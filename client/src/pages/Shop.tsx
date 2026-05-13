@@ -142,24 +142,36 @@ export default function Shop() {
   }, [searchStr]);
 
   const filteredProducts = useMemo(() => {
-    // Defensive: ensure products is always an array
-    let products = searchQuery.trim()
-      ? searchProducts(searchQuery)
-      : getProductsByCategory(activeCategory);
-    
-    // Safeguard against undefined/null
-    if (!Array.isArray(products)) {
-      console.warn(`getProductsByCategory returned non-array for category: ${activeCategory}`);
-      products = [];
+    if (searchQuery.trim()) {
+      return searchProducts(searchQuery);
     }
-
-    switch (sortBy) {
-      case 'price-asc': return [...products].sort((a, b) => a.price - b.price);
-      case 'price-desc': return [...products].sort((a, b) => b.price - a.price);
-      case 'name': return [...products].sort((a, b) => a.name.localeCompare(b.name));
-      default: return products;
+    if (activeCategory === 'all') {
+      return PRODUCTS;
     }
+    return PRODUCTS.filter(product => {
+      const productCat = (product.category || '')
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .trim();
+      const activeCat = activeCategory
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .trim();
+      return productCat === activeCat;
+    }).sort((a, b) => {
+      switch (sortBy) {
+        case 'price-asc': return a.price - b.price;
+        case 'price-desc': return b.price - a.price;
+        case 'name': return a.name.localeCompare(b.name);
+        default: return 0;
+      }
+    });
   }, [activeCategory, searchQuery, sortBy]);
+
+  const handleCategoryChange = (catId: string) => {
+    setActiveCategory('');
+    setTimeout(() => setActiveCategory(catId), 0);
+  };
 
   const activeCategoryLabel = CATEGORIES.find(c => c.id === activeCategory)?.label || 'All Products';
 
@@ -264,7 +276,7 @@ export default function Shop() {
                   <button
                     key={cat.id}
                     className={`category-tab ${activeCategory === cat.id ? 'active' : ''}`}
-                    onClick={() => { setActiveCategory(cat.id); setSearchQuery(''); }}
+                    onClick={() => { handleCategoryChange(cat.id); setSearchQuery(''); }}
                   >
                     {cat.label}
                   </button>
@@ -363,7 +375,7 @@ export default function Shop() {
                   Try a different search term or browse all categories.
                 </p>
                 <button
-                  onClick={() => { setSearchQuery(''); setActiveCategory('all'); }}
+                  onClick={() => { setSearchQuery(''); handleCategoryChange('all'); }}
                   className="btn-secondary"
                   style={{ fontSize: '0.8rem' }}
                 >
