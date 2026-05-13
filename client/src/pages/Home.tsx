@@ -356,11 +356,11 @@ export default function Home() {
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {[
-              { label: 'Skincare', emoji: '✨', href: '/shop?cat=skincare', bg: '#EADFCF' },
+              { label: 'Skincare', emoji: '✨', href: '/shop?cat=general-skincare-beauty', bg: '#EADFCF' },
               { label: 'Sunscreen & SPF', emoji: '☀️', href: '/shop?cat=sunscreen', bg: '#F6F1EB' },
-              { label: 'Fragrance', emoji: '🌸', href: '/shop?cat=fragrance', bg: '#EADFCF' },
+              { label: 'Fragrance', emoji: '🌸', href: '/shop?cat=fragrance-cologne-edp', bg: '#EADFCF' },
               { label: 'Body Wash', emoji: '🫧', href: '/shop?cat=body-wash', bg: '#F6F1EB' },
-              { label: 'Body Lotion', emoji: '🧴', href: '/shop?cat=body-lotion', bg: '#EADFCF' },
+              { label: 'Body Lotion', emoji: '🧴', href: '/shop?cat=body-lotion-butter-cream', bg: '#EADFCF' },
               { label: 'Deodorant', emoji: '🌿', href: '/shop?cat=deodorant', bg: '#F6F1EB' },
             ].map((cat, i) => (
               <Link key={cat.label} href={cat.href}>

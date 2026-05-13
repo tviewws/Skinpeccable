@@ -130,17 +130,28 @@ export default function Shop() {
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc' | 'name'>('default');
   const [showMobileFilter, setShowMobileFilter] = useState(false);
 
-  // Update category from URL params
+  // Update category from URL params with validation
   useEffect(() => {
     const p = new URLSearchParams(searchStr);
     const cat = p.get('cat');
-    if (cat) setActiveCategory(cat);
+    if (cat) {
+      // Validate that the category exists in CATEGORIES
+      const isValidCategory = CATEGORIES.some(c => c.id === cat);
+      setActiveCategory(isValidCategory ? cat : 'all');
+    }
   }, [searchStr]);
 
   const filteredProducts = useMemo(() => {
+    // Defensive: ensure products is always an array
     let products = searchQuery.trim()
       ? searchProducts(searchQuery)
       : getProductsByCategory(activeCategory);
+    
+    // Safeguard against undefined/null
+    if (!Array.isArray(products)) {
+      console.warn(`getProductsByCategory returned non-array for category: ${activeCategory}`);
+      products = [];
+    }
 
     switch (sortBy) {
       case 'price-asc': return [...products].sort((a, b) => a.price - b.price);
