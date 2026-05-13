@@ -192,7 +192,7 @@ export default function Shop() {
 
       {/* ── MAIN SHOP LAYOUT ── */}
       <div className="flex" style={{ minHeight: '80vh' }}>
-        {/* ── LEFT SIDEBAR — Page Navigation ── */}
+        {/* ── LEFT SIDEBAR — Vertical Categories ── */}
         <aside
           className="hidden lg:flex flex-col flex-shrink-0"
           style={{
@@ -210,25 +210,27 @@ export default function Shop() {
               className="font-body font-semibold tracking-widest uppercase mb-5"
               style={{ fontSize: '0.65rem', color: 'var(--warm-taupe)', letterSpacing: '0.18em' }}
             >
-              Pages
+              Categories
             </p>
             <nav className="flex flex-col gap-1">
-              {PAGE_NAV.map(link => {
-                const isActive = link.href === '/shop';
+              {CATEGORIES.map(cat => {
+                const isActive = activeCategory === cat.id;
                 return (
-                  <Link key={link.href} href={link.href}>
-                    <span
-                      className="block font-body font-medium py-2.5 px-3 rounded transition-colors duration-200 cursor-pointer"
-                      style={{
-                        fontSize: '0.875rem',
-                        color: isActive ? 'var(--dark-chocolate)' : 'var(--warm-taupe)',
-                        backgroundColor: isActive ? 'var(--soft-cream)' : 'transparent',
-                        borderLeft: isActive ? '2px solid var(--deep-orange)' : '2px solid transparent',
-                      }}
-                    >
-                      {link.label}
-                    </span>
-                  </Link>
+                  <button
+                    key={cat.id}
+                    onClick={() => { setActiveCategory(cat.id); setSearchQuery(''); }}
+                    className="text-left font-body font-medium py-2.5 px-3 rounded transition-colors duration-200 cursor-pointer"
+                    style={{
+                      fontSize: '0.875rem',
+                      color: isActive ? 'var(--dark-chocolate)' : 'var(--warm-taupe)',
+                      backgroundColor: isActive ? 'var(--soft-cream)' : 'transparent',
+                      borderLeft: isActive ? '2px solid var(--deep-orange)' : '2px solid transparent',
+                      border: 'none',
+                      padding: '0.625rem 0.75rem',
+                    }}
+                  >
+                    {cat.label}
+                  </button>
                 );
               })}
             </nav>
