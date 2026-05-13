@@ -81,11 +81,11 @@ export default function Footer() {
             </h4>
             <ul className="flex flex-col gap-3">
               {[
-                { href: '/shop?cat=skincare', label: 'Skincare' },
+                { href: '/shop?cat=general-skincare-beauty', label: 'Skincare' },
                 { href: '/shop?cat=sunscreen', label: 'Sunscreen & SPF' },
-                { href: '/shop?cat=fragrance', label: 'Fragrance & Body Mists' },
+                { href: '/shop?cat=body-hair-mist', label: 'Fragrance & Body Mists' },
                 { href: '/shop?cat=body-wash', label: 'Body Wash' },
-                { href: '/shop?cat=body-lotion', label: 'Body Lotion & Butter' },
+                { href: '/shop?cat=body-lotion-butter-cream', label: 'Body Lotion & Butter' },
                 { href: '/shop?cat=deodorant', label: 'Deodorant' },
               ].map(link => (
                 <li key={link.href}>
