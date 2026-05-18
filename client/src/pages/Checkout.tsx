@@ -5,13 +5,16 @@
 
 import { useState } from 'react';
 import { Link } from 'wouter';
-import { ShoppingBag, ArrowLeft, CreditCard, Smartphone, Building2, CheckCircle, Lock, Truck } from 'lucide-react';
+import { ShoppingBag, ArrowLeft, CreditCard, Smartphone, CheckCircle, Lock, Truck } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 const PAYMENT_METHODS = [
   { id: 'mpesa', label: 'M-Pesa', icon: <Smartphone size={18} />, desc: 'Pay via M-Pesa mobile money' },
   { id: 'card', label: 'Card', icon: <CreditCard size={18} />, desc: 'Visa, Mastercard, Amex' },
-  { id: 'bank', label: 'Bank Transfer', icon: <Building2 size={18} />, desc: 'Direct bank transfer' },
 ];
 
 const inputStyle: React.CSSProperties = {
@@ -26,6 +29,163 @@ const inputStyle: React.CSSProperties = {
   outline: 'none',
   transition: 'border-color 200ms ease',
 };
+
+const cardElementOptions = {
+  style: {
+    base: {
+      fontFamily: "'Poppins', sans-serif",
+      fontSize: '14px',
+      color: '#3B2A1A',
+      '::placeholder': { color: '#B5A99A' },
+    },
+    invalid: { color: '#e53e3e' },
+  },
+};
+
+// ── Inner Stripe form (needs to be inside <Elements>)
+function StripeCardForm({
+  total,
+  onSuccess,
+  onBack,
+  form,
+  items,
+}: {
+  total: number;
+  onSuccess: () => void;
+  onBack: () => void;
+  form: any;
+  items: any[];
+}) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [loading, setLoading] = useState(false);
+  const [cardError, setCardError] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!stripe || !elements) return;
+
+    setLoading(true);
+    setCardError('');
+
+    try {
+      // 1. Create payment intent on backend
+      const intentRes = await fetch('/api/payments/stripe/create-payment-intent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: total,
+          currency: 'kes',
+          customerEmail: form.email,
+          customerName: `${form.firstName} ${form.lastName}`,
+        }),
+      });
+      const { clientSecret } = await intentRes.json();
+
+      // 2. Confirm card payment
+      const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card: elements.getElement(CardElement)!,
+          billing_details: {
+            name: `${form.firstName} ${form.lastName}`,
+            email: form.email,
+            phone: form.phone,
+          },
+        },
+      });
+
+      if (error) {
+        setCardError(error.message || 'Payment failed');
+        setLoading(false);
+        return;
+      }
+
+      if (paymentIntent?.status === 'succeeded') {
+        // 3. Create order in Odoo
+        await fetch('/api/odoo/order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customer: {
+              name: `${form.firstName} ${form.lastName}`,
+              email: form.email,
+              phone: form.phone,
+            },
+            items: items.map(i => ({ name: i.name, price: i.price, qty: i.quantity })),
+            total,
+          }),
+        });
+        onSuccess();
+      }
+    } catch (err) {
+      setCardError('Something went wrong. Please try again.');
+    }
+
+    setLoading(false);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div
+        className="rounded-2xl p-8"
+        style={{ backgroundColor: '#FFFFFF', border: '1px solid var(--soft-border-beige)' }}
+      >
+        <h2
+          className="font-display font-semibold mb-6"
+          style={{ fontSize: '1.5rem', color: 'var(--dark-chocolate)' }}
+        >
+          Card Payment
+        </h2>
+
+        <div
+          className="p-4 rounded-xl mb-6"
+          style={{ border: '1px solid var(--soft-border-beige)', backgroundColor: '#FAFAFA' }}
+        >
+          <label className="block font-body font-medium text-xs mb-3 uppercase tracking-wider" style={{ color: 'var(--warm-taupe)' }}>
+            Card Details
+          </label>
+          <CardElement options={cardElementOptions} />
+        </div>
+
+        {cardError && (
+          <p className="font-body text-sm mb-4" style={{ color: '#e53e3e' }}>
+            {cardError}
+          </p>
+        )}
+
+        <div className="flex gap-4">
+          <button
+            type="button"
+            onClick={onBack}
+            className="btn-secondary flex items-center gap-2"
+            style={{ fontSize: '0.875rem' }}
+          >
+            <ArrowLeft size={15} />
+            Back
+          </button>
+          <button
+            type="submit"
+            disabled={loading || !stripe}
+            className="btn-primary flex-1 justify-center flex items-center gap-2"
+            style={{ opacity: loading ? 0.7 : 1 }}
+          >
+            {loading ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Processing…
+              </>
+            ) : (
+              <>
+                <Lock size={15} />
+                Pay KSh {total.toLocaleString()}
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </form>
+  );
+}
 
 export default function Checkout() {
   const { items, totalPrice, totalItems, clearCart } = useCart();
@@ -46,7 +206,7 @@ export default function Checkout() {
     setStep('payment');
   };
 
-  const handlePaymentSubmit = (e: React.FormEvent) => {
+  const handleMpesaSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setTimeout(() => {
@@ -67,10 +227,7 @@ export default function Checkout() {
           style={{ backgroundColor: '#FFFFFF', border: '1px solid var(--soft-border-beige)' }}
         >
           <CheckCircle size={64} style={{ color: 'var(--deep-orange)' }} className="mx-auto mb-6" />
-          <h1
-            className="font-display font-semibold mb-3"
-            style={{ fontSize: '2rem', color: 'var(--dark-chocolate)' }}
-          >
+          <h1 className="font-display font-semibold mb-3" style={{ fontSize: '2rem', color: 'var(--dark-chocolate)' }}>
             Order Confirmed!
           </h1>
           <p className="font-body mb-2" style={{ fontSize: '1rem', color: 'var(--charcoal)' }}>
@@ -79,21 +236,14 @@ export default function Checkout() {
           <p className="font-body mb-8" style={{ fontSize: '0.9rem', color: 'var(--warm-taupe)' }}>
             We hope your purchase brings confidence, care and a little more glow to your routine.
           </p>
-          <p
-            className="font-display italic text-lg mb-8"
-            style={{ color: 'var(--deep-orange)' }}
-          >
+          <p className="font-display italic text-lg mb-8" style={{ color: 'var(--deep-orange)' }}>
             Glow. Different.
           </p>
           <Link href="/shop">
-            <button className="btn-primary w-full justify-center">
-              Continue Shopping
-            </button>
+            <button className="btn-primary w-full justify-center">Continue Shopping</button>
           </Link>
           <Link href="/">
-            <button className="btn-secondary w-full justify-center mt-3">
-              Back to Home
-            </button>
+            <button className="btn-secondary w-full justify-center mt-3">Back to Home</button>
           </Link>
         </div>
       </div>
@@ -140,9 +290,7 @@ export default function Checkout() {
                   >
                     {s === 'details' ? 'Delivery Details' : 'Payment'}
                   </span>
-                  {i === 0 && (
-                    <div className="w-8 h-px" style={{ backgroundColor: 'var(--soft-border-beige)' }} />
-                  )}
+                  {i === 0 && <div className="w-8 h-px" style={{ backgroundColor: 'var(--soft-border-beige)' }} />}
                 </div>
               ))}
             </div>
@@ -153,10 +301,7 @@ export default function Checkout() {
                   className="rounded-2xl p-8"
                   style={{ backgroundColor: '#FFFFFF', border: '1px solid var(--soft-border-beige)' }}
                 >
-                  <h2
-                    className="font-display font-semibold mb-6"
-                    style={{ fontSize: '1.5rem', color: 'var(--dark-chocolate)' }}
-                  >
+                  <h2 className="font-display font-semibold mb-6" style={{ fontSize: '1.5rem', color: 'var(--dark-chocolate)' }}>
                     Delivery Details
                   </h2>
 
@@ -277,19 +422,16 @@ export default function Checkout() {
             )}
 
             {step === 'payment' && (
-              <form onSubmit={handlePaymentSubmit}>
+              <>
+                {/* Payment Method Selector */}
                 <div
                   className="rounded-2xl p-8"
                   style={{ backgroundColor: '#FFFFFF', border: '1px solid var(--soft-border-beige)' }}
                 >
-                  <h2
-                    className="font-display font-semibold mb-6"
-                    style={{ fontSize: '1.5rem', color: 'var(--dark-chocolate)' }}
-                  >
+                  <h2 className="font-display font-semibold mb-6" style={{ fontSize: '1.5rem', color: 'var(--dark-chocolate)' }}>
                     Payment Method
                   </h2>
-
-                  <div className="flex flex-col gap-3 mb-8">
+                  <div className="flex flex-col gap-3">
                     {PAYMENT_METHODS.map(method => (
                       <label
                         key={method.id}
@@ -326,9 +468,7 @@ export default function Checkout() {
                         </div>
                         <div
                           className="ml-auto w-5 h-5 rounded-full border-2 flex items-center justify-center"
-                          style={{
-                            borderColor: paymentMethod === method.id ? 'var(--deep-orange)' : 'var(--soft-border-beige)',
-                          }}
+                          style={{ borderColor: paymentMethod === method.id ? 'var(--deep-orange)' : 'var(--soft-border-beige)' }}
                         >
                           {paymentMethod === method.id && (
                             <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: 'var(--deep-orange)' }} />
@@ -337,56 +477,76 @@ export default function Checkout() {
                       </label>
                     ))}
                   </div>
-
-                  {paymentMethod === 'mpesa' && (
-                    <div
-                      className="p-5 rounded-xl mb-7"
-                      style={{ backgroundColor: 'var(--light-warm-grey)', border: '1px solid var(--soft-border-beige)' }}
-                    >
-                      <p className="font-body font-semibold text-sm mb-2" style={{ color: 'var(--dark-chocolate)' }}>
-                        M-Pesa Payment Instructions
-                      </p>
-                      <ol className="font-body text-sm space-y-1" style={{ color: 'var(--charcoal)' }}>
-                        <li>1. Go to M-Pesa on your phone</li>
-                        <li>2. Select "Lipa na M-Pesa" → "Pay Bill"</li>
-                        <li>3. Business Number: <strong>123456</strong></li>
-                        <li>4. Account: Your phone number</li>
-                        <li>5. Amount: <strong>KSh {total.toLocaleString()}</strong></li>
-                      </ol>
-                    </div>
-                  )}
-
-                  <div className="flex gap-4">
-                    <button
-                      type="button"
-                      onClick={() => setStep('details')}
-                      className="btn-secondary flex items-center gap-2"
-                      style={{ fontSize: '0.875rem' }}
-                    >
-                      <ArrowLeft size={15} />
-                      Back
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="btn-primary flex-1 justify-center flex items-center gap-2"
-                      style={{ opacity: loading ? 0.7 : 1 }}
-                    >
-                      {loading ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          Processing…
-                        </>
-                      ) : (
-                        <>
-                          <Lock size={15} />
-                          Place Order — KSh {total.toLocaleString()}
-                        </>
-                      )}
-                    </button>
-                  </div>
                 </div>
-              </form>
+
+                {/* M-Pesa Instructions */}
+                {paymentMethod === 'mpesa' && (
+                  <form onSubmit={handleMpesaSubmit}>
+                    <div
+                      className="rounded-2xl p-8"
+                      style={{ backgroundColor: '#FFFFFF', border: '1px solid var(--soft-border-beige)' }}
+                    >
+                      <div
+                        className="p-5 rounded-xl mb-7"
+                        style={{ backgroundColor: 'var(--light-warm-grey)', border: '1px solid var(--soft-border-beige)' }}
+                      >
+                        <p className="font-body font-semibold text-sm mb-2" style={{ color: 'var(--dark-chocolate)' }}>
+                          M-Pesa Payment Instructions
+                        </p>
+                        <ol className="font-body text-sm space-y-1" style={{ color: 'var(--charcoal)' }}>
+                          <li>1. Go to M-Pesa on your phone</li>
+                          <li>2. Select "Lipa na M-Pesa" → "Pay Bill"</li>
+                          <li>3. Business Number: <strong>123456</strong></li>
+                          <li>4. Account: Your phone number</li>
+                          <li>5. Amount: <strong>KSh {total.toLocaleString()}</strong></li>
+                        </ol>
+                      </div>
+                      <div className="flex gap-4">
+                        <button
+                          type="button"
+                          onClick={() => setStep('details')}
+                          className="btn-secondary flex items-center gap-2"
+                          style={{ fontSize: '0.875rem' }}
+                        >
+                          <ArrowLeft size={15} />
+                          Back
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={loading}
+                          className="btn-primary flex-1 justify-center flex items-center gap-2"
+                          style={{ opacity: loading ? 0.7 : 1 }}
+                        >
+                          {loading ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                              Processing…
+                            </>
+                          ) : (
+                            <>
+                              <Lock size={15} />
+                              Place Order — KSh {total.toLocaleString()}
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                )}
+
+                {/* Stripe Card Payment */}
+                {paymentMethod === 'card' && (
+                  <Elements stripe={stripePromise}>
+                    <StripeCardForm
+                      total={total}
+                      form={form}
+                      items={items}
+                      onSuccess={() => { setStep('success'); clearCart(); }}
+                      onBack={() => setStep('details')}
+                    />
+                  </Elements>
+                )}
+              </>
             )}
           </div>
 
@@ -396,10 +556,7 @@ export default function Checkout() {
               className="rounded-2xl p-6"
               style={{ backgroundColor: '#FFFFFF', border: '1px solid var(--soft-border-beige)' }}
             >
-              <h3
-                className="font-display font-semibold mb-5"
-                style={{ fontSize: '1.25rem', color: 'var(--dark-chocolate)' }}
-              >
+              <h3 className="font-display font-semibold mb-5" style={{ fontSize: '1.25rem', color: 'var(--dark-chocolate)' }}>
                 Order Summary
                 <span className="font-body font-normal text-sm ml-2" style={{ color: 'var(--warm-taupe)' }}>
                   ({totalItems} {totalItems === 1 ? 'item' : 'items'})
@@ -409,9 +566,7 @@ export default function Checkout() {
               {items.length === 0 ? (
                 <div className="text-center py-8">
                   <ShoppingBag size={36} style={{ color: 'var(--soft-border-beige)' }} className="mx-auto mb-3" />
-                  <p className="font-body text-sm" style={{ color: 'var(--warm-taupe)' }}>
-                    Your bag is empty
-                  </p>
+                  <p className="font-body text-sm" style={{ color: 'var(--warm-taupe)' }}>Your bag is empty</p>
                   <Link href="/shop">
                     <button className="btn-primary mt-4 text-sm" style={{ fontSize: '0.8rem', padding: '0.6rem 1.5rem' }}>
                       Shop Now
@@ -433,9 +588,7 @@ export default function Checkout() {
                           <p className="font-body font-medium text-sm leading-snug" style={{ color: 'var(--dark-chocolate)' }}>
                             {item.name}
                           </p>
-                          <p className="font-body text-xs" style={{ color: 'var(--warm-taupe)' }}>
-                            Qty: {item.quantity}
-                          </p>
+                          <p className="font-body text-xs" style={{ color: 'var(--warm-taupe)' }}>Qty: {item.quantity}</p>
                         </div>
                         <span className="font-body font-semibold text-sm flex-shrink-0" style={{ color: 'var(--dark-chocolate)' }}>
                           KSh {(item.price * item.quantity).toLocaleString()}
@@ -444,10 +597,7 @@ export default function Checkout() {
                     ))}
                   </div>
 
-                  <div
-                    className="space-y-2 pt-4"
-                    style={{ borderTop: '1px solid var(--soft-border-beige)' }}
-                  >
+                  <div className="space-y-2 pt-4" style={{ borderTop: '1px solid var(--soft-border-beige)' }}>
                     <div className="flex justify-between font-body text-sm" style={{ color: 'var(--charcoal)' }}>
                       <span>Subtotal</span>
                       <span>KSh {totalPrice.toLocaleString()}</span>
@@ -485,9 +635,7 @@ export default function Checkout() {
               ].map(item => (
                 <div key={item.text} className="flex items-center gap-3">
                   <span style={{ color: 'var(--deep-orange)' }}>{item.icon}</span>
-                  <span className="font-body text-sm" style={{ color: 'var(--dark-chocolate)' }}>
-                    {item.text}
-                  </span>
+                  <span className="font-body text-sm" style={{ color: 'var(--dark-chocolate)' }}>{item.text}</span>
                 </div>
               ))}
             </div>
