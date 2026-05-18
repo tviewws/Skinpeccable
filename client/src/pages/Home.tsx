@@ -4,14 +4,15 @@
  * Sections: Hero (full-screen) | Brand Story | Three Pillars | Lifestyle Split | Tagline CTA
  */
 
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { Link } from 'wouter';
 import { ArrowRight, Sparkles, Leaf, Heart } from 'lucide-react';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
+import heroVideo from '../../assets/herovideo.mp4';
 
-const HERO_IMG = 'https://d2xsxph8kpxj0f.cloudfront.net/310519663656533692/jCCPNKSkazkgBn7bH3FjhA/hero-home-kqjyACi9knqn96y4NyeKv6.webp';
+import heroSkin from '../../assets/heroskin.jpg';
+
 const HERO_IMG_2 = 'https://d2xsxph8kpxj0f.cloudfront.net/310519663656533692/jCCPNKSkazkgBn7bH3FjhA/hero-home-2-WUTV3RMNtmEEzPj6biBqEK.webp';
-const MODEL_IMG = 'https://d2xsxph8kpxj0f.cloudfront.net/310519663656533692/jCCPNKSkazkgBn7bH3FjhA/model-glow-NiHJGGwKSLZuMx88Nt3HbH.webp';
 
 const PILLARS = [
   {
@@ -35,19 +36,8 @@ export default function Home() {
   useScrollReveal();
   const heroRef = useRef<HTMLDivElement>(null);
 
-  // Parallax on hero image
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!heroRef.current) return;
-      const scrollY = window.scrollY;
-      const imgEl = heroRef.current.querySelector('.hero-img') as HTMLElement;
-      if (imgEl) {
-        imgEl.style.transform = `scale(1.08) translateY(${scrollY * 0.12}px)`;
-      }
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  // NOTE: Parallax scroll effect removed — it conflicts with video playback
+  // and causes visual glitching on the <video> element.
 
   return (
     <div>
@@ -57,14 +47,18 @@ export default function Home() {
         className="relative overflow-hidden"
         style={{ height: 'calc(100vh - 5rem)', minHeight: '600px', maxHeight: '900px' }}
       >
-        {/* Background Image */}
+        {/* Background Video */}
         <div className="absolute inset-0 overflow-hidden">
-          <img
-            src={HERO_IMG}
-            alt="Skinpeccable Glowtique — Glow. Different."
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
             className="hero-img w-full h-full object-cover"
-            style={{ transform: 'scale(1.08)', transformOrigin: 'center center', transition: 'transform 0.1s linear' }}
-          />
+            style={{ transform: 'none', objectPosition: 'top' }}
+          >
+            <source src={heroVideo} type="video/mp4" />
+          </video>
           {/* Gradient overlay — dark left, transparent right */}
           <div
             className="absolute inset-0"
@@ -149,11 +143,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Bottom fade */}
-        <div
-          className="absolute bottom-0 left-0 right-0 h-24"
-          style={{ background: 'linear-gradient(to top, #FFFFFF, transparent)' }}
-        />
+
       </section>
 
       {/* ── BRAND INTRO STRIP ── */}
@@ -191,7 +181,7 @@ export default function Home() {
                 style={{ aspectRatio: '4/5', maxHeight: '600px' }}
               >
                 <img
-                  src={MODEL_IMG}
+                  src={heroSkin}
                   alt="Skinpeccable model — confident, glowing skin"
                   className="w-full h-full object-cover"
                 />

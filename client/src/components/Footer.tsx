@@ -5,6 +5,7 @@
 
 import { Link } from 'wouter';
 import { Instagram, Mail, Phone, MapPin } from 'lucide-react';
+import homelogo from '../../assets/homelogo.png';
 
 export default function Footer() {
   return (
@@ -17,12 +18,12 @@ export default function Footer() {
           {/* Brand Column */}
           <div className="lg:col-span-1">
             <div className="mb-4">
-              <p className="font-display font-semibold text-2xl" style={{ color: 'var(--soft-cream)', letterSpacing: '0.02em' }}>
-                Skinpeccable
-              </p>
-              <p className="font-body font-light tracking-widest mt-0.5" style={{ fontSize: '0.6rem', color: 'var(--warm-taupe)', letterSpacing: '0.25em', textTransform: 'uppercase' }}>
-                Glowtique
-              </p>
+              <img
+                src={homelogo}
+                alt="Skinpeccable Glowtique"
+                className="object-contain"
+                style={{ height: '56px', width: 'auto' }}
+              />
             </div>
             <p className="font-body text-sm leading-relaxed mb-6" style={{ color: 'rgba(234,223,207,0.7)' }}>
               Curated beauty, skincare, cosmetics, fragrance and grooming for every skin and every confidence.

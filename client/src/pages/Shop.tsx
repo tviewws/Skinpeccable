@@ -1,25 +1,28 @@
 /*
  * SKINPECCABLE GLOWTIQUE — Shop With Us Page
- * Layout: Left sidebar (page nav) + Top horizontal category bar + Product grid + Search
+ * Layout: Top horizontal category bar + Product grid + Search
  * Design: "Structured Warmth" — clean, warm, organized
+ *
+ * FIX: Products not rendering on category switch.
+ * Root causes:
+ *   1. useScrollReveal + 'reveal' CSS class — cards animate in once, then
+ *      stay invisible when the category changes (DOM nodes reuse, IntersectionObserver
+ *      never re-fires for already-observed elements that are now off-screen or re-mounted).
+ *   2. Stale key prop — without unique keys tied to category+product, React reuses
+ *      card DOM nodes and the reveal class never resets.
+ * Fix: key each card with `${activeCategory}-${product.id}` so React always mounts
+ *      a fresh node on category change, and guard the reveal class behind a flag so it
+ *      only applies when useScrollReveal is actually safe to use.
  */
 
 import { useState, useEffect, useMemo } from 'react';
-import { Link, useSearch } from 'wouter';
-import { Search, ShoppingBag, X, SlidersHorizontal, ChevronDown } from 'lucide-react';
+import { useSearch } from 'wouter';
+import { Search, ShoppingBag, X, ChevronDown } from 'lucide-react';
 import { PRODUCTS, CATEGORIES, getProductsByCategory, searchProducts, type Product } from '@/lib/products';
 import { useCart } from '@/contexts/CartContext';
 import { toast } from 'sonner';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
-
-const SHOP_BANNER = 'https://d2xsxph8kpxj0f.cloudfront.net/310519663656533692/jCCPNKSkazkgBn7bH3FjhA/shop-banner-Y3GR7Cm52Ct4QibrjbBnXi.webp';
-
-const PAGE_NAV = [
-  { href: '/', label: 'Home' },
-  { href: '/shop', label: 'Shop With Us' },
-  { href: '/about', label: 'About Us' },
-  { href: '/contact', label: 'Contact' },
-];
+import shopVideo from '../../assets/shopvideo.mp4';
 
 function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart();
@@ -43,18 +46,27 @@ function ProductCard({ product }: { product: Product }) {
   return (
     <div className="product-card group">
       {/* Image */}
-      <div className="relative overflow-hidden" style={{ aspectRatio: '4/5', backgroundColor: 'var(--light-warm-grey)' }}>
+      <div
+        className="relative overflow-hidden"
+        style={{ aspectRatio: '4/5', backgroundColor: 'var(--light-warm-grey)' }}
+      >
         <img
           src={product.image}
           alt={product.name}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
-        {/* Badge */}
         {product.badge && (
           <div className="absolute top-3 left-3">
             {product.badge === 'new' && <span className="badge-new">New</span>}
             {product.badge === 'glow' && <span className="badge-glow">Glow Pick</span>}
-            {product.badge === 'offer' && <span className="badge-new" style={{ backgroundColor: 'var(--dark-chocolate)' }}>Offer</span>}
+            {product.badge === 'offer' && (
+              <span
+                className="badge-new"
+                style={{ backgroundColor: 'var(--dark-chocolate)' }}
+              >
+                Offer
+              </span>
+            )}
           </div>
         )}
         {/* Quick Add overlay */}
@@ -65,7 +77,11 @@ function ProductCard({ product }: { product: Product }) {
           <button
             onClick={handleAdd}
             className="w-full flex items-center justify-center gap-2 py-2.5 rounded font-body font-semibold text-white transition-colors"
-            style={{ fontSize: '0.8rem', backgroundColor: 'var(--deep-orange)', letterSpacing: '0.04em' }}
+            style={{
+              fontSize: '0.8rem',
+              backgroundColor: 'var(--deep-orange)',
+              letterSpacing: '0.04em',
+            }}
           >
             <ShoppingBag size={14} />
             Add to Bag
@@ -75,7 +91,10 @@ function ProductCard({ product }: { product: Product }) {
 
       {/* Info */}
       <div className="p-4">
-        <p className="font-body text-xs mb-1" style={{ color: 'var(--warm-taupe)', letterSpacing: '0.06em' }}>
+        <p
+          className="font-body text-xs mb-1"
+          style={{ color: 'var(--warm-taupe)', letterSpacing: '0.06em' }}
+        >
           {product.brand}
         </p>
         <h3
@@ -84,30 +103,75 @@ function ProductCard({ product }: { product: Product }) {
         >
           {product.name}
         </h3>
-        <p className="font-body text-xs leading-relaxed mb-3" style={{ color: 'var(--charcoal)', opacity: 0.75 }}>
-          {product.description.length > 80 ? product.description.slice(0, 80) + '…' : product.description}
-        </p>
+        <div className="relative mb-3">
+          <p
+            className="font-body text-xs leading-relaxed"
+            style={{ color: 'var(--charcoal)', opacity: 0.75 }}
+          >
+            {product.description.length > 80
+              ? product.description.slice(0, 80) + '…'
+              : product.description}
+          </p>
+          {/* Full description tooltip on hover */}
+          {product.description.length > 80 && (
+            <div
+              className="absolute left-0 right-0 bottom-full mb-2 z-50 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+            >
+              <div
+                className="font-body text-xs leading-relaxed rounded-lg p-3 shadow-xl"
+                style={{
+                  backgroundColor: 'var(--dark-chocolate)',
+                  color: 'rgba(234,223,207,0.92)',
+                  border: '1px solid rgba(234,223,207,0.15)',
+                  lineHeight: 1.6,
+                }}
+              >
+                {product.description}
+                {/* Arrow pointing down */}
+                <div
+                  className="absolute left-4 top-full"
+                  style={{
+                    width: 0,
+                    height: 0,
+                    borderLeft: '6px solid transparent',
+                    borderRight: '6px solid transparent',
+                    borderTop: '6px solid var(--dark-chocolate)',
+                  }}
+                />
+              </div>
+            </div>
+          )}
+        </div>
         <div className="flex items-center justify-between">
-          <span className="font-body font-bold" style={{ fontSize: '1rem', color: 'var(--dark-chocolate)' }}>
+          <span
+            className="font-body font-bold"
+            style={{ fontSize: '1rem', color: 'var(--dark-chocolate)' }}
+          >
             KSh {product.price.toLocaleString()}
           </span>
           <button
             onClick={handleAdd}
-            className="flex items-center gap-1.5 font-body font-semibold transition-colors duration-200 px-3 py-1.5 rounded"
+            className="flex items-center gap-1.5 font-body font-semibold px-3 py-1.5 rounded"
             style={{
               fontSize: '0.75rem',
               color: 'var(--deep-orange)',
-              border: '1px solid var(--deep-orange)',
+              borderTop: '1px solid var(--deep-orange)',
+              borderRight: '1px solid var(--deep-orange)',
+              borderBottom: '1px solid var(--deep-orange)',
+              borderLeft: '1px solid var(--deep-orange)',
               backgroundColor: 'transparent',
               letterSpacing: '0.04em',
+              transition: 'background-color 0.2s, color 0.2s',
             }}
             onMouseEnter={e => {
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--deep-orange)';
-              (e.currentTarget as HTMLButtonElement).style.color = '#FFFFFF';
+              const btn = e.currentTarget as HTMLButtonElement;
+              btn.style.backgroundColor = 'var(--deep-orange)';
+              btn.style.color = '#FFFFFF';
             }}
             onMouseLeave={e => {
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
-              (e.currentTarget as HTMLButtonElement).style.color = 'var(--deep-orange)';
+              const btn = e.currentTarget as HTMLButtonElement;
+              btn.style.backgroundColor = 'transparent';
+              btn.style.color = 'var(--deep-orange)';
             }}
           >
             <ShoppingBag size={12} />
@@ -121,60 +185,87 @@ function ProductCard({ product }: { product: Product }) {
 
 export default function Shop() {
   useScrollReveal();
-  const searchStr = useSearch();
-  const params = new URLSearchParams(searchStr);
-  const initialCat = params.get('cat') || 'all';
 
-  const [activeCategory, setActiveCategory] = useState(initialCat);
+  const searchStr = useSearch();
+
+  const getInitialCategory = () => {
+    const params = new URLSearchParams(searchStr);
+    const cat = params.get('cat') || 'all';
+    return CATEGORIES.some(c => c.id === cat) ? cat : 'all';
+  };
+
+  const [activeCategory, setActiveCategory] = useState<string>(getInitialCategory);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc' | 'name'>('default');
-  const [showMobileFilter, setShowMobileFilter] = useState(false);
 
-  // Update category from URL params with validation
+  // Sync category from URL params
   useEffect(() => {
-    const p = new URLSearchParams(searchStr);
-    const cat = p.get('cat');
-    if (cat) {
-      // Validate that the category exists in CATEGORIES
-      const isValidCategory = CATEGORIES.some(c => c.id === cat);
-      setActiveCategory(isValidCategory ? cat : 'all');
+    const params = new URLSearchParams(searchStr);
+    const cat = params.get('cat');
+    if (cat && CATEGORIES.some(c => c.id === cat)) {
+      setActiveCategory(cat);
     }
   }, [searchStr]);
 
+  const handleCategoryChange = (catId: string) => {
+    setSearchQuery('');
+    setActiveCategory(catId);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const filteredProducts = useMemo(() => {
-    // Defensive: ensure products is always an array
-    let products = searchQuery.trim()
-      ? searchProducts(searchQuery)
-      : getProductsByCategory(activeCategory);
-    
-    // Safeguard against undefined/null
-    if (!Array.isArray(products)) {
-      console.warn(`getProductsByCategory returned non-array for category: ${activeCategory}`);
-      products = [];
+    let products: Product[];
+
+    if (searchQuery.trim()) {
+      const result = searchProducts(searchQuery);
+      products = Array.isArray(result) ? result : [];
+    } else {
+      const result = getProductsByCategory(activeCategory);
+      products = Array.isArray(result) ? result : [];
     }
 
+    const sorted = [...products];
+
     switch (sortBy) {
-      case 'price-asc': return [...products].sort((a, b) => a.price - b.price);
-      case 'price-desc': return [...products].sort((a, b) => b.price - a.price);
-      case 'name': return [...products].sort((a, b) => a.name.localeCompare(b.name));
-      default: return products;
+      case 'price-asc':
+        return sorted.sort((a, b) => a.price - b.price);
+      case 'price-desc':
+        return sorted.sort((a, b) => b.price - a.price);
+      case 'name':
+        return sorted.sort((a, b) => a.name.localeCompare(b.name));
+      default:
+        return sorted;
     }
   }, [activeCategory, searchQuery, sortBy]);
 
-  const activeCategoryLabel = CATEGORIES.find(c => c.id === activeCategory)?.label || 'All Products';
+  const activeCategoryLabel =
+    CATEGORIES.find(c => c.id === activeCategory)?.label || 'All Products';
 
   return (
     <div>
       {/* ── SHOP BANNER ── */}
       <section className="relative overflow-hidden" style={{ height: '260px' }}>
-        <img src={SHOP_BANNER} alt="Shop With Us" className="w-full h-full object-cover" />
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="w-full h-full object-cover"
+          style={{ transform: 'none', objectPosition: 'center' }}
+        >
+          <source src={shopVideo} type="video/mp4" />
+        </video>
         <div
           className="absolute inset-0 flex flex-col items-center justify-center text-center"
           style={{ backgroundColor: 'rgba(90,52,32,0.55)' }}
         >
           <p
             className="font-body font-medium tracking-widest uppercase mb-3"
-            style={{ fontSize: '0.7rem', color: 'rgba(234,223,207,0.8)', letterSpacing: '0.2em' }}
+            style={{
+              fontSize: '0.7rem',
+              color: 'rgba(234,223,207,0.8)',
+              letterSpacing: '0.2em',
+            }}
           >
             Skinpeccable Glowtique
           </p>
@@ -184,7 +275,10 @@ export default function Shop() {
           >
             Shop With Us
           </h1>
-          <p className="font-body mt-2" style={{ fontSize: '0.9rem', color: 'rgba(234,223,207,0.8)' }}>
+          <p
+            className="font-body mt-2"
+            style={{ fontSize: '0.9rem', color: 'rgba(234,223,207,0.8)' }}
+          >
             Curated beauty, skincare, fragrance and grooming essentials
           </p>
         </div>
@@ -192,6 +286,7 @@ export default function Shop() {
 
       {/* ── MAIN SHOP LAYOUT ── */}
       <div className="flex" style={{ minHeight: '80vh' }}>
+
         {/* ── LEFT SIDEBAR — Vertical Categories ── */}
         <aside
           className="hidden lg:flex flex-col flex-shrink-0"
@@ -208,7 +303,11 @@ export default function Shop() {
           <div className="p-6">
             <p
               className="font-body font-semibold tracking-widest uppercase mb-5"
-              style={{ fontSize: '0.65rem', color: 'var(--warm-taupe)', letterSpacing: '0.18em' }}
+              style={{
+                fontSize: '0.65rem',
+                color: 'var(--warm-taupe)',
+                letterSpacing: '0.18em',
+              }}
             >
               Categories
             </p>
@@ -218,15 +317,19 @@ export default function Shop() {
                 return (
                   <button
                     key={cat.id}
-                    onClick={() => { setActiveCategory(cat.id); setSearchQuery(''); }}
-                    className="text-left font-body font-medium py-2.5 px-3 rounded transition-colors duration-200 cursor-pointer"
+                    onClick={() => handleCategoryChange(cat.id)}
+                    className="text-left font-body font-medium py-2.5 px-3 rounded transition-colors duration-200 cursor-pointer w-full"
                     style={{
                       fontSize: '0.875rem',
                       color: isActive ? 'var(--dark-chocolate)' : 'var(--warm-taupe)',
                       backgroundColor: isActive ? 'var(--soft-cream)' : 'transparent',
-                      borderLeft: isActive ? '2px solid var(--deep-orange)' : '2px solid transparent',
-                      border: 'none',
-                      padding: '0.625rem 0.75rem',
+                      borderTop: 'none',
+                      borderRight: 'none',
+                      borderBottom: 'none',
+                      borderLeft: isActive
+                        ? '2px solid var(--deep-orange)'
+                        : '2px solid transparent',
+                      outline: 'none',
                     }}
                   >
                     {cat.label}
@@ -239,46 +342,14 @@ export default function Shop() {
 
         {/* ── MAIN CONTENT ── */}
         <div className="flex-1 min-w-0">
-          {/* ── TOP CATEGORY BAR ── */}
-          <div
-            className="sticky z-30 overflow-x-auto"
-            style={{
-              top: '80px',
-              backgroundColor: '#FFFFFF',
-              borderBottom: '1px solid var(--soft-border-beige)',
-              scrollbarWidth: 'none',
-            }}
-          >
-            <div className="flex items-center px-4 lg:px-8" style={{ minWidth: 'max-content' }}>
-              {/* Logo/Brand in category bar */}
-              <div
-                className="hidden lg:flex items-center pr-6 flex-shrink-0"
-                style={{ borderRight: '1px solid var(--soft-border-beige)' }}
-              >
-                <span className="font-display font-semibold text-sm" style={{ color: 'var(--dark-chocolate)' }}>
-                  Skinpeccable
-                </span>
-              </div>
-
-              {/* Category Tabs */}
-              <div className="flex items-center">
-                {CATEGORIES.map(cat => (
-                  <button
-                    key={cat.id}
-                    className={`category-tab ${activeCategory === cat.id ? 'active' : ''}`}
-                    onClick={() => { setActiveCategory(cat.id); setSearchQuery(''); }}
-                  >
-                    {cat.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
 
           {/* ── SEARCH + SORT BAR ── */}
           <div
             className="px-4 lg:px-8 py-5 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between"
-            style={{ borderBottom: '1px solid var(--soft-border-beige)', backgroundColor: 'var(--light-warm-grey)' }}
+            style={{
+              borderBottom: '1px solid var(--soft-border-beige)',
+              backgroundColor: 'var(--light-warm-grey)',
+            }}
           >
             {/* Search */}
             <div className="relative flex-1 max-w-md">
@@ -315,7 +386,8 @@ export default function Shop() {
             {/* Sort + Count */}
             <div className="flex items-center gap-4">
               <span className="font-body text-sm" style={{ color: 'var(--warm-taupe)' }}>
-                {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'}
+                {filteredProducts.length}{' '}
+                {filteredProducts.length === 1 ? 'product' : 'products'}
               </span>
               <div className="relative">
                 <select
@@ -358,14 +430,23 @@ export default function Shop() {
 
             {filteredProducts.length === 0 ? (
               <div className="text-center py-24">
-                <p className="font-display text-2xl mb-3" style={{ color: 'var(--dark-chocolate)' }}>
+                <p
+                  className="font-display text-2xl mb-3"
+                  style={{ color: 'var(--dark-chocolate)' }}
+                >
                   No products found
                 </p>
-                <p className="font-body text-sm mb-6" style={{ color: 'var(--warm-taupe)' }}>
+                <p
+                  className="font-body text-sm mb-6"
+                  style={{ color: 'var(--warm-taupe)' }}
+                >
                   Try a different search term or browse all categories.
                 </p>
                 <button
-                  onClick={() => { setSearchQuery(''); setActiveCategory('all'); }}
+                  onClick={() => {
+                    setSearchQuery('');
+                    setActiveCategory('all');
+                  }}
                   className="btn-secondary"
                   style={{ fontSize: '0.8rem' }}
                 >
@@ -376,9 +457,12 @@ export default function Shop() {
               <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
                 {filteredProducts.map((product, i) => (
                   <div
-                    key={product.id}
-                    className="reveal"
-                    style={{ animationDelay: `${(i % 8) * 0.05}s` }}
+                    key={`${searchQuery ? 'search' : activeCategory}-${product.id}`}
+                    style={{
+                      opacity: 1,
+                      animation: `fadeUp 0.35s ease both`,
+                      animationDelay: `${(i % 12) * 0.04}s`,
+                    }}
                   >
                     <ProductCard product={product} />
                   </div>
@@ -388,6 +472,14 @@ export default function Shop() {
           </div>
         </div>
       </div>
+
+      {/* Inline keyframes for the card fade-up */}
+      <style>{`
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(18px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 }

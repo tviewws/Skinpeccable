@@ -1,13 +1,14 @@
 /*
  * SKINPECCABLE GLOWTIQUE — Navbar
  * Design: Sticky, clean white/cream header with Dark Chocolate text
- * Left: Logo/Brand name | Center: Page navigation | Right: Cart icon
+ * Left: Logo image | Center: Page navigation | Right: Cart icon
  */
 
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
 import { ShoppingBag, Menu, X } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
+import homelogo from '../../assets/homelogo.png';
 
 const NAV_LINKS = [
   { href: '/', label: 'Home' },
@@ -46,21 +47,16 @@ export default function Navbar() {
       >
         <div className="container">
           <div className="flex items-center justify-between h-16 md:h-20">
-            {/* Logo */}
+
+            {/* Logo — image replaces text */}
             <Link href="/">
-              <div className="flex flex-col leading-none cursor-pointer group">
-                <span
-                  className="font-display font-semibold tracking-wide"
-                  style={{ fontSize: '1.35rem', color: 'var(--dark-chocolate)', letterSpacing: '0.02em' }}
-                >
-                  Skinpeccable
-                </span>
-                <span
-                  className="font-body font-light tracking-widest"
-                  style={{ fontSize: '0.55rem', color: 'var(--warm-taupe)', letterSpacing: '0.25em', textTransform: 'uppercase', marginTop: '1px' }}
-                >
-                  Glowtique
-                </span>
+              <div className="cursor-pointer" style={{ marginLeft: '-65px' }}> 
+                <img
+                  src={homelogo}
+                  alt="Skinpeccable Glowtique"
+                  className="object-contain"
+                  style={{ height: '72px', width: 'auto' }}
+                />
               </div>
             </Link>
 

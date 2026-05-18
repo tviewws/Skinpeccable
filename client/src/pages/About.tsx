@@ -6,10 +6,10 @@
 import { Link } from 'wouter';
 import { ArrowRight, CheckCircle } from 'lucide-react';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
+import aboutUsPng from '../../assets/aboutuspng.png';
+import aboutUsPng2 from '../../assets/aboutuspng2.png';
 
 const ABOUT_HERO = 'https://d2xsxph8kpxj0f.cloudfront.net/310519663656533692/jCCPNKSkazkgBn7bH3FjhA/about-hero-jV8SayHvBDchVyQrx3tDWN.webp';
-const MODEL_IMG = 'https://d2xsxph8kpxj0f.cloudfront.net/310519663656533692/jCCPNKSkazkgBn7bH3FjhA/model-glow-NiHJGGwKSLZuMx88Nt3HbH.webp';
-const SHOP_BANNER = 'https://d2xsxph8kpxj0f.cloudfront.net/310519663656533692/jCCPNKSkazkgBn7bH3FjhA/shop-banner-Y3GR7Cm52Ct4QibrjbBnXi.webp';
 
 const VALUES = [
   { title: 'Confidence', desc: 'Every customer should leave feeling more assured and cared for.' },
@@ -102,7 +102,7 @@ export default function About() {
             <div className="reveal reveal-delay-2 relative">
               <div className="overflow-hidden rounded-xl" style={{ aspectRatio: '4/5' }}>
                 <img
-                  src={MODEL_IMG}
+                  src={aboutUsPng}
                   alt="Skinpeccable — confidence and self-care"
                   className="w-full h-full object-cover"
                 />
@@ -244,7 +244,7 @@ export default function About() {
 
       {/* ── LIFESTYLE IMAGE BANNER ── */}
       <section className="relative overflow-hidden" style={{ height: '360px' }}>
-        <img src={SHOP_BANNER} alt="Skinpeccable curated products" className="w-full h-full object-cover" />
+        <img src={aboutUsPng2} alt="Skinpeccable curated products" className="w-full h-full object-cover" />
         <div
           className="absolute inset-0 flex flex-col items-center justify-center text-center"
           style={{ backgroundColor: 'rgba(90,52,32,0.65)' }}

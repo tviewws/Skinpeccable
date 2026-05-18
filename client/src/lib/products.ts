@@ -4,6 +4,235 @@
  * 228 products across 17 categories
  */
 
+import product1 from '../../assets/product1.jpg';
+import product2 from '../../assets/product2.jpg';
+import product3 from '../../assets/product3.jpg';
+import product4 from '../../assets/product4.jpg';
+import product5 from '../../assets/product5.jpg';
+import product6 from '../../assets/product6.jpg';
+import product7 from '../../assets/product7.jpg';
+import product8 from '../../assets/product8.jpg';
+import product9 from '../../assets/product9.jpg';
+import product10 from '../../assets/product10.jpg';
+import product11 from '../../assets/product11.jpg';
+import product12 from '../../assets/product12.jpg';
+import product13 from '../../assets/product13.jpg';
+import product14 from '../../assets/product14.jpg';
+import product15 from '../../assets/product15.jpg';
+import product16 from '../../assets/product16.jpg';
+import product17 from '../../assets/product17.jpg';
+import product18 from '../../assets/product18.jpg';
+import product19 from '../../assets/product19.jpg';
+import product20 from '../../assets/product20.jpg';
+import product21 from '../../assets/product21.jpg';
+import product22 from '../../assets/product22.jpg';
+import product23 from '../../assets/product23.jpg';
+import product24 from '../../assets/product24.jpg';
+import product25 from '../../assets/product25.jpg';
+import product26 from '../../assets/product26.jpg';
+import product27 from '../../assets/product27.jpg';
+import product28 from '../../assets/product28.jpg';
+import product29 from '../../assets/product29.jpg';
+import product30 from '../../assets/product30.jpg';
+import product31 from '../../assets/product31.jpg';
+import product32 from '../../assets/product32.jpg';
+import product33 from '../../assets/product33.jpg';
+import product34 from '../../assets/product34.jpg';
+import product35 from '../../assets/product35.jpg';
+import product36 from '../../assets/product36.jpg';
+import product37 from '../../assets/product37.jpg';
+import product38 from '../../assets/product38.jpg';
+import product39 from '../../assets/product39.jpg';
+import product40 from '../../assets/product40.jpg';
+import product41 from '../../assets/product41.jpg';
+import product42 from '../../assets/product42.jpg';
+import product43 from '../../assets/product43.jpg';
+import product44 from '../../assets/product44.jpg';
+import product45 from '../../assets/product45.jpg';
+import product46 from '../../assets/product46.jpg';
+import product47 from '../../assets/product47.jpg';
+import product48 from '../../assets/product48.jpg';
+import product49 from '../../assets/product49.jpg';
+import product50 from '../../assets/product50.jpg';
+import product51 from '../../assets/product51.jpg';
+import product52 from '../../assets/product52.jpg';
+import product53 from '../../assets/product53.png';
+import product54 from '../../assets/product54.jpg';
+import product55 from '../../assets/product55.jpg';
+import product56 from '../../assets/product56.jpg';
+import product57 from '../../assets/product57.jpg';
+import product58 from '../../assets/product58.png';
+import product59 from '../../assets/product59.jpg';
+import product60 from '../../assets/product60.jpg';
+import product61 from '../../assets/product61.jpg';
+import product62 from '../../assets/product62.jpg';
+import product63 from '../../assets/product63.jpg';
+import product64 from '../../assets/product64.jpg';
+import product65 from '../../assets/product65.jpg';
+import product66 from '../../assets/product66.jpg';
+import product67 from '../../assets/product67.png';
+import product68 from '../../assets/product68.jpg';
+import product69 from '../../assets/product69.jpg';
+import product70 from '../../assets/product70.jpg';
+import product71 from '../../assets/product71.jpg';
+import product72 from '../../assets/product72.jpg';
+import product73 from '../../assets/product73.jpg';
+import product74 from '../../assets/product74.jpg';
+import product75 from '../../assets/product75.jpg';
+import product76 from '../../assets/product76.jpg';
+import product77 from '../../assets/product77.jpg';
+import product78 from '../../assets/product78.jpg';
+import product79 from '../../assets/product79.jpg';
+import product80 from '../../assets/product80.jpg';
+import product81 from '../../assets/product81.jpg';
+import product82 from '../../assets/product82.png';
+import product83 from '../../assets/product83.jpg';
+import product84 from '../../assets/product84.png';
+import product85 from '../../assets/product85.png';
+import product86 from '../../assets/product86.jpg';
+import product87 from '../../assets/product87.jpg';
+import product88 from '../../assets/product88.png';
+import product89 from '../../assets/product89.jpg';
+import product90 from '../../assets/product90.jpg';
+import product91 from '../../assets/product91.png';
+import product92 from '../../assets/product92.jpg';
+import product93 from '../../assets/product93.jpg';
+import product94 from '../../assets/product94.png';
+import product95 from '../../assets/product95.png';
+import product96 from '../../assets/product96.jpg';
+import product97 from '../../assets/product97.jpg';
+import product98 from '../../assets/product98.jpg';
+import product99 from '../../assets/product99.jpg';
+import product100 from '../../assets/product100.jpg';
+import product101 from '../../assets/product101.jpg';
+import product102 from '../../assets/product102.png';
+import product103 from '../../assets/product103.jpg';
+import product104 from '../../assets/product104.jpg';
+import product105 from '../../assets/product105.jpg';
+import product106 from '../../assets/product106.png';
+import product107 from '../../assets/product107.png';
+import product108 from '../../assets/product108.jpg';
+import product109 from '../../assets/product109.jpg';
+import product110 from '../../assets/product110.jpg';
+import product111 from '../../assets/product111.jpg';
+import product112 from '../../assets/product112.jpg';
+import product113 from '../../assets/product113.jpg';
+import product114 from '../../assets/product114.png';
+import product115 from '../../assets/product115.jpg';
+import product116 from '../../assets/product116.jpg';
+import product117 from '../../assets/product117.jpg';
+import product118 from '../../assets/product118.jpg';
+import product119 from '../../assets/product119.jpg';
+import product120 from '../../assets/product120.jpg';
+import product121 from '../../assets/product121.jpg';
+import product122 from '../../assets/product122.jpg';
+import product123 from '../../assets/product123.jpg';
+import product124 from '../../assets/product124.jpg';
+import product125 from '../../assets/product125.jpg';
+import product126 from '../../assets/product126.jpg';
+import product127 from '../../assets/product127.jpg';
+import product128 from '../../assets/product128.jpg';
+import product129 from '../../assets/product129.jpg';
+import product130 from '../../assets/product130.jpg';
+import product131 from '../../assets/product131.jpg';
+import product132 from '../../assets/product132.jpg';
+import product133 from '../../assets/product133.jpg';
+import product134 from '../../assets/product134.png';
+import product135 from '../../assets/product135.jpg';
+import product136 from '../../assets/product136.jpg';
+import product137 from '../../assets/product137.jpg';
+import product138 from '../../assets/product138.jpg';
+import product139 from '../../assets/product139.jpg';
+import product140 from '../../assets/product140.jpg';
+import product141 from '../../assets/product141.jpg';
+import product142 from '../../assets/product142.jpg';
+import product143 from '../../assets/product143.jpg';
+import product144 from '../../assets/product144.jpg';
+import product145 from '../../assets/product145.jpg';
+import product146 from '../../assets/product146.jpg';
+import product147 from '../../assets/product147.jpg';
+import product148 from '../../assets/product148.jpg';
+import product149 from '../../assets/product149.jpg';
+import product150 from '../../assets/product150.jpg';
+import product151 from '../../assets/product151.jpg';
+import product152 from '../../assets/product152.jpg';
+import product153 from '../../assets/product153.jpg';
+import product154 from '../../assets/product154.jpg';
+import product155 from '../../assets/product155.jpg';
+import product156 from '../../assets/product156.jpg';
+import product157 from '../../assets/product157.jpg';
+import product158 from '../../assets/product158.jpg';
+import product159 from '../../assets/product159.jpg';
+import product160 from '../../assets/product160.jpg';
+import product161 from '../../assets/product161.jpg';
+import product162 from '../../assets/product162.jpg';
+import product163 from '../../assets/product163.jpg';
+import product164 from '../../assets/product164.jpg';
+import product165 from '../../assets/product165.jpg';
+import product166 from '../../assets/product166.jpg';
+import product167 from '../../assets/product167.jpg';
+import product168 from '../../assets/product168.jpg';
+import product169 from '../../assets/product169.jpg';
+import product170 from '../../assets/product170.jpg';
+import product171 from '../../assets/product171.png';
+import product172 from '../../assets/product172.jpg';
+import product173 from '../../assets/product173.jpg';
+import product174 from '../../assets/product174.jpg';
+import product175 from '../../assets/product175.png';
+import product176 from '../../assets/product176.jpg';
+import product177 from '../../assets/product177.jpg';
+import product178 from '../../assets/product178.jpg';
+import product179 from '../../assets/product179.jpg';
+import product180 from '../../assets/product180.jpg';
+import product181 from '../../assets/product181.jpg';
+import product182 from '../../assets/product182.jpg';
+import product183 from '../../assets/product183.jpg';
+import product184 from '../../assets/product184.jpg';
+import product185 from '../../assets/product185.jpg';
+import product186 from '../../assets/product186.jpg';
+import product187 from '../../assets/product187.jpg';
+import product188 from '../../assets/product188.jpg';
+import product189 from '../../assets/product189.jpg';
+import product190 from '../../assets/product190.jpg';
+import product191 from '../../assets/product191.jpg';
+import product192 from '../../assets/product192.jpg';
+import product193 from '../../assets/product193.jpg';
+import product194 from '../../assets/product194.png';
+import product195 from '../../assets/product195.jpg';
+import product196 from '../../assets/product196.jpg';
+import product197 from '../../assets/product197.jpg';
+import product198 from '../../assets/product198.jpg';
+import product199 from '../../assets/product199.jpg';
+import product200 from '../../assets/product200.jpg';
+import product201 from '../../assets/product201.jpg';
+import product202 from '../../assets/product202.jpg';
+import product203 from '../../assets/product203.jpg';
+import product204 from '../../assets/product204.jpg';
+import product205 from '../../assets/product205.jpg';
+import product206 from '../../assets/product206.jpg';
+import product207 from '../../assets/product207.jpg';
+import product208 from '../../assets/product208.jpg';
+import product209 from '../../assets/product209.jpg';
+import product210 from '../../assets/product210.jpg';
+import product211 from '../../assets/product211.jpg';
+import product212 from '../../assets/product212.jpg';
+import product213 from '../../assets/product213.jpg';
+import product214 from '../../assets/product214.jpg';
+import product215 from '../../assets/product215.jpg';
+import product216 from '../../assets/product216.jpg';
+import product217 from '../../assets/product217.jpg';
+import product218 from '../../assets/product218.jpg';
+import product219 from '../../assets/product219.jpg';
+import product220 from '../../assets/product220.jpg';
+import product221 from '../../assets/product221.jpg';
+import product222 from '../../assets/product222.jpg';
+import product223 from '../../assets/product223.jpg';
+import product224 from '../../assets/product224.jpg';
+import product225 from '../../assets/product225.jpg';
+import product226 from '../../assets/product226.jpg';
+import product227 from '../../assets/product227.jpg';
+import product228 from '../../assets/product228.jpg';
+
 export interface Product {
   id: string;
   name: string;
@@ -46,7 +275,7 @@ export const PRODUCTS: Product[] = [
     category: 'sunscreen',
     price: 2700,
     description: 'Lightweight Japanese-formula sunscreen gel offering SPF50/PA+++ protection. Contains dual hyaluronic acid for hydration; fragrance-free, non-greasy, and absorbs invisibly for daily face and body use.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product1,
   },
   {
     id: 'skinpeccable_product_002',
@@ -55,7 +284,7 @@ export const PRODUCTS: Product[] = [
     category: 'cleanser',
     price: 2100,
     description: 'pH 5.5 balanced daily facial cleanser with fermented black rice extract and coconut-derived surfactants. Soap-free, unscented formula gently removes impurities while keeping skin moisturized and barrier-strong.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product2,
   },
   {
     id: 'skinpeccable_product_003',
@@ -64,7 +293,7 @@ export const PRODUCTS: Product[] = [
     category: 'sunscreen',
     price: 2300,
     description: 'Korean sunscreen enriched with Centella Asiatica (CICA) for soothing and barrier-repair. Provides SPF50+/PA++++ broad-spectrum protection with a lightweight, non-irritating finish for sensitive skin.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product3,
   },
   {
     id: 'skinpeccable_product_004',
@@ -73,7 +302,7 @@ export const PRODUCTS: Product[] = [
     category: 'cleanser',
     price: 1800,
     description: 'Fast-acting Japanese makeup-removing cleansing oil that emulsifies instantly with water. Dissolves waterproof makeup, SPF, and impurities leaving skin soft without a greasy residue.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product4,
   },
   {
     id: 'skinpeccable_product_005',
@@ -82,7 +311,7 @@ export const PRODUCTS: Product[] = [
     category: 'cleanser',
     price: 2000,
     description: 'pH 5.5 soothing foam cleanser formulated with panthenol and Madecassoside for calming sensitive or compromised skin. Free of fragrance, alcohol, and artificial color; gentle enough for daily use.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product5,
   },
   {
     id: 'skinpeccable_product_006',
@@ -91,7 +320,7 @@ export const PRODUCTS: Product[] = [
     category: 'set-bundle-kit',
     price: 0,
     description: 'Korean skincare starter set featuring a toner, serum, moisturizer, and cleanser with AHA, BHA, and PHA exfoliants. Designed to visibly reduce blemishes and smooth skin texture within 30 days.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product6,
   },
   {
     id: 'skinpeccable_product_007',
@@ -100,7 +329,7 @@ export const PRODUCTS: Product[] = [
     category: 'mask',
     price: 3000,
     description: 'Sheet mask set infused with Centella Asiatica and ginseng to deeply hydrate and calm irritated or stressed skin. Each mask delivers concentrated soothing actives for a dewy, refreshed complexion.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product7,
   },
   {
     id: 'skinpeccable_product_008',
@@ -109,7 +338,7 @@ export const PRODUCTS: Product[] = [
     category: 'sunscreen',
     price: 2300,
     description: 'Ultra-lightweight daily sunscreen with SPF50+/PA++++ protection and fermented black rice extract. Airy gel texture absorbs quickly with no white cast, suitable for all skin types including sensitive.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product8,
   },
   {
     id: 'skinpeccable_product_009',
@@ -118,7 +347,7 @@ export const PRODUCTS: Product[] = [
     category: 'serum-toner-essence',
     price: 2000,
     description: 'Twin-pack of pH-balanced hydrating toner enriched with fermented black rice extract and hyaluronic acid. Strengthens the skin barrier, brightens complexion, and preps skin for subsequent skincare steps.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product9,
   },
   {
     id: 'skinpeccable_product_010',
@@ -127,7 +356,7 @@ export const PRODUCTS: Product[] = [
     category: 'sunscreen',
     price: 1500,
     description: 'Portable SPF50+/PA++++ sunscreen stick for convenient on-the-go application and touch-ups. Lightweight airy formula glides on smoothly without stickiness or white cast.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product10,
   },
   {
     id: 'skinpeccable_product_011',
@@ -136,7 +365,7 @@ export const PRODUCTS: Product[] = [
     category: 'sunscreen',
     price: 2300,
     description: 'Japan\'s best-selling daily facial sunscreen with SPF50+/PA++++ in a refreshing watery essence texture. Hyaluronic acid micro-capsules release moisture on contact for hydrated, protected skin.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product11,
   },
   {
     id: 'skinpeccable_product_012',
@@ -145,7 +374,7 @@ export const PRODUCTS: Product[] = [
     category: 'sunscreen',
     price: 2300,
     description: 'Japanese sunscreen with SPF50+/PA++++ and micro-reflecting pigments that blur imperfections for a luminous skin-lit finish. Water-light texture is non-greasy and suitable for daily face use.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product12,
   },
   {
     id: 'skinpeccable_product_013',
@@ -154,7 +383,7 @@ export const PRODUCTS: Product[] = [
     category: 'sunscreen',
     price: 1200,
     description: 'Gentle SPF50+/PA++++ sunscreen essence for sensitive skin with a mild, hydrating formula. Absorbs quickly, leaves no white cast, and is suitable for daily use on the face.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product13,
   },
   {
     id: 'skinpeccable_product_014',
@@ -163,7 +392,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 2500,
     description: 'Refreshing hair and body fragrance mist in a vibrant sparkling hibiscus scent. Lightly perfumes hair and skin with a long-lasting, alcohol-based formula that won\'t dry out strands.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product14,
   },
   {
     id: 'skinpeccable_product_015',
@@ -172,7 +401,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 2500,
     description: 'Warm and cozy hair and body mist with a creamy whipped almond fragrance. Dual-use formula lightly scents both hair and skin without weighing down or causing dryness.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product15,
   },
   {
     id: 'skinpeccable_product_016',
@@ -181,7 +410,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 1200,
     description: 'Mini travel-size vanilla bourbon hair and body mist for on-the-go fragrance. Rich, warm scent lightly perfumes hair and skin with a convenient portable format.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product16,
   },
   {
     id: 'skinpeccable_product_017',
@@ -190,7 +419,7 @@ export const PRODUCTS: Product[] = [
     category: 'fragrance-cologne-edp',
     price: 4000,
     description: 'Long-lasting eau de parfum in a warm, nutty whipped almond scent. Higher concentration fragrance for all-day wear with sophisticated vanilla-almond notes.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product17,
   },
   {
     id: 'skinpeccable_product_018',
@@ -199,7 +428,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 2500,
     description: 'Sweet and playful body mist with a magnetic candy fragrance profile of fruity, sugary notes. Lightweight spray for a fresh, long-lasting scent on skin.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product18,
   },
   {
     id: 'skinpeccable_product_019',
@@ -208,7 +437,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 2500,
     description: 'Uplifting body mist with Sun Phoria fragrance blending bright citrus and warm solar notes. Lightweight formula leaves a sheer, refreshing scent on skin.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product19,
   },
   {
     id: 'skinpeccable_product_020',
@@ -217,7 +446,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 4000,
     description: '5-piece body mist gift set with an assortment of Finer\'ry\'s signature fragrances. Includes a curated collection of scents in convenient spray bottles perfect for layering or gifting.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product20,
   },
   {
     id: 'skinpeccable_product_021',
@@ -226,7 +455,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 2000,
     description: 'Bath & Body Works fine fragrance mist combining fresh coconut and clean cotton notes. Long-lasting formula lightly perfumes skin for all-day freshness.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product21,
   },
   {
     id: 'skinpeccable_product_022',
@@ -235,7 +464,7 @@ export const PRODUCTS: Product[] = [
     category: 'fragrance-cologne-edp',
     price: 0,
     description: 'Men\'s cologne inspired by the classic Smoked Old Fashioned cocktail, featuring notes of charred oak, warm bourbon, and smoky bitters. Sophisticated and long-lasting fragrance for everyday wear.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product22,
   },
   {
     id: 'skinpeccable_product_023',
@@ -244,7 +473,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 0,
     description: 'Bath & Body Works fine fragrance mist with sun-ripened raspberry and bright fruity notes. Light, refreshing formula perfect for layering or daily use.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product23,
   },
   {
     id: 'skinpeccable_product_024',
@@ -253,7 +482,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 0,
     description: 'Holiday-inspired Bath & Body Works fragrance mist blending creamy vanilla bean, sugar, and soft musk. A warm, comforting scent ideal for the festive season.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product24,
   },
   {
     id: 'skinpeccable_product_025',
@@ -262,7 +491,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 0,
     description: 'Bath & Body Works fine fragrance mist with a dreamy blend of midnight orchid, warm musk, and soft woods. Sophisticated and long-lasting everyday fragrance.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product25,
   },
   {
     id: 'skinpeccable_product_026',
@@ -271,7 +500,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 0,
     description: 'Refreshing Bath & Body Works mist evoking fresh jungle rain with green leaves, water lily, and earthy woods. Light and invigorating for daily wear.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product26,
   },
   {
     id: 'skinpeccable_product_027',
@@ -280,7 +509,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 0,
     description: 'Bath & Body Works fine fragrance mist with serene white tea, spicy ginger, and clean floral notes. A calming, spa-inspired scent for everyday freshness.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product27,
   },
   {
     id: 'skinpeccable_product_028',
@@ -289,7 +518,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 0,
     description: 'Tropical Bath & Body Works fragrance mist evoking Waikiki Beach with coconut, sea spray, and warm vanilla. A light, vacation-inspired scent for daily wear.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product28,
   },
   {
     id: 'skinpeccable_product_029',
@@ -298,7 +527,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 0,
     description: 'Classic Bath & Body Works fragrance mist with crisp juniper berry, fresh citrus, and clean woods. A timeless, refreshing scent suitable for all occasions.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product29,
   },
   {
     id: 'skinpeccable_product_030',
@@ -307,7 +536,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 0,
     description: 'Bath & Body Works fine fragrance mist with oceanic amethyst waves, soft florals, and clean driftwood notes. Light and airy for everyday wear.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product30,
   },
   {
     id: 'skinpeccable_product_031',
@@ -316,7 +545,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 0,
     description: 'Bath & Body Works mist capturing coastal bliss with sea salt, white florals, and warm sandalwood. Fresh and long-lasting for daily skin fragrance.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product31,
   },
   {
     id: 'skinpeccable_product_032',
@@ -325,7 +554,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 0,
     description: 'Bath & Body Works fine fragrance mist blending sweet floral petals and warm pound cake. A deliciously feminine scent for daily wear.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product32,
   },
   {
     id: 'skinpeccable_product_033',
@@ -334,7 +563,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 0,
     description: 'Bath & Body Works fine fragrance mist with fresh green emerald notes, cucumber, and clean musk. A crisp, revitalizing scent for all-day freshness.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product33,
   },
   {
     id: 'skinpeccable_product_034',
@@ -343,7 +572,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-wash',
     price: 0,
     description: 'Bath & Body Works 3-in-1 men\'s wash for hair, face, and body with a bold teakwood fragrance. Nourishing and moisturizing formula for an efficient all-in-one shower routine.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product34,
   },
   {
     id: 'skinpeccable_product_035',
@@ -352,7 +581,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-wash',
     price: 0,
     description: 'Bath & Body Works 3-in-1 men\'s wash for hair, face, and body with a warm bourbon and oak fragrance. Cleanses and conditions in one convenient step.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product35,
   },
   {
     id: 'skinpeccable_product_036',
@@ -361,7 +590,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-wash',
     price: 0,
     description: 'Bath & Body Works 3-in-1 men\'s grooming wash with the Smoked Old Fashioned scent of charred oak and bourbon. Cleans hair, face, and body in one step.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product36,
   },
   {
     id: 'skinpeccable_product_037',
@@ -370,7 +599,7 @@ export const PRODUCTS: Product[] = [
     category: 'candle',
     price: 0,
     description: 'Bath & Body Works single-wick scented candle with a warm, romantic fragrance. Up to 45 hours of burn time in a classic glass jar with a natural-fiber wick.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product37,
   },
   {
     id: 'skinpeccable_product_038',
@@ -379,7 +608,7 @@ export const PRODUCTS: Product[] = [
     category: 'candle',
     price: 0,
     description: 'Bath & Body Works signature single-wick candle with a tropical Coco Paradise fragrance of coconut, warm vanilla, and exotic woods. Burns up to 45 hours.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product38,
   },
   {
     id: 'skinpeccable_product_039',
@@ -388,7 +617,7 @@ export const PRODUCTS: Product[] = [
     category: 'candle',
     price: 0,
     description: 'Bath & Body Works single-wick candle with a luxurious dark amber and oud fragrance. Rich, warm scent with up to 45 hours of burn time.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product39,
   },
   {
     id: 'skinpeccable_product_040',
@@ -397,7 +626,7 @@ export const PRODUCTS: Product[] = [
     category: 'candle',
     price: 0,
     description: 'Bath & Body Works single-wick candle with an airy Endless Weekend fragrance of citrus, fresh greens, and clean woods. Up to 45 hours of burn time.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product40,
   },
   {
     id: 'skinpeccable_product_041',
@@ -406,7 +635,7 @@ export const PRODUCTS: Product[] = [
     category: 'candle',
     price: 0,
     description: 'Bath & Body Works single-wick candle combining fresh coconut and crisp cotton for a clean, tropical home fragrance. Burns approximately 45 hours.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product41,
   },
   {
     id: 'skinpeccable_product_042',
@@ -415,7 +644,7 @@ export const PRODUCTS: Product[] = [
     category: 'candle',
     price: 0,
     description: 'Bath & Body Works 3-wick candle with a warm bourbon, oak, and vanilla fragrance. Provides up to 45 hours of long-lasting, even fragrance throw throughout the home.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product42,
   },
   {
     id: 'skinpeccable_product_043',
@@ -424,7 +653,7 @@ export const PRODUCTS: Product[] = [
     category: 'candle',
     price: 0,
     description: 'Bath & Body Works 3-wick candle set featuring Rose Water & Ivy and Mahogany Teakwood fragrances. Rich, lasting scent fill for up to 45 hours per candle.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product43,
   },
   {
     id: 'skinpeccable_product_044',
@@ -433,7 +662,7 @@ export const PRODUCTS: Product[] = [
     category: 'home-fragrance',
     price: 0,
     description: 'Bath & Body Works car fragrance refill with a fresh, airy \'Among The Clouds\' scent. Clips onto the car vent for weeks of continuous fragrance while driving.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product44,
   },
   {
     id: 'skinpeccable_product_045',
@@ -442,7 +671,7 @@ export const PRODUCTS: Product[] = [
     category: 'home-fragrance',
     price: 0,
     description: 'Bath & Body Works 2-pack Wallflowers plug-in refill with a tropical Tiki Beach fragrance of coconut, sea mist, and warm sand. Each bulb provides up to 30 days of fragrance.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product45,
   },
   {
     id: 'skinpeccable_product_046',
@@ -451,7 +680,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 1600,
     description: 'e.l.f. gentle makeup remover that effectively dissolves eye, face, and lip makeup. Hydrating formula leaves skin feeling clean and soft without stripping natural moisture.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product46,
   },
   {
     id: 'skinpeccable_product_047',
@@ -460,7 +689,7 @@ export const PRODUCTS: Product[] = [
     category: 'cleanser',
     price: 1600,
     description: 'e.l.f. Holy Hydration daily facial cleanser with a gentle, creamy formula that removes makeup and impurities. Enriched with hyaluronic acid and peptides for a clean, nourished feel.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product47,
   },
   {
     id: 'skinpeccable_product_048',
@@ -469,7 +698,7 @@ export const PRODUCTS: Product[] = [
     category: 'face-cream-moisturizer',
     price: 2600,
     description: 'Rich overnight face cream that deeply nourishes and restores skin while you sleep. Formulated with hydrating actives to leave skin feeling softer, smoother, and more supple by morning.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product48,
   },
   {
     id: 'skinpeccable_product_049',
@@ -478,7 +707,7 @@ export const PRODUCTS: Product[] = [
     category: 'face-cream-moisturizer',
     price: 2600,
     description: 'e.l.f. Holy Hydration fragrance-free daily face moisturizer with hyaluronic acid and peptides. Provides lasting hydration and a dewy finish suitable for sensitive skin.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product49,
   },
   {
     id: 'skinpeccable_product_050',
@@ -487,7 +716,7 @@ export const PRODUCTS: Product[] = [
     category: 'cleanser',
     price: 2200,
     description: 'Gentle daily facial cleanser that removes impurities and excess oil without stripping the skin. Suitable for acne-prone and sensitive skin types with a non-comedogenic formula.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product50,
   },
   {
     id: 'skinpeccable_product_051',
@@ -496,7 +725,7 @@ export const PRODUCTS: Product[] = [
     category: 'face-cream-moisturizer',
     price: 2600,
     description: 'Lightweight daily moisturizer for acne-prone or oily skin. Oil-free, non-comedogenic formula hydrates skin while helping to minimize breakouts and control shine.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product51,
   },
   {
     id: 'skinpeccable_product_052',
@@ -505,7 +734,7 @@ export const PRODUCTS: Product[] = [
     category: 'set-bundle-kit',
     price: 3000,
     description: 'Mini skincare starter set for acne-prone skin including a cleanser and moisturizer. Ideal for travel or trying a new routine with gentle, pore-friendly formulas.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product52,
   },
   {
     id: 'skinpeccable_product_053',
@@ -514,7 +743,7 @@ export const PRODUCTS: Product[] = [
     category: 'face-cream-moisturizer',
     price: 1800,
     description: 'Everyday facial moisturizer with a lightweight texture that provides lasting hydration. Suitable for all skin types, it absorbs quickly and leaves skin soft and comfortable.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product53,
   },
   {
     id: 'skinpeccable_product_054',
@@ -523,7 +752,7 @@ export const PRODUCTS: Product[] = [
     category: 'face-cream-moisturizer',
     price: 2600,
     description: 'Water-gel facial moisturizer packed with hydrating actives for intensely moisturized, plump-looking skin. Lightweight, oil-free texture absorbs quickly for a refreshing finish.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product54,
   },
   {
     id: 'skinpeccable_product_055',
@@ -532,7 +761,7 @@ export const PRODUCTS: Product[] = [
     category: 'face-cream-moisturizer',
     price: 2600,
     description: 'e.l.f. Holy Hydration water-gel moisturizer with hyaluronic acid and peptides. Provides an immediate surge of lightweight hydration for a dewy, refreshed complexion.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product55,
   },
   {
     id: 'skinpeccable_product_056',
@@ -541,7 +770,7 @@ export const PRODUCTS: Product[] = [
     category: 'makeup',
     price: 0,
     description: '12-piece professional makeup brush set with soft synthetic bristles for flawless application of foundation, eyeshadow, contour, and more. Includes a variety of brush shapes for a full face look.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product56,
   },
   {
     id: 'skinpeccable_product_057',
@@ -550,7 +779,7 @@ export const PRODUCTS: Product[] = [
     category: 'makeup',
     price: 2000,
     description: 'e.l.f. Power Grip Primer with hyaluronic acid for a hydrating, grippy base that helps makeup last all day. Smooths the appearance of pores and keeps foundation in place.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product57,
   },
   {
     id: 'skinpeccable_product_058',
@@ -559,7 +788,7 @@ export const PRODUCTS: Product[] = [
     category: 'makeup',
     price: 1300,
     description: 'e.l.f. No Budge retractable eyeliner pencil for precise, long-lasting eye definition. Waterproof, smudge-proof formula glides on smoothly for bold, crease-resistant lines.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product58,
   },
   {
     id: 'skinpeccable_product_059',
@@ -568,7 +797,7 @@ export const PRODUCTS: Product[] = [
     category: 'makeup',
     price: 0,
     description: 'Travel-size e.l.f. Big Mood mascara for volumizing and lengthening lashes. Buildable formula with a hourglass-shaped brush for dramatic, full lashes on the go.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product59,
   },
   {
     id: 'skinpeccable_product_060',
@@ -577,7 +806,7 @@ export const PRODUCTS: Product[] = [
     category: 'sunscreen',
     price: 500,
     description: 'Mini SPF 35 invisible sunscreen ideal for face use on the go. Lightweight, sheer formula provides broad-spectrum UV protection without leaving a white cast.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product60,
   },
   {
     id: 'skinpeccable_product_061',
@@ -586,7 +815,7 @@ export const PRODUCTS: Product[] = [
     category: 'set-bundle-kit',
     price: 3000,
     description: 'e.l.f. Holy Hydration mini skincare kit with travel-size cleanser and moisturizer. Perfect for trying the Holy Hydration range or for travel, packed with hyaluronic acid and peptides.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product61,
   },
   {
     id: 'skinpeccable_product_062',
@@ -595,7 +824,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 2600,
     description: 'Good Chemistry Queen Bee body mist with a sweet, floral fragrance of amber, honey, and soft musk. Long-lasting fine fragrance mist for daily skin scenting.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product62,
   },
   {
     id: 'skinpeccable_product_063',
@@ -604,7 +833,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 2600,
     description: 'Good Chemistry Cheerful Charmer body mist with a bright, playful blend of fruity and floral notes. Light, long-lasting fragrance spray for everyday use.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product63,
   },
   {
     id: 'skinpeccable_product_064',
@@ -613,7 +842,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 2600,
     description: 'Good Chemistry Coffee Cloud body mist inspired by a creamy morning brew with notes of espresso, vanilla, and warm musk. Cozy, indulgent fragrance for daily wear.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product64,
   },
   {
     id: 'skinpeccable_product_065',
@@ -622,7 +851,7 @@ export const PRODUCTS: Product[] = [
     category: 'set-bundle-kit',
     price: 10400,
     description: 'Skincare bundle targeting sensitive or reactive skin with soothing and barrier-repairing formulas. Includes multiple full-size products with calming actives such as Centella Asiatica and ceramides.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product65,
   },
   {
     id: 'skinpeccable_product_066',
@@ -631,7 +860,7 @@ export const PRODUCTS: Product[] = [
     category: 'set-bundle-kit',
     price: 6500,
     description: 'Skincare bundle featuring niacinamide-powered gel products for brightening, pore minimizing, and oil control. Ideal for oily or acne-prone skin types seeking a clear, even complexion.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product66,
   },
   {
     id: 'skinpeccable_product_067',
@@ -640,7 +869,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-wash',
     price: 3000,
     description: 'Girl Scouts Trefoils-scented shower gel with a warm, buttery shortbread cookie fragrance. Native moisturizing formula cleanses and softens skin in the shower.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product67,
   },
   {
     id: 'skinpeccable_product_068',
@@ -649,7 +878,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 3000,
     description: 'Native body wash in a soft Cashmere & Rain scent combining cozy cashmere and clean fresh rain. Moisturizing formula with naturally derived cleansers for a smooth, nourished feel.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product68,
   },
   {
     id: 'skinpeccable_product_069',
@@ -658,7 +887,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 3000,
     description: 'Native body wash with a tropical Coconut & Vanilla fragrance. Made with coconut-derived cleansers and moisturizing ingredients for soft, smooth skin.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product69,
   },
   {
     id: 'skinpeccable_product_070',
@@ -667,7 +896,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 3000,
     description: 'Native body wash in a sweet Cherry & Vanilla Macaron scent with a dessert-inspired, indulgent fragrance. Nourishing and moisturizing for daily use.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product70,
   },
   {
     id: 'skinpeccable_product_071',
@@ -676,7 +905,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 3000,
     description: 'Native body wash inspired by Girl Scouts Thin Mints with a refreshing peppermint and chocolate fragrance. Gently cleanses and moisturizes skin.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product71,
   },
   {
     id: 'skinpeccable_product_072',
@@ -685,7 +914,7 @@ export const PRODUCTS: Product[] = [
     category: 'sunscreen',
     price: 3000,
     description: 'Bondi Sands fragrance-free hydrating tinted SPF sunscreen for the face. Provides broad-spectrum UV protection with a lightweight tint that evens skin tone without fragrance.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product72,
   },
   {
     id: 'skinpeccable_product_073',
@@ -694,7 +923,7 @@ export const PRODUCTS: Product[] = [
     category: 'sunscreen',
     price: 0,
     description: 'Bondi Sands suncare essentials kit including full-size SPF products for face and body. Comprehensive sun protection set for daily outdoor use.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product73,
   },
   {
     id: 'skinpeccable_product_074',
@@ -703,7 +932,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-wash',
     price: 2300,
     description: 'Men\'s body wash with an earthy Pacific Cypress fragrance of cedar, pine, and fresh greens. Moisturizing formula gently cleanses skin for a fresh, outdoorsy feel.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product74,
   },
   {
     id: 'skinpeccable_product_075',
@@ -712,7 +941,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 2300,
     description: 'Men\'s body wash with a fresh, coastal Coastal Moss fragrance. Moisturizing and cleansing formula for soft, refreshed skin with an aquatic green scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product75,
   },
   {
     id: 'skinpeccable_product_076',
@@ -721,7 +950,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 0,
     description: 'Good Chemistry or Native body mist/wash in a fresh sea salt fragrance with oceanic, mineral notes. Lightweight and long-lasting.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product76,
   },
   {
     id: 'skinpeccable_product_077',
@@ -730,7 +959,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 2600,
     description: 'Body fragrance or wash in a warm, woody sandalwood scent with creamy, earthy notes. Moisturizing formula for daily use.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product77,
   },
   {
     id: 'skinpeccable_product_078',
@@ -739,7 +968,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 2600,
     description: 'Good Chemistry Crimson Oak body mist with bold, woody notes of red oak and warm spice. Long-lasting fragrance for a confident, nature-inspired scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product78,
   },
   {
     id: 'skinpeccable_product_079',
@@ -748,7 +977,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 2600,
     description: 'Native or Good Chemistry Cedarwood body mist/wash with a warm, grounding cedarwood fragrance. Clean and earthy scent for everyday use.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product79,
   },
   {
     id: 'skinpeccable_product_080',
@@ -757,7 +986,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 3000,
     description: 'Native body wash in a rich Aged Bourbon scent with notes of whiskey, vanilla, and oak. Moisturizing formula for a warm, masculine shower experience.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product80,
   },
   {
     id: 'skinpeccable_product_081',
@@ -766,7 +995,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 2800,
     description: 'Native body wash in a classic coconut and vanilla fragrance. Gentle, moisturizing formula with naturally derived cleansers for soft, sweet-smelling skin.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product81,
   },
   {
     id: 'skinpeccable_product_082',
@@ -775,7 +1004,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 2800,
     description: 'Native body wash with a cozy Warm Cider and Cinnamon seasonal fragrance. Gently moisturizing and cleansing with a spiced apple scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product82,
   },
   {
     id: 'skinpeccable_product_083',
@@ -784,7 +1013,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 2800,
     description: 'Native body wash in an indulgent Coconut Caramel scent combining tropical coconut and sweet caramel. Moisturizing formula for soft, deliciously scented skin.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product83,
   },
   {
     id: 'skinpeccable_product_084',
@@ -793,7 +1022,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 2800,
     description: 'Native body wash in a fun, sweet Peanut Butter fragrance inspired by Girl Scouts cookies. Moisturizing and cleansing with a warm, nutty aroma.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product84,
   },
   {
     id: 'skinpeccable_product_085',
@@ -802,7 +1031,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 2800,
     description: 'Native Girl Scouts collab body wash in a Trefoils shortbread cookie scent. Moisturizing formula with coconut-derived cleansers for soft, fresh-smelling skin.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product85,
   },
   {
     id: 'skinpeccable_product_086',
@@ -811,7 +1040,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 2800,
     description: 'Native body wash in a juicy Sweet Peach and Nectar fragrance. Moisturizing formula with naturally derived cleansers for soft, fruity-scented skin.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product86,
   },
   {
     id: 'skinpeccable_product_087',
@@ -820,7 +1049,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 2800,
     description: 'Native body wash with a cherry and vanilla macaron scent. Gentle, moisturizing formula for deliciously scented, soft skin.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product87,
   },
   {
     id: 'skinpeccable_product_088',
@@ -829,7 +1058,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-lotion-butter-cream',
     price: 3500,
     description: 'Native body lotion in a Sweet Peach and Nectar fragrance. Fast-absorbing, lightweight formula moisturizes skin with a fresh, fruity scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product88,
   },
   {
     id: 'skinpeccable_product_089',
@@ -838,7 +1067,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-lotion-butter-cream',
     price: 3500,
     description: 'Native body lotion in a classic Coconut and Vanilla fragrance. Moisturizing formula absorbs quickly to leave skin soft and sweetly scented.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product89,
   },
   {
     id: 'skinpeccable_product_090',
@@ -847,7 +1076,7 @@ export const PRODUCTS: Product[] = [
     category: 'deodorant',
     price: 3500,
     description: 'Native deodorant spray in a Sweet Peach and Nectar fragrance. Aluminum-free formula provides effective odor protection with a fruity, fresh scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product90,
   },
   {
     id: 'skinpeccable_product_091',
@@ -856,7 +1085,7 @@ export const PRODUCTS: Product[] = [
     category: 'deodorant',
     price: 3500,
     description: 'Native deodorant spray in a Coconut and Vanilla fragrance. Aluminum-free, effective odor protection with a tropical, sweet scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product91,
   },
   {
     id: 'skinpeccable_product_092',
@@ -865,7 +1094,7 @@ export const PRODUCTS: Product[] = [
     category: 'deodorant',
     price: 3500,
     description: 'Native deodorant spray in a Coconut Caramel fragrance. Aluminum-free formula for all-day odor protection with a warm, tropical scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product92,
   },
   {
     id: 'skinpeccable_product_093',
@@ -874,7 +1103,7 @@ export const PRODUCTS: Product[] = [
     category: 'deodorant',
     price: 2600,
     description: 'Native deodorant stick in a Trefoils shortbread cookie scent. Aluminum-free formula provides effective odor protection with a warm, sweet fragrance.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product93,
   },
   {
     id: 'skinpeccable_product_094',
@@ -883,7 +1112,7 @@ export const PRODUCTS: Product[] = [
     category: 'deodorant',
     price: 2600,
     description: 'Native deodorant stick in a fun Peanut Butter fragrance. Aluminum-free, long-lasting odor protection with a warm, nutty scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product94,
   },
   {
     id: 'skinpeccable_product_095',
@@ -892,7 +1121,7 @@ export const PRODUCTS: Product[] = [
     category: 'deodorant',
     price: 2600,
     description: 'Native deodorant stick in a Coconut Caramel fragrance. Aluminum-free formula for all-day odor protection with a tropical, sweet aroma.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product95,
   },
   {
     id: 'skinpeccable_product_096',
@@ -901,7 +1130,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 3000,
     description: 'Good Chemistry Coffee Cloud body mist with a creamy espresso and vanilla fragrance. Fine fragrance spray for lightly scenting the skin with a warm, cozy coffee-inspired aroma.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product96,
   },
   {
     id: 'skinpeccable_product_097',
@@ -910,7 +1139,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 3000,
     description: 'Finer\'y body mist with a sweet, gourmand fragrance featuring sugary and fruity notes. Light, refreshing formula for all-day skin fragrance.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product97,
   },
   {
     id: 'skinpeccable_product_098',
@@ -919,7 +1148,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 3000,
     description: 'Finer\'y body mist with a clean, subtle fragrance designed to be barely-there. Sheer, fresh formula for a delicate, effortless scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product98,
   },
   {
     id: 'skinpeccable_product_099',
@@ -928,7 +1157,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 3000,
     description: 'Finer\'y Flower Bed body mist with a soft, floral fragrance blending rose, peony, and fresh greens. Feminine and light for daily wear.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product99,
   },
   {
     id: 'skinpeccable_product_100',
@@ -937,7 +1166,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 3000,
     description: 'Finer\'y Midnight Cafe body mist with a rich, warm fragrance of dark coffee, vanilla, and soft woods. Indulgent and long-lasting for evening wear.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product100,
   },
   {
     id: 'skinpeccable_product_101',
@@ -946,7 +1175,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 3000,
     description: 'Finer\'y Before the Rainbow body mist with a crisp, fresh fragrance inspired by the calm before rain. Clean and invigorating for daily use.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product101,
   },
   {
     id: 'skinpeccable_product_102',
@@ -955,7 +1184,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 3000,
     description: 'Being Frenshe body mist in Solar Fluer with a bright, floral citrus scent. Lightweight formula infused with skin-loving ingredients for a refreshing, all-day fragrance.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product102,
   },
   {
     id: 'skinpeccable_product_103',
@@ -964,7 +1193,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 3000,
     description: 'Finer\'y The New Rouge body mist with a bold, modern floral fragrance. Light and long-lasting for a confident, feminine everyday scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product103,
   },
   {
     id: 'skinpeccable_product_104',
@@ -973,7 +1202,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 3000,
     description: 'Finer\'y Another Cherry body mist with a juicy, vibrant cherry and floral fragrance. Bright and playful formula for a fun, fruity everyday scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product104,
   },
   {
     id: 'skinpeccable_product_105',
@@ -982,7 +1211,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-lotion-butter-cream',
     price: 3500,
     description: 'Native body lotion in a warm Sugar Cookie fragrance. Fast-absorbing, moisturizing formula leaves skin soft and smelling like freshly baked cookies.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product105,
   },
   {
     id: 'skinpeccable_product_106',
@@ -991,7 +1220,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-lotion-butter-cream',
     price: 3500,
     description: 'Native body lotion in a HoneyCrisp apple and Cider fragrance. Moisturizing formula for soft skin with a crisp, fresh autumnal scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product106,
   },
   {
     id: 'skinpeccable_product_107',
@@ -1000,7 +1229,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-lotion-butter-cream',
     price: 3500,
     description: 'Native seasonal body lotion in a refreshing peppermint candy cane fragrance. Moisturizing formula for silky skin with a festive, minty scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product107,
   },
   {
     id: 'skinpeccable_product_108',
@@ -1009,7 +1238,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 2800,
     description: 'Native body wash in a rich, warm Coastal Oak and Amber fragrance with woody and earthy notes. Moisturizing formula for a grounding, sophisticated shower experience.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product108,
   },
   {
     id: 'skinpeccable_product_109',
@@ -1018,7 +1247,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 2800,
     description: 'Native body wash in an Ocean and Timber fragrance combining fresh oceanic notes with warm cedar. Moisturizing and cleansing for a crisp, outdoorsy scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product109,
   },
   {
     id: 'skinpeccable_product_110',
@@ -1027,7 +1256,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 2800,
     description: 'Native body wash with a classic Coconut and Vanilla fragrance. Gentle, moisturizing formula for soft, tropically scented skin.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product110,
   },
   {
     id: 'skinpeccable_product_111',
@@ -1036,7 +1265,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-lotion-butter-cream',
     price: 3500,
     description: 'Native body lotion in a calming Lavender and Rose fragrance. Fast-absorbing formula moisturizes and soothes skin with a soft floral scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product111,
   },
   {
     id: 'skinpeccable_product_112',
@@ -1045,7 +1274,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-lotion-butter-cream',
     price: 3500,
     description: 'Native body lotion with a classic Coconut and Vanilla fragrance. Moisturizing formula absorbs quickly for soft, sweetly scented skin.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product112,
   },
   {
     id: 'skinpeccable_product_113',
@@ -1054,7 +1283,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 2800,
     description: 'Native body wash in a HoneyCrisp Apple and Cider fragrance. Moisturizing formula with naturally derived cleansers for a fresh, crisp autumnal scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product113,
   },
   {
     id: 'skinpeccable_product_114',
@@ -1063,7 +1292,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 2800,
     description: 'Native body wash in a warm Toasted Vanilla and Honey fragrance. Moisturizing formula for soft, indulgently scented skin.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product114,
   },
   {
     id: 'skinpeccable_product_115',
@@ -1072,7 +1301,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 2800,
     description: 'Native body wash in a warm Sugar Cookie scent. Gently cleanses and moisturizes skin with a sweet, bakery-inspired fragrance.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product115,
   },
   {
     id: 'skinpeccable_product_116',
@@ -1081,7 +1310,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 2800,
     description: 'Native seasonal body wash in a playful Holiday Gumdrop fragrance with sweet, candy-inspired notes. Moisturizing formula for a festive shower experience.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product116,
   },
   {
     id: 'skinpeccable_product_117',
@@ -1090,7 +1319,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 2800,
     description: 'Native seasonal body wash in a refreshing Candy Cane peppermint fragrance. Gently cleanses and moisturizes with a festive, minty scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product117,
   },
   {
     id: 'skinpeccable_product_118',
@@ -1099,7 +1328,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 2800,
     description: 'Native seasonal body wash in an Apple Butter and Strudel fragrance with warm, spiced apple notes. Moisturizing formula for a cozy, bakery-inspired shower experience.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product118,
   },
   {
     id: 'skinpeccable_product_119',
@@ -1108,7 +1337,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-lotion-butter-cream',
     price: 0,
     description: 'Native deodorant cream in a classic Coconut and Vanilla fragrance. Aluminum-free formula provides effective odor protection with a light, moisturizing texture.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product119,
   },
   {
     id: 'skinpeccable_product_120',
@@ -1117,7 +1346,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 3000,
     description: 'Good Chemistry Magnolia Violet body mist with a romantic floral fragrance of magnolia blooms and soft violet. Long-lasting fine fragrance spray for daily skin scenting.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product120,
   },
   {
     id: 'skinpeccable_product_121',
@@ -1126,7 +1355,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 3000,
     description: 'Good Chemistry Tiger Lily body mist with a vibrant, exotic floral fragrance of tiger lily and warm musk. Fine fragrance mist for daily wear.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product121,
   },
   {
     id: 'skinpeccable_product_122',
@@ -1135,7 +1364,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 3000,
     description: 'Good Chemistry Cheerful Charmer body mist with a bright, playful fragrance blend. Light-bodied spray for a fresh, uplifting everyday scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product122,
   },
   {
     id: 'skinpeccable_product_123',
@@ -1144,7 +1373,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 3000,
     description: 'Good Chemistry Pink Palm body mist with a tropical, fruity-floral fragrance. Light and long-lasting fine fragrance spray for a vacation-inspired scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product123,
   },
   {
     id: 'skinpeccable_product_124',
@@ -1153,7 +1382,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 3000,
     description: 'Good Chemistry Coco Blush body mist with a soft, feminine fragrance blending coconut and blush floral notes. Lightweight spray for an everyday, sun-kissed scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product124,
   },
   {
     id: 'skinpeccable_product_125',
@@ -1162,7 +1391,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 3000,
     description: 'Good Chemistry Queen Bee body mist with a sweet honey, floral, and amber fragrance. Long-lasting fine fragrance mist for daily wear.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product125,
   },
   {
     id: 'skinpeccable_product_126',
@@ -1171,7 +1400,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 3000,
     description: 'Good Chemistry Unknown Legend body mist with a bold, woody-musky fragrance. Long-lasting fine fragrance spray for a mysterious, sophisticated everyday scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product126,
   },
   {
     id: 'skinpeccable_product_127',
@@ -1180,7 +1409,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 3000,
     description: 'Good Chemistry Sugar Berry body mist with a sweet, juicy berry fragrance. Light, refreshing fine fragrance spray for daily use.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product127,
   },
   {
     id: 'skinpeccable_product_128',
@@ -1189,7 +1418,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-lotion-butter-cream',
     price: 3000,
     description: 'Native multi-pack body lotion bundle featuring several of the brand\'s best-selling scents. Fast-absorbing, moisturizing formulas for soft, nourished skin with a variety of fragrances.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product128,
   },
   {
     id: 'skinpeccable_product_129',
@@ -1198,7 +1427,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 2700,
     description: 'Native deodorant stick in a sophisticated Mandarin Vetiver fragrance combining bright citrus and earthy vetiver. Aluminum-free formula for effective all-day odor protection.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product129,
   },
   {
     id: 'skinpeccable_product_130',
@@ -1207,7 +1436,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-wash',
     price: 4000,
     description: 'Native 3-in-1 large-format wash for hair, face, and body in a fresh Sea Salt fragrance. Moisturizing formula with naturally derived cleansers for head-to-toe freshness.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product130,
   },
   {
     id: 'skinpeccable_product_131',
@@ -1216,7 +1445,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-wash',
     price: 1200,
     description: 'Invigorating cold-plunge inspired bar soap in Tahoe Blue scent with fresh, icy aquatic notes. Moisturizing bar soap for a refreshing, revitalizing shower experience.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product131,
   },
   {
     id: 'skinpeccable_product_132',
@@ -1225,7 +1454,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 2700,
     description: 'Native deodorant stick in a warm, woody Sandalwood fragrance. Aluminum-free formula provides all-day odor protection with a soft, earthy scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product132,
   },
   {
     id: 'skinpeccable_product_133',
@@ -1234,7 +1463,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 2700,
     description: 'Native deodorant stick or body product in a fresh Sea Salt fragrance with clean, oceanic notes. Effective and refreshing for daily use.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product133,
   },
   {
     id: 'skinpeccable_product_134',
@@ -1243,7 +1472,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 4200,
     description: 'e.l.f. or skincare brand Gleanser gel-to-milk facial cleanser. Removes makeup and impurities with a hydrating, gentle formula that leaves skin clean without tightness.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product134,
   },
   {
     id: 'skinpeccable_product_135',
@@ -1252,7 +1481,7 @@ export const PRODUCTS: Product[] = [
     category: 'face-cream-moisturizer',
     price: 5000,
     description: 'Moisturizer formulated with urea for intensive hydration and relief of dry, rough, or cracked skin. Urea gently exfoliates and draws moisture into the skin for visibly softer results.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product135,
   },
   {
     id: 'skinpeccable_product_136',
@@ -1261,7 +1490,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 2800,
     description: 'PanOxyl acne creamy wash with 4% benzoyl peroxide for gentle daily use on acne-prone skin. Kills acne-causing bacteria while cleansing pores to reduce breakouts and prevent new ones.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product136,
   },
   {
     id: 'skinpeccable_product_137',
@@ -1270,7 +1499,7 @@ export const PRODUCTS: Product[] = [
     category: 'set-bundle-kit',
     price: 0,
     description: 'Body Fantasies signature fragrance gift set with long-lasting body mist and complementary products. Features iconic sweet and feminine fragrances in a giftable collection.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product137,
   },
   {
     id: 'skinpeccable_product_138',
@@ -1279,7 +1508,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-wash',
     price: 4000,
     description: 'Dove Invigorating body wash with aloe vera and eucalyptus for a refreshing cleansing experience. Dove\'s moisturizing formula leaves skin feeling clean, soft, and revitalized.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product138,
   },
   {
     id: 'skinpeccable_product_139',
@@ -1288,7 +1517,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-wash',
     price: 4000,
     description: 'Dove Renewing body wash with peony extracts and rose oil for a luxurious, moisturizing cleanse. Leaves skin feeling silky and nourished with a delicate floral fragrance.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product139,
   },
   {
     id: 'skinpeccable_product_140',
@@ -1297,7 +1526,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 2200,
     description: 'Summer\'s Eve fragrance-free feminine wash formulated to maintain the body\'s natural pH balance. Dermatologist and gynecologist-tested formula that is gentle and free of harsh fragrances.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product140,
   },
   {
     id: 'skinpeccable_product_141',
@@ -1306,7 +1535,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-wash',
     price: 4000,
     description: 'Dove Pampering body wash with shea butter and warm vanilla for a rich, moisturizing cleanse. Deeply nourishes skin with Dove\'s signature 1/4 moisturizing cream formula.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product141,
   },
   {
     id: 'skinpeccable_product_142',
@@ -1315,7 +1544,7 @@ export const PRODUCTS: Product[] = [
     category: 'sunscreen',
     price: 2100,
     description: '5-pack of Carmex mini lip balm tubes with SPF 15 for moisturizing and sun-protecting lips. Classic medicated formula soothes dry, chapped lips with a convenient travel-size format.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product142,
   },
   {
     id: 'skinpeccable_product_143',
@@ -1324,7 +1553,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 0,
     description: 'Dove Restoring body wash with coconut and cocoa butter for deep moisturization. Rich formula restores skin\'s natural softness and luminosity with a tropical fragrance.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product143,
   },
   {
     id: 'skinpeccable_product_144',
@@ -1333,7 +1562,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 0,
     description: 'Dove Rejuvenating body wash with pomegranate and hibiscus extracts. Moisturizing formula provides antioxidant benefits while leaving skin feeling fresh and nourished.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product144,
   },
   {
     id: 'skinpeccable_product_145',
@@ -1342,7 +1571,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 0,
     description: 'Body by TPH Indulge Me Seductive body mist with a rich, sensual fragrance. Lightweight spray for an alluring, long-lasting scent that complements the skin\'s natural warmth.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product145,
   },
   {
     id: 'skinpeccable_product_146',
@@ -1351,7 +1580,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 0,
     description: 'Summer\'s Eve Simply Sensitive feminine wash for sensitive skin, pH-balanced and fragrance-free. Gentle, hypoallergenic formula maintains natural balance without irritation.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product146,
   },
   {
     id: 'skinpeccable_product_147',
@@ -1360,7 +1589,7 @@ export const PRODUCTS: Product[] = [
     category: 'face-cream-moisturizer',
     price: 2200,
     description: 'Korean daily moisturizer packed with 90% Beta-Glucan for deep, lasting hydration. Lightweight, gel-cream texture strengthens the skin barrier and soothes irritated or dry skin.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product147,
   },
   {
     id: 'skinpeccable_product_148',
@@ -1369,7 +1598,7 @@ export const PRODUCTS: Product[] = [
     category: 'cleanser',
     price: 1700,
     description: 'The Face Shop Rice Water Bright cleansing foam that brightens and gently cleanses. Enriched with rice water to remove impurities while leaving skin luminous and soft.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product148,
   },
   {
     id: 'skinpeccable_product_149',
@@ -1378,7 +1607,7 @@ export const PRODUCTS: Product[] = [
     category: 'face-cream-moisturizer',
     price: 2300,
     description: 'Purito Seoul lightweight gel-cream moisturizer with oat extract for calming and soothing sensitive or irritated skin. Hydrates and strengthens the skin barrier with a refreshing, non-greasy texture.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product149,
   },
   {
     id: 'skinpeccable_product_150',
@@ -1387,7 +1616,7 @@ export const PRODUCTS: Product[] = [
     category: 'serum-toner-essence',
     price: 2000,
     description: 'Jumbo-size Cos De BAHA retinol serum with 2.5% retinol for anti-aging, fine line reduction, and skin renewal. Formulated with niacinamide and hyaluronic acid for added hydration and brightening.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product150,
   },
   {
     id: 'skinpeccable_product_151',
@@ -1396,7 +1625,7 @@ export const PRODUCTS: Product[] = [
     category: 'serum-toner-essence',
     price: 1800,
     description: 'Fragrance-free hydrating toner enriched with fermented black rice extract and hyaluronic acid. Strengthens the skin barrier, brightens, and preps skin for the next steps in your routine.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product151,
   },
   {
     id: 'skinpeccable_product_152',
@@ -1405,7 +1634,7 @@ export const PRODUCTS: Product[] = [
     category: 'cleanser',
     price: 1700,
     description: 'pH 5.5 balanced daily facial gel cleanser with fermented black rice extract. Soap-free, unscented, and gentle enough for all skin types including sensitive.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product152,
   },
   {
     id: 'skinpeccable_product_153',
@@ -1414,7 +1643,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-lotion-butter-cream',
     price: 0,
     description: 'Korean body lotion combining glutathione and niacinamide for brightening and evening skin tone. Lightweight, fast-absorbing formula moisturizes and visibly reduces dark spots and uneven pigmentation.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product153,
   },
   {
     id: 'skinpeccable_product_154',
@@ -1423,7 +1652,7 @@ export const PRODUCTS: Product[] = [
     category: 'serum-toner-essence',
     price: 3000,
     description: 'Anua facial serum with 70% peach extract and niacinamide for brightening, pore-tightening, and skin-soothing benefits. Lightweight gel serum for a clearer, more luminous complexion.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product154,
   },
   {
     id: 'skinpeccable_product_155',
@@ -1432,7 +1661,7 @@ export const PRODUCTS: Product[] = [
     category: 'sunscreen',
     price: 2500,
     description: 'Anua sunscreen with SPF and heartleaf (Houttuynia Cordata) extract for soothing and calming skin while providing broad-spectrum UV protection. Silky, hydrating texture for everyday wear.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product155,
   },
   {
     id: 'skinpeccable_product_156',
@@ -1441,7 +1670,7 @@ export const PRODUCTS: Product[] = [
     category: 'serum-toner-essence',
     price: 2800,
     description: 'Jumbo-size fragrance-free hydrating toner with fermented black rice extract and hyaluronic acid. Brightens, strengthens the skin barrier, and deeply hydrates for a healthy, glowing complexion.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product156,
   },
   {
     id: 'skinpeccable_product_157',
@@ -1450,7 +1679,7 @@ export const PRODUCTS: Product[] = [
     category: 'serum-toner-essence',
     price: 3200,
     description: 'Anua brightening serum combining 10% niacinamide with 4% tranexamic acid (TXA) for targeted dark spot correction and overall skin tone evening. Lightweight formula for daily use.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product157,
   },
   {
     id: 'skinpeccable_product_158',
@@ -1459,7 +1688,7 @@ export const PRODUCTS: Product[] = [
     category: 'face-cream-moisturizer',
     price: 1450,
     description: 'Korean facial cream combining retinol, vitamin C, and vitamin E for anti-aging, brightening, and antioxidant protection. Nourishing formula for a youthful, radiant complexion.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product158,
   },
   {
     id: 'skinpeccable_product_159',
@@ -1468,7 +1697,7 @@ export const PRODUCTS: Product[] = [
     category: 'face-cream-moisturizer',
     price: 1450,
     description: 'Korean facial moisturizer with hyaluronic acid, ceramide, and vitamin B5 for deep hydration and barrier repair. Lightweight cream for plump, healthy-looking skin.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product159,
   },
   {
     id: 'skinpeccable_product_160',
@@ -1477,7 +1706,7 @@ export const PRODUCTS: Product[] = [
     category: 'sunscreen',
     price: 1500,
     description: 'Korean sunscreen with glutathione and niacinamide for UV protection combined with brightening benefits. Lightweight formula with no white cast for everyday facial use.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product160,
   },
   {
     id: 'skinpeccable_product_161',
@@ -1486,7 +1715,7 @@ export const PRODUCTS: Product[] = [
     category: 'face-cream-moisturizer',
     price: 1400,
     description: 'Korean facial cream combining urea and hyaluronic acid for intensive hydration and gentle exfoliation of dry skin. Effective for rough, dehydrated, or flaky skin.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product161,
   },
   {
     id: 'skinpeccable_product_162',
@@ -1495,7 +1724,7 @@ export const PRODUCTS: Product[] = [
     category: 'serum-toner-essence',
     price: 1400,
     description: 'Korean brightening ampoule with tranexamic acid and niacinamide for reducing dark spots, hyperpigmentation, and uneven skin tone. Concentrated serum for targeted brightening results.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product162,
   },
   {
     id: 'skinpeccable_product_163',
@@ -1504,7 +1733,7 @@ export const PRODUCTS: Product[] = [
     category: 'cleanser',
     price: 1650,
     description: 'Kose Softymo Japanese cleansing oil that swiftly emulsifies with water to dissolve makeup, SPF, and impurities. Gentle formula leaves skin soft and clean without tightness.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product163,
   },
   {
     id: 'skinpeccable_product_164',
@@ -1513,7 +1742,7 @@ export const PRODUCTS: Product[] = [
     category: 'sunscreen',
     price: 2200,
     description: 'Japanese sunscreen essence with SPF 50+/PA++++ for maximum UV protection. Water-resistant, long-lasting formula with a smooth essence texture for face and body use.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product164,
   },
   {
     id: 'skinpeccable_product_165',
@@ -1522,7 +1751,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-lotion-butter-cream',
     price: 3000,
     description: 'EOS Vanilla Cashmere body lotion with a rich, velvety formula for 24-hour moisturization. Cozy vanilla cashmere fragrance and shea butter leave skin silky soft and nourished.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product165,
   },
   {
     id: 'skinpeccable_product_166',
@@ -1531,7 +1760,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-wash',
     price: 3000,
     description: 'Cremo or EOS body wash in a fresh, hydrating Coconut Waters fragrance. Moisturizing formula with coconut-derived cleansers for soft, clean skin with a tropical scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product166,
   },
   {
     id: 'skinpeccable_product_167',
@@ -1540,7 +1769,7 @@ export const PRODUCTS: Product[] = [
     category: 'lip-care',
     price: 1883,
     description: 'Bundle of viral lip oil balms providing glossy, moisturizing coverage. Nourishing formula with conditioning oils for hydrated, plump-looking lips with a sheer, glossy finish.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product167,
   },
   {
     id: 'skinpeccable_product_168',
@@ -1549,7 +1778,7 @@ export const PRODUCTS: Product[] = [
     category: 'shave',
     price: 0,
     description: 'Cremo Sensitive Skin shave cream with a concentrated, slick formula for a smooth, irritation-free shave. Designed for sensitive skin with calming ingredients to prevent razor burn and nicks.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product168,
   },
   {
     id: 'skinpeccable_product_169',
@@ -1558,7 +1787,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 3000,
     description: 'Cremo Vintage Suede deodorant or grooming product with a sophisticated, warm fragrance of suede, sandalwood, and amber. Effective odor protection with a masculine, elegant scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product169,
   },
   {
     id: 'skinpeccable_product_170',
@@ -1567,7 +1796,7 @@ export const PRODUCTS: Product[] = [
     category: 'deodorant',
     price: 3000,
     description: 'Cremo Vintage Suede antiperspirant and deodorant stick for effective sweat and odor protection. Features a warm, sophisticated fragrance with notes of suede and sandalwood.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product170,
   },
   {
     id: 'skinpeccable_product_171',
@@ -1576,7 +1805,7 @@ export const PRODUCTS: Product[] = [
     category: 'deodorant',
     price: 3000,
     description: 'Cremo Palo Santo deodorant stick with a woody, sacred palo santo fragrance. Effective odor protection with natural-inspired ingredients and a warm, earthy scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product171,
   },
   {
     id: 'skinpeccable_product_172',
@@ -1585,7 +1814,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-wash',
     price: 3000,
     description: 'Cremo Palo Santo body wash with a warm, earthy palo santo fragrance. Moisturizing formula for a luxurious shower experience that cleanses skin and leaves a subtle woody scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product172,
   },
   {
     id: 'skinpeccable_product_173',
@@ -1594,7 +1823,7 @@ export const PRODUCTS: Product[] = [
     category: 'deodorant',
     price: 3000,
     description: 'Cremo Italian Bergamot deodorant stick with a bright, citrusy bergamot fragrance. Effective odor protection with a fresh, uplifting Italian citrus scent for all-day wear.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product173,
   },
   {
     id: 'skinpeccable_product_174',
@@ -1603,7 +1832,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-wash',
     price: 3200,
     description: 'Cremo Italian Bergamot body wash with a refreshing citrus bergamot fragrance. Moisturizing formula for a revitalizing shower experience with bright, clean citrus notes.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product174,
   },
   {
     id: 'skinpeccable_product_175',
@@ -1612,7 +1841,7 @@ export const PRODUCTS: Product[] = [
     category: 'deodorant',
     price: 1900,
     description: 'Native Cedarwood aluminum-free deodorant with a warm, woody cedarwood fragrance. Effective odor protection with naturally derived ingredients for a grounding, earthy scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product175,
   },
   {
     id: 'skinpeccable_product_176',
@@ -1621,7 +1850,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-wash',
     price: 1900,
     description: 'Native Cedarwood body wash with a warm, woody cedarwood fragrance. Moisturizing formula with naturally derived cleansers for a grounding shower experience.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product176,
   },
   {
     id: 'skinpeccable_product_177',
@@ -1630,7 +1859,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-lotion-butter-cream',
     price: 3000,
     description: 'Native Cedarwood body lotion with a warm, woody fragrance. Fast-absorbing, moisturizing formula for soft skin with a subtle, earthy cedarwood scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product177,
   },
   {
     id: 'skinpeccable_product_178',
@@ -1639,7 +1868,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-lotion-butter-cream',
     price: 3000,
     description: 'Native Sea Salt body lotion with a fresh, oceanic fragrance. Fast-absorbing, moisturizing formula for soft, clean-smelling skin with clean mineral notes.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product178,
   },
   {
     id: 'skinpeccable_product_179',
@@ -1648,7 +1877,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-wash',
     price: 1900,
     description: 'Native Sea Salt body wash with a fresh, clean oceanic fragrance. Moisturizing formula with naturally derived cleansers for a revitalizing shower experience.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product179,
   },
   {
     id: 'skinpeccable_product_180',
@@ -1657,7 +1886,7 @@ export const PRODUCTS: Product[] = [
     category: 'deodorant',
     price: 1900,
     description: 'Native Sea Salt aluminum-free deodorant with a fresh, clean oceanic fragrance. Effective odor protection with naturally derived ingredients for everyday use.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product180,
   },
   {
     id: 'skinpeccable_product_181',
@@ -1666,7 +1895,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-wash',
     price: 1900,
     description: 'Native Sandalwood body wash with a warm, creamy sandalwood fragrance. Moisturizing formula with naturally derived cleansers for a rich, luxurious shower experience.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product181,
   },
   {
     id: 'skinpeccable_product_182',
@@ -1675,7 +1904,7 @@ export const PRODUCTS: Product[] = [
     category: 'deodorant',
     price: 1900,
     description: 'Native Sandalwood aluminum-free deodorant with a warm, woody fragrance. Effective, naturally derived odor protection for all-day freshness with a soft earthy scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product182,
   },
   {
     id: 'skinpeccable_product_183',
@@ -1684,7 +1913,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-lotion-butter-cream',
     price: 3000,
     description: 'Native Sandalwood body lotion with a warm, woodsy fragrance. Moisturizing formula that absorbs quickly for soft, subtly scented skin.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product183,
   },
   {
     id: 'skinpeccable_product_184',
@@ -1693,7 +1922,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-lotion-butter-cream',
     price: 3200,
     description: 'Cremo or EOS body lotion in a fruity Pomegranate and Raspberry fragrance. Rich moisturizing formula for soft skin with a vibrant, fruity scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product184,
   },
   {
     id: 'skinpeccable_product_185',
@@ -1702,7 +1931,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-wash',
     price: 3200,
     description: 'Cremo Fresh & Cozy body wash with a warm, comforting fragrance of clean cotton and soft woods. Moisturizing formula for a soothing, everyday shower experience.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product185,
   },
   {
     id: 'skinpeccable_product_186',
@@ -1711,7 +1940,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-wash',
     price: 3200,
     description: 'EOS or Cremo Coconut Waters body wash with a fresh, tropical coconut fragrance. Moisturizing formula with naturally derived cleansers for soft, clean skin.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product186,
   },
   {
     id: 'skinpeccable_product_187',
@@ -1720,7 +1949,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-wash',
     price: 3200,
     description: 'EOS or Cremo Pink Champagne body wash with a sparkling, festive fragrance. Moisturizing formula for soft skin with a light, bubbly floral-fruity scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product187,
   },
   {
     id: 'skinpeccable_product_188',
@@ -1729,7 +1958,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-wash',
     price: 3200,
     description: 'EOS Vanilla Cashmere body wash with a rich, cozy vanilla fragrance. Moisturizing formula for soft, nourished skin with a warm, indulgent scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product188,
   },
   {
     id: 'skinpeccable_product_189',
@@ -1738,7 +1967,7 @@ export const PRODUCTS: Product[] = [
     category: 'sunscreen',
     price: 0,
     description: 'Broad-spectrum SPF 50 fragrance-free sunscreen suitable for sensitive skin. Lightweight formula provides effective UVA/UVB protection without added fragrance or irritating ingredients.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product189,
   },
   {
     id: 'skinpeccable_product_190',
@@ -1747,7 +1976,7 @@ export const PRODUCTS: Product[] = [
     category: 'sunscreen',
     price: 0,
     description: 'Large-size broad-spectrum SPF 50 fragrance-free sunscreen for face and body. Lightweight, non-irritating formula suitable for sensitive skin and daily use.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product190,
   },
   {
     id: 'skinpeccable_product_191',
@@ -1756,7 +1985,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-lotion-butter-cream',
     price: 2500,
     description: 'Rich whipped body butter in a warm Tahitian Vanilla fragrance. Intensely moisturizing formula with a fluffy texture that melts into skin, leaving it deeply nourished and soft.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product191,
   },
   {
     id: 'skinpeccable_product_192',
@@ -1765,7 +1994,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 3200,
     description: 'EOS Shea Better body butter in Vanilla Cashmere with 100% shea butter for deep moisturization. Rich, creamy formula for very dry skin with a warm, cozy fragrance.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product192,
   },
   {
     id: 'skinpeccable_product_193',
@@ -1774,7 +2003,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-wash',
     price: 0,
     description: 'Dove moisturizing bar soap in a sweet Cherry fragrance. Dove\'s signature 1/4 moisturizing cream formula cleanses gently while maintaining the skin\'s natural moisture barrier.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product193,
   },
   {
     id: 'skinpeccable_product_194',
@@ -1783,7 +2012,7 @@ export const PRODUCTS: Product[] = [
     category: 'set-bundle-kit',
     price: 4000,
     description: 'e.l.f. Gleansing Duo set featuring the Gleanser gel-to-milk cleanser and a complementary hydrating product. Complete cleansing system for a thoroughly clean, hydrated complexion.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product194,
   },
   {
     id: 'skinpeccable_product_195',
@@ -1792,7 +2021,7 @@ export const PRODUCTS: Product[] = [
     category: 'set-bundle-kit',
     price: 3500,
     description: 'Skincare or body care duo with a tropical Pink Beach fragrance. Includes complementary body products (lotion and mist or wash) for a complete, coordinated body care routine.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product195,
   },
   {
     id: 'skinpeccable_product_196',
@@ -1801,7 +2030,7 @@ export const PRODUCTS: Product[] = [
     category: 'lip-care',
     price: 1900,
     description: 'Nourishing lip oil balm for glossy, moisturized lips. Conditioning oils provide a plump, hydrated finish with a sheer, comfortable gloss.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product196,
   },
   {
     id: 'skinpeccable_product_197',
@@ -1810,7 +2039,7 @@ export const PRODUCTS: Product[] = [
     category: 'lip-care',
     price: 1900,
     description: 'Bundle of lip oil balms in multiple shades or flavors. Provides glossy, moisturizing lip coverage with nourishing oils for hydrated, plump-looking lips.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product197,
   },
   {
     id: 'skinpeccable_product_198',
@@ -1819,7 +2048,7 @@ export const PRODUCTS: Product[] = [
     category: 'lip-care',
     price: 2600,
     description: 'Mented Cosmetics Thirst Quencher lip oil collection with multiple shades of nourishing, glossy lip oil. Conditioning formula for hydrated, plump-looking lips with a sheer, buildable tint.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product198,
   },
   {
     id: 'skinpeccable_product_199',
@@ -1828,7 +2057,7 @@ export const PRODUCTS: Product[] = [
     category: 'lip-care',
     price: 2000,
     description: 'Bundled set of nourishing lip oils in a selection of shades or flavors. Conditioning oils deliver glossy, moisturized lips with lightweight, comfortable coverage.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product199,
   },
   {
     id: 'skinpeccable_product_200',
@@ -1837,7 +2066,7 @@ export const PRODUCTS: Product[] = [
     category: 'set-bundle-kit',
     price: 0,
     description: 'Cremo Reserve men\'s grooming collection set with premium grooming products in sophisticated, elevated fragrances. Ideal as a gift or for upgrading a daily grooming routine.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product200,
   },
   {
     id: 'skinpeccable_product_201',
@@ -1846,7 +2075,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 0,
     description: 'Cremo Bourbon Vanilla Oak deodorant or grooming product with a warm, woody fragrance of bourbon, vanilla, and oak. Effective odor protection with a sophisticated, masculine scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product201,
   },
   {
     id: 'skinpeccable_product_202',
@@ -1855,7 +2084,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 0,
     description: 'Cremo Casked Vanilla men\'s grooming product with a warm, rich vanilla and oak barrel fragrance. Effective and long-lasting with a sophisticated, warm scent profile.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product202,
   },
   {
     id: 'skinpeccable_product_203',
@@ -1864,7 +2093,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-lotion-butter-cream',
     price: 0,
     description: 'Athena Club Salted Sunset lotion and mist duo for complete body hydration and fragrance. Includes a moisturizing body lotion and a fine fragrance mist in a warm, beachy scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product203,
   },
   {
     id: 'skinpeccable_product_204',
@@ -1873,7 +2102,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 0,
     description: 'Mini Athena Club Solar Muse hair and body mist with a bright, sun-kissed fragrance. Portable travel-size spray for lightly scenting both hair and skin.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product204,
   },
   {
     id: 'skinpeccable_product_205',
@@ -1882,7 +2111,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 0,
     description: 'Mini hair and body mist in a romantic Love Letter fragrance with soft florals and warm musk. Travel-size spray for lightly scenting hair and skin on the go.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product205,
   },
   {
     id: 'skinpeccable_product_206',
@@ -1891,7 +2120,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 0,
     description: 'Mini hair and body mist in a warm Golden Vanilla fragrance. Travel-size spray for a cozy, sweet scent on both hair and skin.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product206,
   },
   {
     id: 'skinpeccable_product_207',
@@ -1900,7 +2129,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 0,
     description: 'Mini Good Chemistry Queen Bee body mist with a sweet honey and floral fragrance. Convenient travel-size spray for on-the-go skin fragrance.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product207,
   },
   {
     id: 'skinpeccable_product_208',
@@ -1909,7 +2138,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 0,
     description: 'Mini Good Chemistry Pink Palm body mist with a tropical, fruity-floral fragrance. Convenient travel-size spray for an everyday, vacation-inspired scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product208,
   },
   {
     id: 'skinpeccable_product_209',
@@ -1918,7 +2147,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 0,
     description: 'Mini body mist with a Not That Vanilla fragrance — a complex take on vanilla with unexpected, bold notes. Travel-size spray for an effortless, signature scent on the go.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product209,
   },
   {
     id: 'skinpeccable_product_210',
@@ -1927,7 +2156,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 0,
     description: 'Mini Good Chemistry Coffee Cloud body mist with a creamy espresso and vanilla fragrance. Convenient travel-size spray for warm, cozy skin fragrance on the go.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product210,
   },
   {
     id: 'skinpeccable_product_211',
@@ -1936,7 +2165,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 0,
     description: 'Mini Good Chemistry Coco Blush body mist with a soft coconut and blush floral fragrance. Travel-size spray for a light, feminine, everyday scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product211,
   },
   {
     id: 'skinpeccable_product_212',
@@ -1945,7 +2174,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 0,
     description: 'Mini Good Chemistry Sugar Berry body mist with a sweet, juicy berry fragrance. Travel-size fine fragrance spray for a bright, fruity everyday scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product212,
   },
   {
     id: 'skinpeccable_product_213',
@@ -1954,7 +2183,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 0,
     description: 'Holler and Glow Miami Wave Salted Caramel hair and body mist with a sweet, tropical fragrance. Lightweight formula lightly perfumes both hair and skin.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product213,
   },
   {
     id: 'skinpeccable_product_214',
@@ -1963,7 +2192,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-hair-mist',
     price: 0,
     description: 'Bodycology Sparkle shimmer mist in Whipped Vanilla with light-reflecting shimmer for glowing skin. Fragrant, sparkly mist for a radiant, festive look.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product214,
   },
   {
     id: 'skinpeccable_product_215',
@@ -1972,7 +2201,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 0,
     description: 'Vaseline Glazed & Glisten body lotion in Golden Hour Vanilla Cocoa for an intensely hydrated, glossy glow. Rich formula with Vaseline jelly for visibly nourished, luminous skin.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product215,
   },
   {
     id: 'skinpeccable_product_216',
@@ -1981,7 +2210,7 @@ export const PRODUCTS: Product[] = [
     category: 'general-skincare-beauty',
     price: 0,
     description: 'Vaseline Glazed & Glisten Sunlit Glow shimmering body lotion in Vanilla Cocoa with light-reflecting particles. Intensely moisturizing formula for a radiant, luminous finish.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product216,
   },
   {
     id: 'skinpeccable_product_217',
@@ -1990,7 +2219,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-lotion-butter-cream',
     price: 0,
     description: '2-pack of Equate Moisture Care Cocoa Divine body oil gel for deep skin nourishment. Lightweight gel formula with cocoa butter provides lasting moisture for soft, radiant skin.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product217,
   },
   {
     id: 'skinpeccable_product_218',
@@ -1999,7 +2228,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-wash',
     price: 0,
     description: 'MIX:BAR Coconut Palm body wash with vitamin E for moisturizing, gentle cleansing. Tropical coconut and palm fragrance with a lather-rich formula for soft, clean skin.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product218,
   },
   {
     id: 'skinpeccable_product_219',
@@ -2008,7 +2237,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-lotion-butter-cream',
     price: 0,
     description: 'MIX:BAR Coconut Palm moisturizing body cream with vitamin E for deep hydration. Tropical coconut and palm fragrance in a rich cream formula for soft, nourished skin.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product219,
   },
   {
     id: 'skinpeccable_product_220',
@@ -2017,7 +2246,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-lotion-butter-cream',
     price: 0,
     description: 'Holler and Glow Miami Wave Salted Caramel body butter with a sweet tropical caramel fragrance. Rich, creamy formula deeply nourishes and softens dry skin.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product220,
   },
   {
     id: 'skinpeccable_product_221',
@@ -2026,7 +2255,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-lotion-butter-cream',
     price: 0,
     description: 'Holler and Glow Hawaii Heat Vanilla body butter with a warm, tropical vanilla fragrance. Nourishing, creamy formula for deeply moisturized, soft skin.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product221,
   },
   {
     id: 'skinpeccable_product_222',
@@ -2035,7 +2264,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-wash',
     price: 0,
     description: 'MIX:BAR Sparkling Hibiscus body wash with vitamin E for moisturizing, gentle cleansing. Fresh hibiscus fragrance in a lather-rich, nourishing formula for soft, clean skin.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product222,
   },
   {
     id: 'skinpeccable_product_223',
@@ -2044,7 +2273,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-lotion-butter-cream',
     price: 0,
     description: 'MIX:BAR Whipped Almond moisturizing body cream enriched with vitamin E. Creamy, fast-absorbing formula in a warm almond fragrance for deeply nourished, soft skin.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product223,
   },
   {
     id: 'skinpeccable_product_224',
@@ -2053,7 +2282,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-wash',
     price: 0,
     description: 'MIX:BAR Whipped Almond body wash with a warm, nutty fragrance and vitamin E. Moisturizing lather cleanses and softens skin for a cozy, nourishing shower experience.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product224,
   },
   {
     id: 'skinpeccable_product_225',
@@ -2062,7 +2291,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-lotion-butter-cream',
     price: 0,
     description: 'MIX:BAR Vanilla Bourbon moisturizing body cream with a warm, sweet fragrance. Rich formula absorbs quickly for deeply nourished, soft skin with a luxurious vanilla-bourbon scent.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product225,
   },
   {
     id: 'skinpeccable_product_226',
@@ -2071,7 +2300,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-wash',
     price: 0,
     description: 'MIX:BAR Vanilla Bourbon body wash with vitamin E in a warm, sweet vanilla and bourbon fragrance. Moisturizing formula for a rich, lathering shower experience with soft, nourished skin.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product226,
   },
   {
     id: 'skinpeccable_product_227',
@@ -2080,7 +2309,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-lotion-butter-cream',
     price: 0,
     description: 'Nourishing body butter in a tropical Coconut Hibiscus fragrance. Rich, whipped formula for deep moisturization and soft, radiant skin.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product227,
   },
   {
     id: 'skinpeccable_product_228',
@@ -2089,7 +2318,7 @@ export const PRODUCTS: Product[] = [
     category: 'body-lotion-butter-cream',
     price: 0,
     description: 'Whipped body butter in a warm Tahitian Vanilla fragrance. Intensely moisturizing, fluffy formula that melts into skin for lasting softness and nourishment.',
-    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=500&h=625&fit=crop',
+    image: product228,
   },
 ];
 
