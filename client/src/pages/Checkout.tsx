@@ -34,7 +34,7 @@ const cardElementOptions = {
   style: {
     base: {
       fontFamily: "'Poppins', sans-serif",
-      fontSize: '14px',
+      fontSize: '16px',
       color: '#3B2A1A',
       '::placeholder': { color: '#B5A99A' },
     },
@@ -69,7 +69,6 @@ function StripeCardForm({
     setCardError('');
 
     try {
-      // 1. Create payment intent on backend
       const intentRes = await fetch('/api/payments/stripe/create-payment-intent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -82,7 +81,6 @@ function StripeCardForm({
       });
       const { clientSecret } = await intentRes.json();
 
-      // 2. Confirm card payment
       const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
         payment_method: {
           card: elements.getElement(CardElement)!,
@@ -101,7 +99,6 @@ function StripeCardForm({
       }
 
       if (paymentIntent?.status === 'succeeded') {
-        // 3. Create order in Odoo
         await fetch('/api/odoo/order', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -137,14 +134,23 @@ function StripeCardForm({
           Card Payment
         </h2>
 
-        <div
-          className="p-4 rounded-xl mb-6"
-          style={{ border: '1px solid var(--soft-border-beige)', backgroundColor: '#FAFAFA' }}
-        >
-          <label className="block font-body font-medium text-xs mb-3 uppercase tracking-wider" style={{ color: 'var(--warm-taupe)' }}>
+        <div className="mb-6">
+          <label
+            className="block font-body font-medium text-xs mb-3 uppercase tracking-wider"
+            style={{ color: 'var(--warm-taupe)' }}
+          >
             Card Details
           </label>
-          <CardElement options={cardElementOptions} />
+          <div
+            className="p-4 rounded-xl"
+            style={{
+              border: '2px solid var(--deep-orange)',
+              backgroundColor: '#FFFFFF',
+              minHeight: '50px',
+            }}
+          >
+            <CardElement options={cardElementOptions} />
+          </div>
         </div>
 
         {cardError && (
