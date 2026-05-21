@@ -1,7 +1,7 @@
 /*
  * SKINPECCABLE GLOWTIQUE — Navbar
  * Design: Sticky, clean white/cream header with Dark Chocolate text
- * Left: Logo image | Center: Page navigation | Right: Cart icon
+ * Left: Page navigation | Center: Logo image | Right: Cart icon
  */
 
 import { useState, useEffect } from 'react';
@@ -29,7 +29,6 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close mobile menu on route change
   useEffect(() => {
     setMobileOpen(false);
   }, [location]);
@@ -48,21 +47,9 @@ export default function Navbar() {
         <div className="container">
           <div className="flex items-center justify-between h-16 md:h-20">
 
-            {/* Logo — image replaces text */}
-            <Link href="/">
-              <div className="cursor-pointer" style={{ marginLeft: '-65px' }}> 
-                <img
-                  src={homelogo}
-                  alt="Skinpeccable Glowtique"
-                  className="object-contain"
-                  style={{ height: '72px', width: 'auto' }}
-                />
-              </div>
-            </Link>
-
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-1">
-              {NAV_LINKS.map(link => {
+            {/* Left: Desktop Navigation */}
+            <nav className="hidden md:flex items-center gap-1 flex-1">
+              {NAV_LINKS.slice(0, 2).map(link => {
                 const isActive = location === link.href;
                 return (
                   <Link key={link.href} href={link.href}>
@@ -87,8 +74,46 @@ export default function Navbar() {
               })}
             </nav>
 
-            {/* Right: Cart + Mobile Menu */}
-            <div className="flex items-center gap-3">
+            {/* Center: Logo */}
+            <Link href="/">
+              <div className="cursor-pointer flex-shrink-0">
+                <img
+                  src={homelogo}
+                  alt="Skinpeccable Glowtique"
+                  className="object-contain"
+                  style={{ height: '72px', width: 'auto' }}
+                />
+              </div>
+            </Link>
+
+            {/* Right: Navigation + Cart */}
+            <div className="flex items-center gap-1 flex-1 justify-end">
+              <nav className="hidden md:flex items-center gap-1">
+                {NAV_LINKS.slice(2).map(link => {
+                  const isActive = location === link.href;
+                  return (
+                    <Link key={link.href} href={link.href}>
+                      <span
+                        className="relative font-body font-medium px-4 py-2 rounded transition-colors duration-200 cursor-pointer"
+                        style={{
+                          fontSize: '0.875rem',
+                          color: isActive ? 'var(--dark-chocolate)' : 'var(--warm-taupe)',
+                          letterSpacing: '0.04em',
+                        }}
+                      >
+                        {link.label}
+                        {isActive && (
+                          <span
+                            className="absolute bottom-0 left-4 right-4 h-0.5 rounded-full"
+                            style={{ backgroundColor: 'var(--deep-orange)' }}
+                          />
+                        )}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </nav>
+
               {/* Cart Button */}
               <button
                 onClick={openCart}

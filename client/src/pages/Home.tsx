@@ -1,18 +1,16 @@
 /*
  * SKINPECCABLE GLOWTIQUE — Home Page
  * Design: "Structured Warmth" — animated welcome experience, no products
- * Sections: Hero (full-screen) | Brand Story | Three Pillars | Lifestyle Split | Tagline CTA
+ * Sections: Hero (full-screen) | Categories Preview | Brand Story | Three Pillars | Lifestyle Split | Tagline CTA
  */
 
 import { useRef } from 'react';
 import { Link } from 'wouter';
 import { ArrowRight, Sparkles, Leaf, Heart } from 'lucide-react';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
-import heroVideo from '../../assets/herovideo.mp4';
-
+import heroVideo from '../../assets/herovideo1.mp4';
 import heroSkin from '../../assets/heroskin.jpg';
-
-const HERO_IMG_2 = 'https://d2xsxph8kpxj0f.cloudfront.net/310519663656533692/jCCPNKSkazkgBn7bH3FjhA/hero-home-2-WUTV3RMNtmEEzPj6biBqEK.webp';
+import homeImage2 from '../../assets/homeimage2.png';
 
 const PILLARS = [
   {
@@ -142,36 +140,59 @@ export default function Home() {
             </div>
           </div>
         </div>
-
-
       </section>
 
-      {/* ── BRAND INTRO STRIP ── */}
-      <section style={{ backgroundColor: 'var(--soft-cream)' }}>
-        <div className="container py-10">
-          <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16">
-            {['Skincare', 'Cosmetics', 'Fragrance', 'Body Care', 'Grooming'].map((cat, i) => (
-              <div key={cat} className="flex items-center gap-3">
-                {i > 0 && (
-                  <span
-                    className="hidden md:block w-1 h-1 rounded-full"
-                    style={{ backgroundColor: 'var(--warm-taupe)' }}
-                  />
-                )}
-                <span
-                  className="font-body font-medium tracking-widest uppercase"
-                  style={{ fontSize: '0.7rem', color: 'var(--warm-taupe)', letterSpacing: '0.15em' }}
+      {/* ── CATEGORIES PREVIEW (Moved Below Hero) ── */}
+      <section className="py-24" style={{ backgroundColor: '#FFFFFF' }}>
+        <div className="container">
+          <div className="text-center mb-14 reveal">
+            <div className="accent-line mx-auto mb-6" />
+            <h2
+              className="font-display font-semibold"
+              style={{ fontSize: 'clamp(1.75rem, 3.5vw, 2.5rem)', color: 'var(--dark-chocolate)' }}
+            >
+              Shop by Category
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {[
+              { label: 'Skincare', emoji: '✨', href: '/shop?cat=general-skincare-beauty', bg: '#EADFCF' },
+              { label: 'Sunscreen & SPF', emoji: '☀️', href: '/shop?cat=sunscreen', bg: '#F6F1EB' },
+              { label: 'Fragrance', emoji: '🌸', href: '/shop?cat=fragrance-cologne-edp', bg: '#EADFCF' },
+              { label: 'Body Wash', emoji: '🫧', href: '/shop?cat=body-wash', bg: '#F6F1EB' },
+              { label: 'Body Lotion', emoji: '🧴', href: '/shop?cat=body-lotion-butter-cream', bg: '#EADFCF' },
+              { label: 'Deodorant', emoji: '🌿', href: '/shop?cat=deodorant', bg: '#F6F1EB' },
+            ].map((cat, i) => (
+              <Link key={cat.label} href={cat.href}>
+                <div
+                  className={`reveal reveal-delay-${(i % 3) + 1} rounded-xl p-6 text-center cursor-pointer transition-all duration-200 group`}
+                  style={{ backgroundColor: cat.bg, border: '1px solid var(--soft-border-beige)' }}
+                  onMouseEnter={e => {
+                    (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-4px)';
+                    (e.currentTarget as HTMLDivElement).style.boxShadow = '0 8px 24px rgba(90,52,32,0.12)';
+                  }}
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)';
+                    (e.currentTarget as HTMLDivElement).style.boxShadow = 'none';
+                  }}
                 >
-                  {cat}
-                </span>
-              </div>
+                  <div className="text-3xl mb-3">{cat.emoji}</div>
+                  <p
+                    className="font-body font-medium"
+                    style={{ fontSize: '0.8rem', color: 'var(--dark-chocolate)', lineHeight: 1.3 }}
+                  >
+                    {cat.label}
+                  </p>
+                </div>
+              </Link>
             ))}
           </div>
         </div>
       </section>
 
       {/* ── BRAND STORY SPLIT ── */}
-      <section className="py-24" style={{ backgroundColor: '#FFFFFF' }}>
+      <section className="py-24" style={{ backgroundColor: '#F6F1EB' }}>
         <div className="container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             {/* Image */}
@@ -290,7 +311,7 @@ export default function Home() {
       {/* ── LIFESTYLE FULL-WIDTH BANNER ── */}
       <section className="relative overflow-hidden" style={{ height: '480px' }}>
         <img
-          src={HERO_IMG_2}
+          src={homeImage2}
           alt="Skinpeccable curated beauty products"
           className="w-full h-full object-cover"
         />
@@ -327,55 +348,6 @@ export default function Home() {
                 </button>
               </Link>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── CATEGORIES PREVIEW ── */}
-      <section className="py-24" style={{ backgroundColor: '#FFFFFF' }}>
-        <div className="container">
-          <div className="text-center mb-14 reveal">
-            <div className="accent-line mx-auto mb-6" />
-            <h2
-              className="font-display font-semibold"
-              style={{ fontSize: 'clamp(1.75rem, 3.5vw, 2.5rem)', color: 'var(--dark-chocolate)' }}
-            >
-              Shop by Category
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {[
-              { label: 'Skincare', emoji: '✨', href: '/shop?cat=general-skincare-beauty', bg: '#EADFCF' },
-              { label: 'Sunscreen & SPF', emoji: '☀️', href: '/shop?cat=sunscreen', bg: '#F6F1EB' },
-              { label: 'Fragrance', emoji: '🌸', href: '/shop?cat=fragrance-cologne-edp', bg: '#EADFCF' },
-              { label: 'Body Wash', emoji: '🫧', href: '/shop?cat=body-wash', bg: '#F6F1EB' },
-              { label: 'Body Lotion', emoji: '🧴', href: '/shop?cat=body-lotion-butter-cream', bg: '#EADFCF' },
-              { label: 'Deodorant', emoji: '🌿', href: '/shop?cat=deodorant', bg: '#F6F1EB' },
-            ].map((cat, i) => (
-              <Link key={cat.label} href={cat.href}>
-                <div
-                  className={`reveal reveal-delay-${(i % 3) + 1} rounded-xl p-6 text-center cursor-pointer transition-all duration-200 group`}
-                  style={{ backgroundColor: cat.bg, border: '1px solid var(--soft-border-beige)' }}
-                  onMouseEnter={e => {
-                    (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-4px)';
-                    (e.currentTarget as HTMLDivElement).style.boxShadow = '0 8px 24px rgba(90,52,32,0.12)';
-                  }}
-                  onMouseLeave={e => {
-                    (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)';
-                    (e.currentTarget as HTMLDivElement).style.boxShadow = 'none';
-                  }}
-                >
-                  <div className="text-3xl mb-3">{cat.emoji}</div>
-                  <p
-                    className="font-body font-medium"
-                    style={{ fontSize: '0.8rem', color: 'var(--dark-chocolate)', lineHeight: 1.3 }}
-                  >
-                    {cat.label}
-                  </p>
-                </div>
-              </Link>
-            ))}
           </div>
         </div>
       </section>
