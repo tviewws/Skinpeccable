@@ -285,7 +285,43 @@ export default function Shop() {
       </section>
 
       {/* ── MAIN SHOP LAYOUT ── */}
-      <div className="flex" style={{ minHeight: '80vh' }}>
+      <div className="flex flex-col lg:flex-row" style={{ minHeight: '80vh' }}>
+
+        {/* ── MOBILE CATEGORY SCROLL BAR ── */}
+        <div
+          className="lg:hidden w-full"
+          style={{
+            borderBottom: '1px solid var(--soft-border-beige)',
+            backgroundColor: 'var(--light-warm-grey)',
+          }}
+        >
+          <div
+            className="flex gap-2 overflow-x-auto px-4 py-3"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {CATEGORIES.map(cat => {
+              const isActive = activeCategory === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => handleCategoryChange(cat.id)}
+                  className="flex-shrink-0 font-body font-medium py-2 px-4 rounded-full transition-all duration-200"
+                  style={{
+                    fontSize: '0.8rem',
+                    whiteSpace: 'nowrap',
+                    backgroundColor: isActive ? 'var(--deep-orange)' : '#FFFFFF',
+                    color: isActive ? '#FFFFFF' : 'var(--warm-taupe)',
+                    border: '1px solid',
+                    borderColor: isActive ? 'var(--deep-orange)' : 'var(--soft-border-beige)',
+                    outline: 'none',
+                  }}
+                >
+                  {cat.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         {/* ── LEFT SIDEBAR — Vertical Categories ── */}
         <aside
@@ -479,6 +515,7 @@ export default function Shop() {
           from { opacity: 0; transform: translateY(18px); }
           to   { opacity: 1; transform: translateY(0); }
         }
+        .mobile-category-bar::-webkit-scrollbar { display: none; }
       `}</style>
     </div>
   );

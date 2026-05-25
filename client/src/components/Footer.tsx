@@ -114,19 +114,19 @@ export default function Footer() {
               <li className="flex items-start gap-3">
                 <MapPin size={15} className="mt-0.5 flex-shrink-0" style={{ color: 'var(--deep-orange)' }} />
                 <span className="font-body text-sm" style={{ color: 'rgba(234,223,207,0.7)' }}>
-                  Nairobi, Kenya
+                  Shop No. 2, Inka Centre<br />Lavington Green, Nairobi
                 </span>
               </li>
               <li className="flex items-center gap-3">
                 <Phone size={15} className="flex-shrink-0" style={{ color: 'var(--deep-orange)' }} />
-                <a href="tel:+254700000000" className="font-body text-sm transition-colors" style={{ color: 'rgba(234,223,207,0.7)' }}>
-                  +254 700 000 000
+                <a href="tel:+254722303056" className="font-body text-sm transition-colors" style={{ color: 'rgba(234,223,207,0.7)' }}>
+                  +254 722 303 056
                 </a>
               </li>
               <li className="flex items-center gap-3">
                 <Mail size={15} className="flex-shrink-0" style={{ color: 'var(--deep-orange)' }} />
-                <a href="mailto:hello@skinpeccable.com" className="font-body text-sm transition-colors" style={{ color: 'rgba(234,223,207,0.7)' }}>
-                  hello@skinpeccable.com
+                <a href="mailto:glow@skinpeccable.co.ke" className="font-body text-sm transition-colors" style={{ color: 'rgba(234,223,207,0.7)' }}>
+                  glow@skinpeccable.co.ke
                 </a>
               </li>
             </ul>
