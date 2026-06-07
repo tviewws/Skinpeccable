@@ -16,10 +16,11 @@ import { toast } from 'sonner';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import shopVideo from '../../assets/shopvideo.mp4';
 
-// ── Fetch live products from Odoo via the backend ──
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+
 async function fetchOdooProducts(): Promise<Product[]> {
   try {
-    const res = await fetch('/api/odoo/products');
+    const res = await fetch(`${BACKEND_URL}/api/odoo/products`);
     const data = await res.json();
     if (!data.success) {
       console.error('Failed to fetch Odoo products:', data.error);
@@ -206,11 +207,9 @@ export default function Shop() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc' | 'name'>('default');
 
-  // ── Odoo live products state ──
   const [odooProducts, setOdooProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
 
-  // Fetch from Odoo on mount
   useEffect(() => {
     fetchOdooProducts().then((products) => {
       setOdooProducts(products);
@@ -233,7 +232,6 @@ export default function Shop() {
   };
 
   const filteredProducts = useMemo(() => {
-    // Merge static products with live Odoo products
     const source = [...PRODUCTS, ...odooProducts];
 
     let products: Product[];
@@ -484,7 +482,6 @@ export default function Shop() {
               </h2>
             </div>
 
-            {/* Loading skeleton */}
             {loadingProducts ? (
               <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
                 {Array.from({ length: 8 }).map((_, i) => (
