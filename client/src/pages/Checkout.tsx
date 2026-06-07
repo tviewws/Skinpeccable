@@ -54,12 +54,9 @@ export default function Checkout() {
     setStep('payment');
   };
 
-  const shipping = totalPrice >= 5000 ? 0 : 350;
-  const total = totalPrice + shipping;
+  const total = totalPrice;
 
   // ── INITIATE PESAPAL PAYMENT
-  // This calls your backend which registers the order with Pesapal
-  // and returns a redirect URL to Pesapal's hosted payment page.
   const handlePesapalPay = async () => {
     setLoading(true);
     setError('');
@@ -95,9 +92,6 @@ export default function Checkout() {
         return;
       }
 
-      // Redirect to Pesapal's hosted payment page.
-      // Customer completes M-Pesa or card payment there.
-      // Pesapal will call your IPN (webhook) on completion.
       window.location.href = data.redirect_url;
 
     } catch (err) {
@@ -106,7 +100,7 @@ export default function Checkout() {
     }
   };
 
-  // ── SUCCESS PAGE (reached via Pesapal redirect_mode callback or IPN)
+  // ── SUCCESS PAGE
   if (step === 'success') {
     return (
       <div
@@ -361,7 +355,6 @@ export default function Checkout() {
                   All transactions are secure and encrypted.
                 </p>
 
-                {/* Pesapal option card — mirrors the reference screenshot style */}
                 <div
                   className="rounded-xl p-5 mb-8"
                   style={{
@@ -373,18 +366,14 @@ export default function Checkout() {
                     <span className="font-body font-semibold" style={{ color: 'var(--dark-chocolate)', fontSize: '1rem' }}>
                       Pesapal
                     </span>
-                    {/* Accepted payment icons */}
                     <div className="flex items-center gap-2">
-                      {/* Visa */}
                       <div className="px-2 py-1 rounded" style={{ backgroundColor: '#1A1F71' }}>
                         <span className="font-body font-bold text-white" style={{ fontSize: '0.6rem', letterSpacing: '0.05em' }}>VISA</span>
                       </div>
-                      {/* Mastercard */}
                       <div className="flex">
                         <div className="w-5 h-5 rounded-full" style={{ backgroundColor: '#EB001B', marginRight: '-6px' }} />
                         <div className="w-5 h-5 rounded-full" style={{ backgroundColor: '#F79E1B', opacity: 0.9 }} />
                       </div>
-                      {/* M-Pesa */}
                       <div className="px-2 py-1 rounded" style={{ backgroundColor: '#4CAF50' }}>
                         <span className="font-body font-bold text-white" style={{ fontSize: '0.55rem', letterSpacing: '0.02em' }}>M-PESA</span>
                       </div>
@@ -395,7 +384,6 @@ export default function Checkout() {
                   </p>
                 </div>
 
-                {/* Amount confirmation */}
                 <div
                   className="flex items-center justify-between p-4 rounded-xl mb-6"
                   style={{ backgroundColor: 'var(--soft-cream)', border: '1px solid var(--soft-border-beige)' }}
@@ -411,7 +399,6 @@ export default function Checkout() {
                   </span>
                 </div>
 
-                {/* Error */}
                 {error && (
                   <div
                     className="p-4 rounded-xl mb-5"
@@ -518,23 +505,9 @@ export default function Checkout() {
                   </div>
 
                   <div className="space-y-2 pt-4" style={{ borderTop: '1px solid var(--soft-border-beige)' }}>
-                    <div className="flex justify-between font-body text-sm" style={{ color: 'var(--charcoal)' }}>
-                      <span>Subtotal</span>
-                      <span>KSh {totalPrice.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between font-body text-sm" style={{ color: 'var(--charcoal)' }}>
-                      <span>Shipping</span>
-                      <span>{shipping === 0 ? 'Free' : `KSh ${shipping.toLocaleString()}`}</span>
-                    </div>
-                    {shipping === 0 && (
-                      <p className="font-body text-xs" style={{ color: 'var(--deep-orange)' }}>
-                        ✓ Free delivery on orders over KSh 5,000
-                      </p>
-                    )}
                     <div
                       className="flex justify-between font-body font-bold pt-3"
                       style={{
-                        borderTop: '1px solid var(--soft-border-beige)',
                         color: 'var(--dark-chocolate)',
                         fontSize: '1rem',
                       }}
