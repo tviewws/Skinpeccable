@@ -56,7 +56,6 @@ export default function Checkout() {
 
   const total = totalPrice;
 
-  // ── INITIATE PESAPAL PAYMENT
   const handlePesapalPay = async () => {
     setLoading(true);
     setError('');
@@ -92,6 +91,21 @@ export default function Checkout() {
         return;
       }
 
+      // Save order details to localStorage before redirecting to PesaPal
+      localStorage.setItem('pendingOrder', JSON.stringify({
+        customer: {
+          name: `${form.firstName} ${form.lastName}`,
+          email: form.email,
+          phone: form.phone,
+        },
+        items: items.map(i => ({
+          name: i.name,
+          price: i.price,
+          qty: i.quantity,
+        })),
+        total,
+      }));
+
       window.location.href = data.redirect_url;
 
     } catch (err) {
@@ -100,7 +114,6 @@ export default function Checkout() {
     }
   };
 
-  // ── SUCCESS PAGE
   if (step === 'success') {
     return (
       <div

@@ -1,13 +1,39 @@
-import { useEffect } from 'react';
-import { Link, useLocation } from 'wouter';
-import { CheckCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link } from 'wouter';
+import { CheckCircle, Loader } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
+
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
 export default function CheckoutSuccess() {
   const { clearCart } = useCart();
+  const [orderSent, setOrderSent] = useState(false);
 
   useEffect(() => {
-    clearCart();
+    const sendOrderToOdoo = async () => {
+      try {
+        const raw = localStorage.getItem('pendingOrder');
+        if (!raw) return;
+
+        const order = JSON.parse(raw);
+
+        await fetch(`${BACKEND_URL}/api/odoo/order`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(order),
+        });
+
+        localStorage.removeItem('pendingOrder');
+        console.log('Order sent to Odoo successfully');
+      } catch (err) {
+        console.error('Failed to send order to Odoo:', err);
+      } finally {
+        clearCart();
+        setOrderSent(true);
+      }
+    };
+
+    sendOrderToOdoo();
   }, []);
 
   return (
@@ -19,7 +45,11 @@ export default function CheckoutSuccess() {
         className="max-w-md w-full text-center rounded-2xl p-12"
         style={{ backgroundColor: '#FFFFFF', border: '1px solid var(--soft-border-beige)' }}
       >
-        <CheckCircle size={64} style={{ color: 'var(--deep-orange)' }} className="mx-auto mb-6" />
+        {!orderSent ? (
+          <Loader size={48} className="mx-auto mb-6 animate-spin" style={{ color: 'var(--deep-orange)' }} />
+        ) : (
+          <CheckCircle size={64} style={{ color: 'var(--deep-orange)' }} className="mx-auto mb-6" />
+        )}
         <h1
           className="font-display font-semibold mb-3"
           style={{ fontSize: '2rem', color: 'var(--dark-chocolate)' }}
