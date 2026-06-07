@@ -2351,14 +2351,16 @@ export function searchProducts(query: string): Product[] {
   );
 }
 // Fetches live products from Odoo via your backend
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+
 export async function fetchOdooProducts(): Promise<Product[]> {
   try {
-    const res = await fetch('/api/odoo/products');
+    const res = await fetch(`${BACKEND_URL}/api/odoo/products`);
     const data = await res.json();
 
     if (!data.success) {
       console.error('Failed to fetch Odoo products:', data.error);
-      return []; // falls back to nothing — you can return PRODUCTS here if you want a fallback
+      return [];
     }
 
     return data.products as Product[];
