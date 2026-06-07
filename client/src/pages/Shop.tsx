@@ -3,32 +3,61 @@
  * Layout: Top horizontal category bar + Product grid + Search
  * Design: "Structured Warmth" — clean, warm, organized
  *
- * FIX: Products not rendering on category switch.
- * Root causes:
- *   1. useScrollReveal + 'reveal' CSS class — cards animate in once, then
- *      stay invisible when the category changes (DOM nodes reuse, IntersectionObserver
- *      never re-fires for already-observed elements that are now off-screen or re-mounted).
- *   2. Stale key prop — without unique keys tied to category+product, React reuses
- *      card DOM nodes and the reveal class never resets.
- * Fix: key each card with `${activeCategory}-${product.id}` so React always mounts
- *      a fresh node on category change, and guard the reveal class behind a flag so it
- *      only applies when useScrollReveal is actually safe to use.
+ * UPDATE: Product cards now navigate to /shop/:id on click.
+ * UPDATE: Products are now fetched live from Odoo. Static PRODUCTS used as fallback.
  */
 
 import { useState, useEffect, useMemo } from 'react';
-import { useSearch } from 'wouter';
+import { useSearch, useLocation } from 'wouter';
 import { Search, ShoppingBag, X, ChevronDown } from 'lucide-react';
-import { PRODUCTS, CATEGORIES, getProductsByCategory, searchProducts, type Product } from '@/lib/products';
+import { PRODUCTS, CATEGORIES, type Product } from '@/lib/products';
 import { useCart } from '@/contexts/CartContext';
 import { toast } from 'sonner';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import shopVideo from '../../assets/shopvideo.mp4';
 
+// ── Fetch live products from Odoo via the backend ──
+async function fetchOdooProducts(): Promise<Product[]> {
+  try {
+    const res = await fetch('/api/odoo/products');
+    const data = await res.json();
+    if (!data.success) {
+      console.error('Failed to fetch Odoo products:', data.error);
+      return [];
+    }
+    return data.products as Product[];
+  } catch (err) {
+    console.error('fetchOdooProducts error:', err);
+    return [];
+  }
+}
+
+function SkeletonCard() {
+  return (
+    <div className="skeleton-card">
+      <div className="skeleton-shimmer" style={{ aspectRatio: '4/5' }} />
+      <div className="p-4 flex flex-col gap-2">
+        <div className="skeleton-shimmer" style={{ height: '10px', width: '45%', borderRadius: '4px' }} />
+        <div className="skeleton-shimmer" style={{ height: '14px', width: '85%', borderRadius: '4px' }} />
+        <div className="skeleton-shimmer" style={{ height: '14px', width: '65%', borderRadius: '4px' }} />
+        <div style={{ marginTop: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="skeleton-shimmer" style={{ height: '16px', width: '30%', borderRadius: '4px' }} />
+          <div className="skeleton-shimmer" style={{ height: '28px', width: '28%', borderRadius: '6px' }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart();
+  const [, navigate] = useLocation();
+
+  const isSoldOut = product.price === 'SOLD OUT';
 
   const handleAdd = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (isSoldOut) return;
     addItem({
       id: product.id,
       name: product.name,
@@ -38,13 +67,23 @@ function ProductCard({ product }: { product: Product }) {
       category: product.category,
     });
     toast.success(`${product.name} added to your bag`, {
-      description: `KSh ${product.price.toLocaleString()}`,
+      description: `KSh ${(product.price as number).toLocaleString()}`,
       duration: 2500,
     });
   };
 
+  const handleCardClick = () => {
+    navigate(`/shop/${product.id}`);
+  };
+
   return (
-    <div className="product-card group">
+    <div
+      className="product-card group cursor-pointer"
+      onClick={handleCardClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={e => e.key === 'Enter' && handleCardClick()}
+    >
       {/* Image */}
       <div
         className="relative overflow-hidden"
@@ -60,33 +99,32 @@ function ProductCard({ product }: { product: Product }) {
             {product.badge === 'new' && <span className="badge-new">New</span>}
             {product.badge === 'glow' && <span className="badge-glow">Glow Pick</span>}
             {product.badge === 'offer' && (
-              <span
-                className="badge-new"
-                style={{ backgroundColor: 'var(--dark-chocolate)' }}
-              >
+              <span className="badge-new" style={{ backgroundColor: 'var(--dark-chocolate)' }}>
                 Offer
               </span>
             )}
           </div>
         )}
         {/* Quick Add overlay */}
-        <div
-          className="absolute inset-x-0 bottom-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300"
-          style={{ background: 'linear-gradient(to top, rgba(90,52,32,0.85), transparent)' }}
-        >
-          <button
-            onClick={handleAdd}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded font-body font-semibold text-white transition-colors"
-            style={{
-              fontSize: '0.8rem',
-              backgroundColor: 'var(--deep-orange)',
-              letterSpacing: '0.04em',
-            }}
+        {!isSoldOut && (
+          <div
+            className="absolute inset-x-0 bottom-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300"
+            style={{ background: 'linear-gradient(to top, rgba(90,52,32,0.85), transparent)' }}
           >
-            <ShoppingBag size={14} />
-            Add to Bag
-          </button>
-        </div>
+            <button
+              onClick={handleAdd}
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded font-body font-semibold text-white transition-colors"
+              style={{
+                fontSize: '0.8rem',
+                backgroundColor: 'var(--deep-orange)',
+                letterSpacing: '0.04em',
+              }}
+            >
+              <ShoppingBag size={14} />
+              Add to Bag
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Info */}
@@ -112,71 +150,41 @@ function ProductCard({ product }: { product: Product }) {
               ? product.description.slice(0, 80) + '…'
               : product.description}
           </p>
-          {/* Full description tooltip on hover */}
-          {product.description.length > 80 && (
-            <div
-              className="absolute left-0 right-0 bottom-full mb-2 z-50 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-            >
-              <div
-                className="font-body text-xs leading-relaxed rounded-lg p-3 shadow-xl"
-                style={{
-                  backgroundColor: 'var(--dark-chocolate)',
-                  color: 'rgba(234,223,207,0.92)',
-                  border: '1px solid rgba(234,223,207,0.15)',
-                  lineHeight: 1.6,
-                }}
-              >
-                {product.description}
-                {/* Arrow pointing down */}
-                <div
-                  className="absolute left-4 top-full"
-                  style={{
-                    width: 0,
-                    height: 0,
-                    borderLeft: '6px solid transparent',
-                    borderRight: '6px solid transparent',
-                    borderTop: '6px solid var(--dark-chocolate)',
-                  }}
-                />
-              </div>
-            </div>
-          )}
         </div>
         <div className="flex items-center justify-between">
           <span
             className="font-body font-bold"
-            style={{ fontSize: '1rem', color: 'var(--dark-chocolate)' }}
+            style={{ fontSize: '1rem', color: isSoldOut ? 'var(--warm-taupe)' : 'var(--dark-chocolate)' }}
           >
-            KSh {product.price.toLocaleString()}
+            {isSoldOut ? 'Sold Out' : `KSh ${(product.price as number).toLocaleString()}`}
           </span>
-          <button
-            onClick={handleAdd}
-            className="flex items-center gap-1.5 font-body font-semibold px-3 py-1.5 rounded"
-            style={{
-              fontSize: '0.75rem',
-              color: 'var(--deep-orange)',
-              borderTop: '1px solid var(--deep-orange)',
-              borderRight: '1px solid var(--deep-orange)',
-              borderBottom: '1px solid var(--deep-orange)',
-              borderLeft: '1px solid var(--deep-orange)',
-              backgroundColor: 'transparent',
-              letterSpacing: '0.04em',
-              transition: 'background-color 0.2s, color 0.2s',
-            }}
-            onMouseEnter={e => {
-              const btn = e.currentTarget as HTMLButtonElement;
-              btn.style.backgroundColor = 'var(--deep-orange)';
-              btn.style.color = '#FFFFFF';
-            }}
-            onMouseLeave={e => {
-              const btn = e.currentTarget as HTMLButtonElement;
-              btn.style.backgroundColor = 'transparent';
-              btn.style.color = 'var(--deep-orange)';
-            }}
-          >
-            <ShoppingBag size={12} />
-            Add
-          </button>
+          {!isSoldOut && (
+            <button
+              onClick={handleAdd}
+              className="flex items-center gap-1.5 font-body font-semibold px-3 py-1.5 rounded"
+              style={{
+                fontSize: '0.75rem',
+                color: 'var(--deep-orange)',
+                border: '1px solid var(--deep-orange)',
+                backgroundColor: 'transparent',
+                letterSpacing: '0.04em',
+                transition: 'background-color 0.2s, color 0.2s',
+              }}
+              onMouseEnter={e => {
+                const btn = e.currentTarget as HTMLButtonElement;
+                btn.style.backgroundColor = 'var(--deep-orange)';
+                btn.style.color = '#FFFFFF';
+              }}
+              onMouseLeave={e => {
+                const btn = e.currentTarget as HTMLButtonElement;
+                btn.style.backgroundColor = 'transparent';
+                btn.style.color = 'var(--deep-orange)';
+              }}
+            >
+              <ShoppingBag size={12} />
+              Add
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -198,7 +206,18 @@ export default function Shop() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc' | 'name'>('default');
 
-  // Sync category from URL params
+  // ── Odoo live products state ──
+  const [odooProducts, setOdooProducts] = useState<Product[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+
+  // Fetch from Odoo on mount
+  useEffect(() => {
+    fetchOdooProducts().then((products) => {
+      setOdooProducts(products);
+      setLoadingProducts(false);
+    });
+  }, []);
+
   useEffect(() => {
     const params = new URLSearchParams(searchStr);
     const cat = params.get('cat');
@@ -214,29 +233,43 @@ export default function Shop() {
   };
 
   const filteredProducts = useMemo(() => {
+    // Merge static products with live Odoo products
+    const source = [...PRODUCTS, ...odooProducts];
+
     let products: Product[];
 
     if (searchQuery.trim()) {
-      const result = searchProducts(searchQuery);
-      products = Array.isArray(result) ? result : [];
+      products = source.filter(p =>
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.brand.toLowerCase().includes(searchQuery.toLowerCase())
+      );
     } else {
-      const result = getProductsByCategory(activeCategory);
-      products = Array.isArray(result) ? result : [];
+      products = activeCategory === 'all'
+        ? source
+        : source.filter(p => p.category === activeCategory);
     }
 
     const sorted = [...products];
 
     switch (sortBy) {
       case 'price-asc':
-        return sorted.sort((a, b) => a.price - b.price);
+        return sorted.sort((a, b) => {
+          if (a.price === 'SOLD OUT') return 1;
+          if (b.price === 'SOLD OUT') return -1;
+          return (a.price as number) - (b.price as number);
+        });
       case 'price-desc':
-        return sorted.sort((a, b) => b.price - a.price);
+        return sorted.sort((a, b) => {
+          if (a.price === 'SOLD OUT') return 1;
+          if (b.price === 'SOLD OUT') return -1;
+          return (b.price as number) - (a.price as number);
+        });
       case 'name':
         return sorted.sort((a, b) => a.name.localeCompare(b.name));
       default:
         return sorted;
     }
-  }, [activeCategory, searchQuery, sortBy]);
+  }, [activeCategory, searchQuery, sortBy, odooProducts]);
 
   const activeCategoryLabel =
     CATEGORIES.find(c => c.id === activeCategory)?.label || 'All Products';
@@ -261,11 +294,7 @@ export default function Shop() {
         >
           <p
             className="font-body font-medium tracking-widest uppercase mb-3"
-            style={{
-              fontSize: '0.7rem',
-              color: 'rgba(234,223,207,0.8)',
-              letterSpacing: '0.2em',
-            }}
+            style={{ fontSize: '0.7rem', color: 'rgba(234,223,207,0.8)', letterSpacing: '0.2em' }}
           >
             Skinpeccable Glowtique
           </p>
@@ -323,7 +352,7 @@ export default function Shop() {
           </div>
         </div>
 
-        {/* ── LEFT SIDEBAR — Vertical Categories ── */}
+        {/* ── LEFT SIDEBAR ── */}
         <aside
           className="hidden lg:flex flex-col flex-shrink-0"
           style={{
@@ -339,11 +368,7 @@ export default function Shop() {
           <div className="p-6">
             <p
               className="font-body font-semibold tracking-widest uppercase mb-5"
-              style={{
-                fontSize: '0.65rem',
-                color: 'var(--warm-taupe)',
-                letterSpacing: '0.18em',
-              }}
+              style={{ fontSize: '0.65rem', color: 'var(--warm-taupe)', letterSpacing: '0.18em' }}
             >
               Categories
             </p>
@@ -362,9 +387,7 @@ export default function Shop() {
                       borderTop: 'none',
                       borderRight: 'none',
                       borderBottom: 'none',
-                      borderLeft: isActive
-                        ? '2px solid var(--deep-orange)'
-                        : '2px solid transparent',
+                      borderLeft: isActive ? '2px solid var(--deep-orange)' : '2px solid transparent',
                       outline: 'none',
                     }}
                   >
@@ -387,7 +410,6 @@ export default function Shop() {
               backgroundColor: 'var(--light-warm-grey)',
             }}
           >
-            {/* Search */}
             <div className="relative flex-1 max-w-md">
               <Search
                 size={16}
@@ -419,10 +441,9 @@ export default function Shop() {
               )}
             </div>
 
-            {/* Sort + Count */}
             <div className="flex items-center gap-4">
               <span className="font-body text-sm" style={{ color: 'var(--warm-taupe)' }}>
-                {filteredProducts.length}{' '}
+                {loadingProducts ? '…' : filteredProducts.length}{' '}
                 {filteredProducts.length === 1 ? 'product' : 'products'}
               </span>
               <div className="relative">
@@ -453,7 +474,6 @@ export default function Shop() {
 
           {/* ── PRODUCT GRID ── */}
           <div className="px-4 lg:px-8 py-8">
-            {/* Category heading */}
             <div className="flex items-center gap-4 mb-8">
               <div className="accent-line" />
               <h2
@@ -464,25 +484,25 @@ export default function Shop() {
               </h2>
             </div>
 
-            {filteredProducts.length === 0 ? (
+            {/* Loading skeleton */}
+            {loadingProducts ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} style={{ animationDelay: `${i * 0.06}s` }}>
+                    <SkeletonCard />
+                  </div>
+                ))}
+              </div>
+            ) : filteredProducts.length === 0 ? (
               <div className="text-center py-24">
-                <p
-                  className="font-display text-2xl mb-3"
-                  style={{ color: 'var(--dark-chocolate)' }}
-                >
+                <p className="font-display text-2xl mb-3" style={{ color: 'var(--dark-chocolate)' }}>
                   No products found
                 </p>
-                <p
-                  className="font-body text-sm mb-6"
-                  style={{ color: 'var(--warm-taupe)' }}
-                >
+                <p className="font-body text-sm mb-6" style={{ color: 'var(--warm-taupe)' }}>
                   Try a different search term or browse all categories.
                 </p>
                 <button
-                  onClick={() => {
-                    setSearchQuery('');
-                    setActiveCategory('all');
-                  }}
+                  onClick={() => { setSearchQuery(''); setActiveCategory('all'); }}
                   className="btn-secondary"
                   style={{ fontSize: '0.8rem' }}
                 >
@@ -509,13 +529,34 @@ export default function Shop() {
         </div>
       </div>
 
-      {/* Inline keyframes for the card fade-up */}
       <style>{`
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(18px); }
           to   { opacity: 1; transform: translateY(0); }
         }
         .mobile-category-bar::-webkit-scrollbar { display: none; }
+
+        @keyframes shimmer {
+          0%   { background-position: -600px 0; }
+          100% { background-position: 600px 0; }
+        }
+        .skeleton-shimmer {
+          background: linear-gradient(
+            90deg,
+            var(--light-warm-grey) 25%,
+            #ede8e1 50%,
+            var(--light-warm-grey) 75%
+          );
+          background-size: 600px 100%;
+          animation: shimmer 1.4s infinite linear;
+        }
+        .skeleton-card {
+          border-radius: 4px;
+          overflow: hidden;
+          background-color: var(--light-warm-grey);
+          opacity: 0;
+          animation: fadeUp 0.3s ease forwards;
+        }
       `}</style>
     </div>
   );

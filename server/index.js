@@ -4,9 +4,6 @@ const cors = require('cors');
 
 const app = express();
 
-// Raw body needed for Stripe webhooks — must come before express.json()
-app.use('/api/payments/stripe/webhook', express.raw({ type: 'application/json' }));
-
 app.use(cors({ origin: 'http://localhost:3000' }));
 app.use(express.json());
 

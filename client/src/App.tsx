@@ -1,6 +1,6 @@
 /*
  * SKINPECCABLE GLOWTIQUE — App Router
- * Routes: / (Home) | /shop (Shop) | /about (About) | /contact (Contact) | /checkout (Checkout)
+ * Routes: / | /shop | /shop/:id | /about | /contact | /checkout
  */
 
 import { Toaster } from "@/components/ui/sonner";
@@ -15,6 +15,7 @@ import CartDrawer from "./components/CartDrawer";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import Shop from "./pages/Shop";
+import ProductDetail from "./pages/ProductDetail";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Checkout from "./pages/Checkout";
@@ -44,6 +45,8 @@ function Router() {
     <Switch>
       <Route path="/" component={() => <Layout><Home /></Layout>} />
       <Route path="/shop" component={() => <Layout><Shop /></Layout>} />
+      {/* Product detail — must come before the 404 catch-all */}
+      <Route path="/shop/:id" component={() => <Layout><ProductDetail /></Layout>} />
       <Route path="/about" component={() => <Layout><About /></Layout>} />
       <Route path="/contact" component={() => <Layout><Contact /></Layout>} />
       <Route path="/checkout" component={() => <Layout><Checkout /></Layout>} />

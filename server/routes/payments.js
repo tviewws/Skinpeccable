@@ -1,143 +1,209 @@
 const express = require('express');
 const router = express.Router();
-const Stripe = require('stripe');
-const IntaSend = require('intasend-node');
+const axios = require('axios');
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-const intasend = new IntaSend(
-  process.env.INTASEND_PUBLISHABLE_KEY,
-  process.env.INTASEND_SECRET_KEY,
-  false // true = test mode, change to false when going live
-);
+const {
+  PESAPAL_CONSUMER_KEY,
+  PESAPAL_CONSUMER_SECRET,
+  PESAPAL_ENV,
+  PESAPAL_IPN_URL,
+  PESAPAL_CALLBACK_URL,
+} = process.env;
 
-// ── STRIPE — Create Payment Intent (card payments)
-router.post('/stripe/create-payment-intent', async (req, res) => {
+// Use sandbox or live URL based on environment
+const PESAPAL_BASE =
+  PESAPAL_ENV === 'live'
+    ? 'https://pay.pesapal.com/v3'
+    : 'https://cybqa.pesapal.com/pesapalv3';
+
+// ── STEP 1: Get Pesapal auth token
+async function getPesapalToken() {
+  const res = await axios.post(
+    `${PESAPAL_BASE}/api/Auth/RequestToken`,
+    {
+      consumer_key: PESAPAL_CONSUMER_KEY,
+      consumer_secret: PESAPAL_CONSUMER_SECRET,
+    },
+    { headers: { 'Content-Type': 'application/json', Accept: 'application/json' } }
+  );
+
+  if (!res.data.token) {
+    throw new Error('Pesapal auth failed — check your consumer key and secret');
+  }
+
+  return res.data.token;
+}
+
+// ── STEP 2: Register IPN (only needs to happen once, but safe to call each time)
+async function registerIPN(token) {
+  const res = await axios.post(
+    `${PESAPAL_BASE}/api/URLSetup/RegisterIPN`,
+    {
+      url: PESAPAL_IPN_URL,
+      ipn_notification_type: 'GET',
+    },
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  if (!res.data.ipn_id) {
+    throw new Error('IPN registration failed');
+  }
+
+  return res.data.ipn_id;
+}
+
+// ── STEP 3: Submit order to Pesapal and get redirect URL
+async function submitOrder(token, ipnId, orderData) {
+  const { customer, items, amount, notes } = orderData;
+
+  const payload = {
+    id: `SKP-${Date.now()}`,               // unique order ID
+    currency: 'KES',
+    amount,
+    description: `Skinpeccable order — ${items.length} item(s)`,
+    callback_url: PESAPAL_CALLBACK_URL,
+    notification_id: ipnId,
+    billing_address: {
+      first_name: customer.firstName,
+      last_name: customer.lastName,
+      email_address: customer.email,
+      phone_number: customer.phone,
+      line_1: customer.address,
+      city: customer.city,
+      country_code: 'KE',
+    },
+  };
+
+  const res = await axios.post(
+    `${PESAPAL_BASE}/api/Transactions/SubmitOrderRequest`,
+    payload,
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  if (!res.data.redirect_url) {
+    throw new Error('No redirect URL returned from Pesapal');
+  }
+
+  return {
+    redirect_url: res.data.redirect_url,
+    order_tracking_id: res.data.order_tracking_id,
+  };
+}
+
+// ── POST /api/payments/pesapal/initiate
+// Called by checkout page — registers order and returns Pesapal redirect URL
+router.post('/pesapal/initiate', async (req, res) => {
   try {
-    const { amount, currency = 'kes', customerEmail, customerName } = req.body;
+    const { customer, items, amount, notes } = req.body;
 
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(amount * 100), // Stripe uses lowest currency unit
-      currency,
-      receipt_email: customerEmail,
-      metadata: { customerName, customerEmail }
+    if (!customer || !items || !amount) {
+      return res.status(400).json({ success: false, error: 'Missing required fields' });
+    }
+
+    // 1. Get auth token
+    const token = await getPesapalToken();
+
+    // 2. Register IPN
+    const ipnId = await registerIPN(token);
+
+    // 3. Submit order and get redirect URL
+    const { redirect_url, order_tracking_id } = await submitOrder(token, ipnId, {
+      customer,
+      items,
+      amount,
+      notes,
     });
 
-    res.json({
-      success: true,
-      clientSecret: paymentIntent.client_secret
-    });
+    console.log(`Pesapal order created: ${order_tracking_id}`);
+
+    res.json({ success: true, redirect_url, order_tracking_id });
 
   } catch (err) {
-    console.error('Stripe error:', err.message);
+    console.error('Pesapal initiate error:', err.message);
     res.status(500).json({ success: false, error: err.message });
   }
 });
 
-// ── STRIPE — Webhook (called by Stripe when payment succeeds)
-router.post('/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
-  const sig = req.headers['stripe-signature'];
-  let event;
-
+// ── GET /api/payments/pesapal/ipn
+// Called by Pesapal when payment status changes
+router.get('/pesapal/ipn', async (req, res) => {
   try {
-    event = stripe.webhooks.constructEvent(
-      req.body,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET
+    const { orderTrackingId, orderMerchantReference, orderNotificationType } = req.query;
+
+    console.log('Pesapal IPN received:', {
+      orderTrackingId,
+      orderMerchantReference,
+      orderNotificationType,
+    });
+
+    // Get token to check transaction status
+    const token = await getPesapalToken();
+
+    const statusRes = await axios.get(
+      `${PESAPAL_BASE}/api/Transactions/GetTransactionStatus?orderTrackingId=${orderTrackingId}`,
+      {
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      }
     );
+
+    const status = statusRes.data.payment_status_description;
+    console.log(`Payment status for ${orderTrackingId}: ${status}`);
+
+    // Respond to Pesapal to confirm IPN was received
+    res.json({ orderNotificationType, orderTrackingId, orderMerchantReference, status: '200' });
+
   } catch (err) {
-    console.error('Webhook signature error:', err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+    console.error('Pesapal IPN error:', err.message);
+    res.status(500).json({ error: err.message });
   }
-
-  if (event.type === 'payment_intent.succeeded') {
-    const paymentIntent = event.data.object;
-    console.log('Stripe payment succeeded:', paymentIntent.id);
-  }
-
-  res.json({ received: true });
 });
 
-// ── INTASEND — Initiate M-Pesa STK Push
-router.post('/mpesa/initiate', async (req, res) => {
+// ── GET /api/payments/pesapal/status
+// Check payment status manually (called from frontend if needed)
+router.get('/pesapal/status', async (req, res) => {
   try {
-    const { phone, amount, customerName, customerEmail } = req.body;
+    const { orderTrackingId } = req.query;
 
-    // Format phone — must be 254XXXXXXXXX format
-    let formattedPhone = phone.toString().trim();
-    if (formattedPhone.startsWith('0')) {
-      formattedPhone = '254' + formattedPhone.slice(1);
-    } else if (formattedPhone.startsWith('+')) {
-      formattedPhone = formattedPhone.slice(1);
+    if (!orderTrackingId) {
+      return res.status(400).json({ success: false, error: 'orderTrackingId is required' });
     }
 
-    const nameParts = customerName.trim().split(' ');
-    const firstName = nameParts[0];
-    const lastName = nameParts.slice(1).join(' ') || firstName;
+    const token = await getPesapalToken();
 
-    console.log('Initiating M-Pesa STK push:', {
-      phone: formattedPhone,
-      amount,
-      firstName,
-      lastName,
-      customerEmail
-    });
-
-    const collection = intasend.collection();
-    const response = await collection.mpesaStkPush({
-      first_name: firstName,
-      last_name: lastName,
-      email: customerEmail,
-      host: 'https://muigaikamau.odoo.com',
-      amount: Math.round(amount),
-      phone_number: formattedPhone,
-      api_ref: `SKINPECCABLE-${Date.now()}`
-    });
-
-    console.log('Intasend full response:', JSON.stringify(response, null, 2));
+    const statusRes = await axios.get(
+      `${PESAPAL_BASE}/api/Transactions/GetTransactionStatus?orderTrackingId=${orderTrackingId}`,
+      {
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
     res.json({
       success: true,
-      invoice_id: response.invoice?.invoice_id,
-      state: response.invoice?.state,
-      message: 'STK push sent — customer should see M-Pesa prompt on their phone'
+      status: statusRes.data.payment_status_description,
+      data: statusRes.data,
     });
 
   } catch (err) {
-    console.error('M-Pesa full error:', JSON.stringify(err, null, 2));
-    res.status(500).json({
-      success: false,
-      error: err.message || 'Unknown error',
-      details: JSON.stringify(err)
-    });
-  }
-});
-
-// ── INTASEND — Check M-Pesa Payment Status
-router.post('/mpesa/status', async (req, res) => {
-  try {
-    const { invoice_id } = req.body;
-
-    console.log('Checking M-Pesa status for invoice:', invoice_id);
-
-    const collection = intasend.collection();
-    const response = await collection.status({ invoice_id });
-
-    console.log('M-Pesa status response:', JSON.stringify(response, null, 2));
-
-    res.json({
-      success: true,
-      status: response.invoice?.state,
-      invoice_id,
-      // States: PENDING, PROCESSING, COMPLETE, FAILED
-    });
-
-  } catch (err) {
-    console.error('M-Pesa status error:', JSON.stringify(err, null, 2));
-    res.status(500).json({
-      success: false,
-      error: err.message || 'Unknown error',
-      details: JSON.stringify(err)
-    });
+    console.error('Pesapal status error:', err.message);
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 

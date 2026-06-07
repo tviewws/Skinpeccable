@@ -92,6 +92,57 @@ router.get('/test', async (req, res) => {
   }
 });
 
+// GET /api/odoo/products
+// Fetches all published products from Odoo and shapes them to match the frontend Product interface
+router.get('/products', async (req, res) => {
+  try {
+    const products = await odooCall(
+      'product.template',
+      'search_read',
+      [[['is_published', '=', true]]],
+      {
+        fields: [
+          'id',
+          'name',
+          'description',        // eCommerce description (filled in the Sales tab)
+          'description_sale',   // quotation/sales description (fallback)
+          'list_price',
+          'image_1920',         // full-size product image (returned as base64)
+          'categ_id',           // product category [id, name]
+        ],
+      }
+    );
+
+    // Shape each Odoo product to match the frontend Product interface
+    const shaped = products.map((p) => {
+      // Pick the best available description — eCommerce description first, then sales description
+      let description = '';
+      if (p.description && typeof p.description === 'string') {
+        description = p.description.replace(/<[^>]*>/g, '').trim(); // strip any HTML tags
+      } else if (p.description_sale && typeof p.description_sale === 'string') {
+        description = p.description_sale.replace(/<[^>]*>/g, '').trim();
+      }
+
+      return {
+        id: `odoo_${p.id}`,
+        name: p.name,
+        brand: 'Skinpeccable', // Odoo doesn't have a brand field by default
+        category: p.categ_id?.[1]?.toLowerCase().replace(/\s+/g, '-') || 'all',
+        price: p.list_price > 0 ? p.list_price : 'SOLD OUT',
+        description,
+        image: p.image_1920
+          ? `data:image/png;base64,${p.image_1920}`
+          : '/placeholder.png',
+      };
+    });
+
+    res.json({ success: true, products: shaped });
+  } catch (err) {
+    console.error('Odoo products fetch error:', err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // POST /api/odoo/order
 router.post('/order', async (req, res) => {
   try {

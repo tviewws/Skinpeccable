@@ -2350,3 +2350,20 @@ export function searchProducts(query: string): Product[] {
     p.category.toLowerCase().includes(q)
   );
 }
+// Fetches live products from Odoo via your backend
+export async function fetchOdooProducts(): Promise<Product[]> {
+  try {
+    const res = await fetch('/api/odoo/products');
+    const data = await res.json();
+
+    if (!data.success) {
+      console.error('Failed to fetch Odoo products:', data.error);
+      return []; // falls back to nothing — you can return PRODUCTS here if you want a fallback
+    }
+
+    return data.products as Product[];
+  } catch (err) {
+    console.error('fetchOdooProducts error:', err);
+    return [];
+  }
+}
