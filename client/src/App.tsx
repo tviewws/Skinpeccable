@@ -1,6 +1,6 @@
 /*
  * SKINPECCABLE GLOWTIQUE — App Router
- * Routes: / | /shop | /shop/:id | /about | /contact | /checkout
+ * Routes: / | /shop | /shop/:id | /about | /contact | /checkout | /checkout/success
  */
 
 import { Toaster } from "@/components/ui/sonner";
@@ -19,6 +19,7 @@ import ProductDetail from "./pages/ProductDetail";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Checkout from "./pages/Checkout";
+import CheckoutSuccess from "./pages/CheckoutSuccess";
 import NotFound from "./pages/NotFound";
 
 function Layout({ children }: { children: React.ReactNode }) {
@@ -45,10 +46,10 @@ function Router() {
     <Switch>
       <Route path="/" component={() => <Layout><Home /></Layout>} />
       <Route path="/shop" component={() => <Layout><Shop /></Layout>} />
-      {/* Product detail — must come before the 404 catch-all */}
       <Route path="/shop/:id" component={() => <Layout><ProductDetail /></Layout>} />
       <Route path="/about" component={() => <Layout><About /></Layout>} />
       <Route path="/contact" component={() => <Layout><Contact /></Layout>} />
+      <Route path="/checkout/success" component={() => <Layout><CheckoutSuccess /></Layout>} />
       <Route path="/checkout" component={() => <Layout><Checkout /></Layout>} />
       <Route path="/404" component={() => <Layout><NotFound /></Layout>} />
       <Route component={() => <Layout><NotFound /></Layout>} />
