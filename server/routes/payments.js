@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
+const { z } = require('zod');
 
 const {
   PESAPAL_CONSUMER_KEY,
@@ -9,6 +10,20 @@ const {
   PESAPAL_IPN_URL,
   PESAPAL_CALLBACK_URL,
 } = process.env;
+
+// Validation schema
+const orderSchema = z.object({
+  amount: z.number().positive(),
+  customer: z.object({
+    firstName: z.string().min(1),
+    lastName: z.string().min(1),
+    email: z.string().email(),
+    phone: z.string().min(9),
+    address: z.string().min(1),
+    city: z.string().min(1),
+  }),
+  items: z.array(z.any()).min(1),
+});
 
 // Use sandbox or live URL based on environment
 const PESAPAL_BASE =
@@ -106,11 +121,16 @@ async function submitOrder(token, ipnId, orderData) {
 // Called by checkout page — registers order and returns Pesapal redirect URL
 router.post('/pesapal/initiate', async (req, res) => {
   try {
-    const { customer, items, amount, notes } = req.body;
-
-    if (!customer || !items || !amount) {
-      return res.status(400).json({ success: false, error: 'Missing required fields' });
+    const validation = orderSchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid order data',
+        details: validation.error.flatten(),
+      });
     }
+
+    const { customer, items, amount, notes } = req.body;
 
     // 1. Get auth token
     const token = await getPesapalToken();
