@@ -87,7 +87,7 @@ function ProductCard({ product }: { product: Product }) {
       id: product.id,
       name: product.name,
       brand: product.brand,
-      price: product.price,
+      price: product.price as number,
       image: product.image,
       category: product.category,
     });
