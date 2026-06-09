@@ -6,7 +6,7 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Route, Switch, useLocation } from "wouter";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { CartProvider } from "./contexts/CartContext";
@@ -24,9 +24,21 @@ import NotFound from "./pages/NotFound";
 
 function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
+  const prevLocation = useRef(location);
 
   useEffect(() => {
-    window.scrollTo(0, 0);
+    const prev = prevLocation.current;
+    const curr = location;
+
+    // Only scroll to top when navigating forward to a new page
+    // Don't scroll when going back from product detail to shop
+    const goingBackToShop = curr === '/shop' && prev.startsWith('/shop/');
+
+    if (!goingBackToShop) {
+      window.scrollTo(0, 0);
+    }
+
+    prevLocation.current = curr;
   }, [location]);
 
   return (
