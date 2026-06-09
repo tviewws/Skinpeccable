@@ -3,20 +3,29 @@
  * Layout: Top horizontal category bar + Product grid + Search
  * Design: "Structured Warmth" — clean, warm, organized
  *
- * UPDATE: Product cards now navigate to /shop/:id on click.
- * UPDATE: Products are now fetched live from Odoo. Static PRODUCTS used as fallback.
+ * Products and categories are now fetched live from Odoo.
+ * Static PRODUCTS library has been removed entirely.
  */
 
 import { useState, useEffect, useMemo } from 'react';
 import { useSearch, useLocation } from 'wouter';
 import { Search, ShoppingBag, X, ChevronDown } from 'lucide-react';
-import { PRODUCTS, CATEGORIES, type Product } from '@/lib/products';
+import { type Product } from '@/lib/products';
 import { useCart } from '@/contexts/CartContext';
 import { toast } from 'sonner';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import shopVideo from '../../assets/shopvideo.mp4';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+
+interface Category {
+  id: string;
+  label: string;
+}
+
+const FALLBACK_CATEGORIES: Category[] = [
+  { id: 'all', label: 'All Products' },
+];
 
 async function fetchOdooProducts(): Promise<Product[]> {
   try {
@@ -30,6 +39,21 @@ async function fetchOdooProducts(): Promise<Product[]> {
   } catch (err) {
     console.error('fetchOdooProducts error:', err);
     return [];
+  }
+}
+
+async function fetchOdooCategories(): Promise<Category[]> {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/odoo/categories`);
+    const data = await res.json();
+    if (!data.success) {
+      console.error('Failed to fetch Odoo categories:', data.error);
+      return FALLBACK_CATEGORIES;
+    }
+    return data.categories as Category[];
+  } catch (err) {
+    console.error('fetchOdooCategories error:', err);
+    return FALLBACK_CATEGORIES;
   }
 }
 
@@ -106,7 +130,6 @@ function ProductCard({ product }: { product: Product }) {
             )}
           </div>
         )}
-        {/* Quick Add overlay */}
         {!isSoldOut && (
           <div
             className="absolute inset-x-0 bottom-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300"
@@ -197,33 +220,37 @@ export default function Shop() {
 
   const searchStr = useSearch();
 
-  const getInitialCategory = () => {
-    const params = new URLSearchParams(searchStr);
-    const cat = params.get('cat') || 'all';
-    return CATEGORIES.some(c => c.id === cat) ? cat : 'all';
-  };
-
-  const [activeCategory, setActiveCategory] = useState<string>(getInitialCategory);
+  const [activeCategory, setActiveCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc' | 'name'>('default');
 
   const [odooProducts, setOdooProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>(FALLBACK_CATEGORIES);
   const [loadingProducts, setLoadingProducts] = useState(true);
+  const [loadingCategories, setLoadingCategories] = useState(true);
 
+  // Fetch products and categories in parallel
   useEffect(() => {
     fetchOdooProducts().then((products) => {
       setOdooProducts(products);
       setLoadingProducts(false);
     });
+
+    fetchOdooCategories().then((cats) => {
+      setCategories(cats);
+      setLoadingCategories(false);
+    });
   }, []);
 
+  // Honour ?cat= query param once categories are loaded
   useEffect(() => {
+    if (loadingCategories) return;
     const params = new URLSearchParams(searchStr);
     const cat = params.get('cat');
-    if (cat && CATEGORIES.some(c => c.id === cat)) {
+    if (cat && categories.some(c => c.id === cat)) {
       setActiveCategory(cat);
     }
-  }, [searchStr]);
+  }, [searchStr, categories, loadingCategories]);
 
   const handleCategoryChange = (catId: string) => {
     setSearchQuery('');
@@ -232,19 +259,17 @@ export default function Shop() {
   };
 
   const filteredProducts = useMemo(() => {
-    const source = [...PRODUCTS, ...odooProducts];
-
     let products: Product[];
 
     if (searchQuery.trim()) {
-      products = source.filter(p =>
+      products = odooProducts.filter(p =>
         p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.brand.toLowerCase().includes(searchQuery.toLowerCase())
       );
     } else {
       products = activeCategory === 'all'
-        ? source
-        : source.filter(p => p.category === activeCategory);
+        ? odooProducts
+        : odooProducts.filter(p => p.category === activeCategory);
     }
 
     const sorted = [...products];
@@ -270,7 +295,7 @@ export default function Shop() {
   }, [activeCategory, searchQuery, sortBy, odooProducts]);
 
   const activeCategoryLabel =
-    CATEGORIES.find(c => c.id === activeCategory)?.label || 'All Products';
+    categories.find(c => c.id === activeCategory)?.label || 'All Products';
 
   return (
     <div>
@@ -326,7 +351,7 @@ export default function Shop() {
             className="flex gap-2 overflow-x-auto px-4 py-3"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
-            {CATEGORIES.map(cat => {
+            {categories.map(cat => {
               const isActive = activeCategory === cat.id;
               return (
                 <button
@@ -371,7 +396,7 @@ export default function Shop() {
               Categories
             </p>
             <nav className="flex flex-col gap-1">
-              {CATEGORIES.map(cat => {
+              {categories.map(cat => {
                 const isActive = activeCategory === cat.id;
                 return (
                   <button

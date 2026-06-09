@@ -1,31 +1,17 @@
 /*
  * SKINPECCABLE GLOWTIQUE — Product Detail Page
  * Route: /shop/:id
- * Design: "Structured Warmth" — full product view with image, description, add to cart
- *
- * Supports two product sources:
- *  - Static library (legacy): IDs like "skinpeccable_product_006"
- *  - Odoo (live sync):        IDs like "odoo_1729"
+ * All products are now fetched live from Odoo.
  */
 
 import { useParams, useLocation } from 'wouter';
 import { ArrowLeft, ShoppingBag, CheckCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { PRODUCTS } from '@/lib/products';
+import { type Product } from '@/lib/products';
 import { useCart } from '@/contexts/CartContext';
 import { toast } from 'sonner';
 
-// ── Shape of a product (covers both static and Odoo-fetched)
-interface Product {
-  id: string;
-  name: string;
-  brand: string;
-  category: string;
-  price: number | 'SOLD OUT';
-  description: string;
-  image: string;
-  badge?: string;
-}
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
@@ -44,34 +30,19 @@ export default function ProductDetail() {
       return;
     }
 
-    if (id.startsWith('odoo_')) {
-      // ── Odoo product: fetch from your backend API
-      const numericId = id.replace('odoo_', '');
-
-      fetch(`${import.meta.env.VITE_BACKEND_URL}/api/odoo/products`)
-        .then(r => r.json())
-        .then(data => {
-          if (!data.success) throw new Error('API error');
-          const found = data.products.find((p: Product) => p.id === id || p.id === `odoo_${numericId}`);
-          if (found) {
-            setProduct(found);
-          } else {
-            setNotFound(true);
-          }
-        })
-        .catch(() => setNotFound(true))
-        .finally(() => setLoading(false));
-
-    } else {
-      // ── Static product: look up in local library
-      const found = PRODUCTS.find(p => String(p.id) === String(id));
-      if (found) {
-        setProduct(found as unknown as Product);
-      } else {
-        setNotFound(true);
-      }
-      setLoading(false);
-    }
+    fetch(`${BACKEND_URL}/api/odoo/products`)
+      .then(r => r.json())
+      .then(data => {
+        if (!data.success) throw new Error('API error');
+        const found = data.products.find((p: Product) => p.id === id);
+        if (found) {
+          setProduct(found);
+        } else {
+          setNotFound(true);
+        }
+      })
+      .catch(() => setNotFound(true))
+      .finally(() => setLoading(false));
   }, [id]);
 
   // ── Loading state

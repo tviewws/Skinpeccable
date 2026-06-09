@@ -70,7 +70,6 @@ async function findOrCreateProduct(name, price) {
   );
   if (existing.length > 0) return existing[0].id;
 
-  // Product not found — create it
   const newProduct = await odooCall('product.product', 'create', [{
     name,
     list_price: price,
@@ -92,6 +91,47 @@ router.get('/test', async (req, res) => {
   }
 });
 
+// GET /api/odoo/categories
+// Fetches all product categories from Odoo that are actually used by published products,
+// and shapes them into { id, label } objects matching the frontend CATEGORIES format.
+router.get('/categories', async (req, res) => {
+  try {
+    // 1. Get all published products and their category IDs
+    const products = await odooCall(
+      'product.template',
+      'search_read',
+      [[['is_published', '=', true]]],
+      { fields: ['categ_id'] }
+    );
+
+    // 2. Collect unique category IDs from published products
+    const categoryMap = new Map();
+    for (const p of products) {
+      if (p.categ_id && p.categ_id[0]) {
+        categoryMap.set(p.categ_id[0], p.categ_id[1]);
+      }
+    }
+
+    // 3. Shape into frontend-friendly format
+    // id: lowercased, hyphenated version of the name (matches how products.category is set)
+    // label: original display name from Odoo
+    const categories = [
+      { id: 'all', label: 'All Products' }, // always first
+      ...[...categoryMap.entries()]
+        .map(([, name]) => ({
+          id: name.toLowerCase().replace(/\s+/g, '-'),
+          label: name,
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label)), // alphabetical
+    ];
+
+    res.json({ success: true, categories });
+  } catch (err) {
+    console.error('Odoo categories fetch error:', err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // GET /api/odoo/products
 // Fetches all published products from Odoo and shapes them to match the frontend Product interface
 router.get('/products', async (req, res) => {
@@ -104,21 +144,19 @@ router.get('/products', async (req, res) => {
         fields: [
           'id',
           'name',
-          'description',        // eCommerce description (filled in the Sales tab)
-          'description_sale',   // quotation/sales description (fallback)
+          'description',
+          'description_sale',
           'list_price',
-          'image_1920',         // full-size product image (returned as base64)
-          'categ_id',           // product category [id, name]
+          'image_1920',
+          'categ_id',
         ],
       }
     );
 
-    // Shape each Odoo product to match the frontend Product interface
     const shaped = products.map((p) => {
-      // Pick the best available description — eCommerce description first, then sales description
       let description = '';
       if (p.description && typeof p.description === 'string') {
-        description = p.description.replace(/<[^>]*>/g, '').trim(); // strip any HTML tags
+        description = p.description.replace(/<[^>]*>/g, '').trim();
       } else if (p.description_sale && typeof p.description_sale === 'string') {
         description = p.description_sale.replace(/<[^>]*>/g, '').trim();
       }
@@ -126,7 +164,7 @@ router.get('/products', async (req, res) => {
       return {
         id: `odoo_${p.id}`,
         name: p.name,
-        brand: 'Skinpeccable', // Odoo doesn't have a brand field by default
+        brand: 'Skinpeccable',
         category: p.categ_id?.[1]?.toLowerCase().replace(/\s+/g, '-') || 'all',
         price: p.list_price > 0 ? p.list_price : 'SOLD OUT',
         description,
@@ -148,14 +186,12 @@ router.post('/order', async (req, res) => {
   try {
     const { customer, items, total } = req.body;
 
-    // 1. Find or create customer
     const partnerId = await findOrCreateCustomer(
       customer.name,
       customer.email,
       customer.phone || ''
     );
 
-    // 2. Build order lines with real product IDs
     const orderLines = await Promise.all(items.map(async (item) => {
       const productId = await findOrCreateProduct(item.name, item.price);
       return [0, 0, {
@@ -166,14 +202,12 @@ router.post('/order', async (req, res) => {
       }];
     }));
 
-    // 3. Create Sales Order
     const saleOrderId = await odooCall('sale.order', 'create', [{
       partner_id: partnerId,
       order_line: orderLines,
       note: `Order placed via Skinpeccable website. Total: KES ${total}`
     }]);
 
-    // 4. Confirm the Sales Order
     await odooCall('sale.order', 'action_confirm', [[saleOrderId]]);
 
     res.json({
