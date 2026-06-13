@@ -14,6 +14,7 @@ import { type Product } from '@/lib/products';
 import { useCart } from '@/contexts/CartContext';
 import { toast } from 'sonner';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import shopVideo from '../../assets/shopvideo.mp4';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
@@ -216,6 +217,10 @@ function ProductCard({ product }: { product: Product }) {
 }
 
 export default function Shop() {
+  usePageMeta(
+    'Shop Skincare, Beauty & Grooming | Skinpeccable Glowtique Nairobi',
+    'Browse 200+ curated skincare, fragrance, body care and grooming products at Skinpeccable Glowtique. Authentic brands, delivered across Nairobi, Kenya.'
+  );
   useScrollReveal();
 
   const searchStr = useSearch();

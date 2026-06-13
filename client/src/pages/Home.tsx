@@ -8,6 +8,7 @@ import { useRef } from 'react';
 import { Link } from 'wouter';
 import { ArrowRight, Sparkles, Leaf, Heart } from 'lucide-react';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import heroVideo from '../../assets/herovideo1.mp4';
 import heroSkin from '../../assets/heroskin.jpg';
 import homeImage2 from '../../assets/homeimage2.png';
@@ -31,6 +32,10 @@ const PILLARS = [
 ];
 
 export default function Home() {
+  usePageMeta(
+    'Skinpeccable Glowtique | Beauty, Skincare & Grooming Boutique in Nairobi',
+    'Discover Skinpeccable Glowtique — a curated beauty, skincare, fragrance and grooming boutique in Nairobi, Kenya. Inclusive, accessible, and crafted for every skin.'
+  );
   useScrollReveal();
   const heroRef = useRef<HTMLDivElement>(null);
 

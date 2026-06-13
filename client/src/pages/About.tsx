@@ -6,6 +6,7 @@
 import { Link } from 'wouter';
 import { ArrowRight, CheckCircle } from 'lucide-react';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import aboutUsPng from '../../assets/aboutuspng.png';
 import aboutUsPng2 from '../../assets/aboutuspng2.png';
 
@@ -28,6 +29,10 @@ const STATS = [
 ];
 
 export default function About() {
+  usePageMeta(
+    'About Us | Skinpeccable Glowtique — Inclusive Beauty in Nairobi',
+    'Learn about Skinpeccable Glowtique — a warm, inclusive and curated beauty and grooming boutique in Nairobi, Kenya. Our story, values and mission.'
+  );
   useScrollReveal();
 
   return (

@@ -5,9 +5,14 @@
 
 import { MapPin, Phone, Mail, Clock, Instagram } from 'lucide-react';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import contactUsPng from '../../assets/contactuspng.png';
 
 export default function Contact() {
+  usePageMeta(
+    'Contact Us | Skinpeccable Glowtique Nairobi',
+    'Get in touch with Skinpeccable Glowtique. WhatsApp, Instagram, email or visit us at Shop No. 2, Inka Centre, Lavington Green, Nairobi.'
+  );
   useScrollReveal();
 
   return (
