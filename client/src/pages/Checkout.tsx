@@ -1,9 +1,10 @@
 /*
  * SKINPECCABLE GLOWTIQUE — Checkout Page
  * Design: "Structured Warmth" — clean checkout, order summary, Pesapal payment
+ * Updated: Google Maps autocomplete + zone-based delivery fee
  */
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'wouter';
 import {
   ShoppingBag,
@@ -12,10 +13,73 @@ import {
   Lock,
   Truck,
   CreditCard,
+  MapPin,
 } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+
+// ─────────────────────────────────────────────
+// DELIVERY ZONES — based on Nairobi corridors
+// Update prices here anytime your client changes rates
+// ─────────────────────────────────────────────
+const DELIVERY_ZONES = [
+  {
+    id: 'cbd',
+    label: 'Zone 1 — CBD & Near',
+    fee: 200,
+    keywords: [
+      'nairobi cbd', 'city centre', 'city center', 'westlands', 'kilimani',
+      'upper hill', 'parklands', 'ngara', 'pangani', 'mlango kubwa',
+      'eastleigh', 'river road', 'downtown', 'kimathi', 'kenyatta avenue',
+    ],
+  },
+  {
+    id: 'inner',
+    label: 'Zone 2 — Inner Estates',
+    fee: 300,
+    keywords: [
+      'ngong road', 'thika road', "lang'ata", 'langata', 'south b', 'south c',
+      'karen', 'hurlingham', 'lavington', 'kileleshwa', 'spring valley',
+      'gigiri', 'muthaiga', 'runda', 'ridgeways', 'kasarani', 'roysambu',
+      'kahawa', 'zimmerman', 'githurai', 'lucky summer', 'baba dogo',
+      'umoja', 'donholm', 'komarock', 'embakasi', 'pipeline', 'imara daima',
+      'buruburu', 'jogoo road', 'waiyaki way', 'limuru road', 'kiambu road',
+      'mombasa road', 'enterprise road',
+    ],
+  },
+  {
+    id: 'outer',
+    label: 'Zone 3 — Outer Nairobi',
+    fee: 400,
+    keywords: [
+      'rongai', 'ruaka', 'ruiru', 'kikuyu', 'dagoretti', 'kawangware',
+      'kangemi', 'kabete', 'uthiru', 'kinoo', 'banana', 'juja',
+      'syokimau', 'athi river', 'mlolongo', 'kitengela',
+      'ngong', 'kiserian', 'ongata rongai',
+    ],
+  },
+  {
+    id: 'outside',
+    label: 'Zone 4 — Outside Nairobi',
+    fee: 600,
+    keywords: [
+      'kiambu', 'thika', 'limuru', 'machakos', 'nakuru', 'mombasa',
+      'kisumu', 'eldoret', 'nyeri', 'muranga', 'kajiado', 'naivasha',
+    ],
+  },
+];
+
+// Match a typed/autocompleted address to a delivery zone
+function getDeliveryZone(address: string): typeof DELIVERY_ZONES[0] | null {
+  const lower = address.toLowerCase();
+  for (const zone of DELIVERY_ZONES) {
+    if (zone.keywords.some(kw => lower.includes(kw))) {
+      return zone;
+    }
+  }
+  return null;
+}
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
@@ -30,11 +94,24 @@ const inputStyle: React.CSSProperties = {
   transition: 'border-color 200ms ease',
 };
 
+// Extend window to include google maps
+declare global {
+  interface Window {
+    google: any;
+    initGoogleMaps: () => void;
+  }
+}
+
 export default function Checkout() {
   const { items, totalPrice, totalItems, clearCart } = useCart();
   const [step, setStep] = useState<'details' | 'payment' | 'success'>('details');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [deliveryZone, setDeliveryZone] = useState<typeof DELIVERY_ZONES[0] | null>(null);
+  const [mapsLoaded, setMapsLoaded] = useState(false);
+  const addressInputRef = useRef<HTMLInputElement>(null);
+  const autocompleteRef = useRef<any>(null);
+
   const [form, setForm] = useState({
     firstName: '',
     lastName: '',
@@ -45,16 +122,73 @@ export default function Checkout() {
     notes: '',
   });
 
+  // ── Load Google Maps script
+  useEffect(() => {
+    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    if (!apiKey) {
+      console.warn('VITE_GOOGLE_MAPS_API_KEY not set — autocomplete disabled');
+      return;
+    }
+    if (window.google?.maps?.places) { setMapsLoaded(true); return; }
+
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+    script.async = true;
+    script.defer = true;
+    script.onload = () => setMapsLoaded(true);
+    document.head.appendChild(script);
+    return () => {
+      if (document.head.contains(script)) document.head.removeChild(script);
+    };
+  }, []);
+
+  // ── Attach Autocomplete to address field
+  useEffect(() => {
+    if (!mapsLoaded || !addressInputRef.current) return;
+
+    const ac = new window.google.maps.places.Autocomplete(
+      addressInputRef.current,
+      {
+        componentRestrictions: { country: 'ke' },
+        fields: ['formatted_address', 'name'],
+      }
+    );
+    autocompleteRef.current = ac;
+
+    ac.addListener('place_changed', () => {
+      const place = ac.getPlace();
+      const formatted = place.formatted_address || place.name || '';
+      const searchText = `${place.name || ''} ${formatted}`;
+      setForm(prev => ({ ...prev, address: formatted }));
+      setDeliveryZone(getDeliveryZone(searchText));
+    });
+  }, [mapsLoaded]);
+
+  // Re-run zone detection when user types manually (no autocomplete selected)
+  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setForm(prev => ({ ...prev, address: val }));
+    const zone = getDeliveryZone(val);
+    setDeliveryZone(zone);
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  const deliveryFee = deliveryZone?.fee ?? 0;
+  const subtotal = totalPrice;
+  const total = subtotal + deliveryFee;
+
   const handleDetailsSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!deliveryZone) {
+      setError('Please enter a valid Nairobi-area delivery address so we can calculate your delivery fee.');
+      return;
+    }
+    setError('');
     setStep('payment');
   };
-
-  const total = totalPrice;
 
   const handlePesapalPay = async () => {
     setLoading(true);
@@ -78,7 +212,9 @@ export default function Checkout() {
             price: i.price,
             qty: i.quantity,
           })),
-          amount: total,
+          amount: total,           // ← includes delivery fee
+          deliveryFee,
+          deliveryZone: deliveryZone?.label,
           notes: form.notes,
         }),
       });
@@ -91,7 +227,6 @@ export default function Checkout() {
         return;
       }
 
-      // Save order details to localStorage before redirecting to PesaPal
       localStorage.setItem('pendingOrder', JSON.stringify({
         customer: {
           name: `${form.firstName} ${form.lastName}`,
@@ -103,6 +238,8 @@ export default function Checkout() {
           price: i.price,
           qty: i.quantity,
         })),
+        deliveryFee,
+        deliveryZone: deliveryZone?.label,
         total,
       }));
 
@@ -114,6 +251,7 @@ export default function Checkout() {
     }
   };
 
+  // ── SUCCESS PAGE
   if (step === 'success') {
     return (
       <div
@@ -206,7 +344,7 @@ export default function Checkout() {
 
             {/* ── STEP 1: DELIVERY DETAILS */}
             {step === 'details' && (
-              <form onSubmit={handleDetailsSubmit}>
+              <form onSubmit={handleDetailsSubmit} noValidate>
                 <div
                   className="rounded-2xl p-8"
                   style={{ backgroundColor: '#FFFFFF', border: '1px solid var(--soft-border-beige)' }}
@@ -218,6 +356,7 @@ export default function Checkout() {
                     Delivery Details
                   </h2>
 
+                  {/* Name row */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
                     {[
                       { name: 'firstName', label: 'First Name', placeholder: 'Jane' },
@@ -245,6 +384,7 @@ export default function Checkout() {
                     ))}
                   </div>
 
+                  {/* Email + Phone */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
                     <div>
                       <label
@@ -286,6 +426,7 @@ export default function Checkout() {
                     </div>
                   </div>
 
+                  {/* ── DELIVERY ADDRESS with Google Maps autocomplete */}
                   <div className="mb-5">
                     <label
                       className="block font-body font-medium text-xs mb-2 uppercase tracking-wider"
@@ -293,19 +434,68 @@ export default function Checkout() {
                     >
                       Delivery Address *
                     </label>
-                    <input
-                      type="text"
-                      name="address"
-                      value={form.address}
-                      onChange={handleChange}
-                      required
-                      placeholder="Street address, apartment, area"
-                      style={inputStyle}
-                      onFocus={e => (e.target.style.borderColor = 'var(--deep-orange)')}
-                      onBlur={e => (e.target.style.borderColor = 'var(--soft-border-beige)')}
-                    />
+                    <div style={{ position: 'relative' }}>
+                      <MapPin
+                        size={15}
+                        style={{
+                          position: 'absolute',
+                          left: '0.85rem',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          color: deliveryZone ? 'var(--deep-orange)' : 'var(--warm-taupe)',
+                          pointerEvents: 'none',
+                          zIndex: 1,
+                        }}
+                      />
+                      <input
+                        ref={addressInputRef}
+                        type="text"
+                        name="address"
+                        value={form.address}
+                        onChange={handleAddressChange}
+                        required
+                        placeholder="Start typing your estate or street…"
+                        style={{
+                          ...inputStyle,
+                          paddingLeft: '2.25rem',
+                        }}
+                        onFocus={e => (e.target.style.borderColor = 'var(--deep-orange)')}
+                        onBlur={e => (e.target.style.borderColor = deliveryZone ? 'var(--deep-orange)' : 'var(--soft-border-beige)')}
+                        autoComplete="off"
+                      />
+                    </div>
+
+                    {/* Zone pill — appears once address is recognised */}
+                    {form.address && (
+                      <div className="mt-2">
+                        {deliveryZone ? (
+                          <div
+                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-body font-semibold"
+                            style={{
+                              backgroundColor: '#FFF4EE',
+                              color: 'var(--deep-orange)',
+                              border: '1px solid var(--deep-orange)',
+                            }}
+                          >
+                            <Truck size={12} />
+                            {deliveryZone.label} — Delivery: KSh {deliveryZone.fee.toLocaleString()}
+                          </div>
+                        ) : (
+                          <p className="text-xs font-body" style={{ color: '#B45309' }}>
+                            ⚠ Area not recognised — please select from the suggestions or type your estate name clearly.
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    {!mapsLoaded && import.meta.env.VITE_GOOGLE_MAPS_API_KEY && (
+                      <p className="text-xs mt-1 font-body" style={{ color: 'var(--warm-taupe)' }}>
+                        Loading address suggestions…
+                      </p>
+                    )}
                   </div>
 
+                  {/* City */}
                   <div className="mb-5">
                     <label
                       className="block font-body font-medium text-xs mb-2 uppercase tracking-wider"
@@ -326,6 +516,7 @@ export default function Checkout() {
                     />
                   </div>
 
+                  {/* Notes */}
                   <div className="mb-7">
                     <label
                       className="block font-body font-medium text-xs mb-2 uppercase tracking-wider"
@@ -345,9 +536,29 @@ export default function Checkout() {
                     />
                   </div>
 
-                  <button type="submit" className="btn-primary w-full justify-center">
+                  {error && (
+                    <div
+                      className="p-4 rounded-xl mb-5"
+                      style={{ backgroundColor: '#FFF7ED', border: '1px solid #FED7AA' }}
+                    >
+                      <p className="font-body text-sm" style={{ color: '#92400E' }}>{error}</p>
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    className="btn-primary w-full justify-center"
+                    disabled={!deliveryZone}
+                    style={{ opacity: deliveryZone ? 1 : 0.5, cursor: deliveryZone ? 'pointer' : 'not-allowed' }}
+                  >
                     Continue to Payment
                   </button>
+
+                  {!deliveryZone && form.address.length < 3 && (
+                    <p className="text-xs text-center mt-3 font-body" style={{ color: 'var(--warm-taupe)' }}>
+                      Enter your delivery address above to calculate your delivery fee
+                    </p>
+                  )}
                 </div>
               </form>
             )}
@@ -367,6 +578,19 @@ export default function Checkout() {
                 <p className="font-body text-sm mb-8" style={{ color: 'var(--warm-taupe)' }}>
                   All transactions are secure and encrypted.
                 </p>
+
+                {/* Delivery summary strip */}
+                {deliveryZone && (
+                  <div
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl mb-6"
+                    style={{ backgroundColor: '#FFF4EE', border: '1px solid #FDDCCA' }}
+                  >
+                    <Truck size={15} style={{ color: 'var(--deep-orange)', flexShrink: 0 }} />
+                    <span className="font-body text-sm" style={{ color: 'var(--dark-chocolate)' }}>
+                      Delivering to <strong>{form.address}</strong> — {deliveryZone.label}
+                    </span>
+                  </div>
+                )}
 
                 <div
                   className="rounded-xl p-5 mb-8"
@@ -397,19 +621,40 @@ export default function Checkout() {
                   </p>
                 </div>
 
+                {/* Amount breakdown */}
                 <div
-                  className="flex items-center justify-between p-4 rounded-xl mb-6"
-                  style={{ backgroundColor: 'var(--soft-cream)', border: '1px solid var(--soft-border-beige)' }}
+                  className="rounded-xl mb-6 overflow-hidden"
+                  style={{ border: '1px solid var(--soft-border-beige)' }}
                 >
-                  <span className="font-body font-medium text-sm" style={{ color: 'var(--charcoal)' }}>
-                    Amount to pay
-                  </span>
-                  <span
-                    className="font-body font-bold"
-                    style={{ fontSize: '1.125rem', color: 'var(--dark-chocolate)' }}
+                  <div
+                    className="flex justify-between px-5 py-3"
+                    style={{ backgroundColor: 'var(--soft-cream)' }}
                   >
-                    KSh {total.toLocaleString()}
-                  </span>
+                    <span className="font-body text-sm" style={{ color: 'var(--charcoal)' }}>Subtotal</span>
+                    <span className="font-body text-sm font-medium" style={{ color: 'var(--dark-chocolate)' }}>
+                      KSh {subtotal.toLocaleString()}
+                    </span>
+                  </div>
+                  <div
+                    className="flex justify-between px-5 py-3"
+                    style={{ backgroundColor: 'var(--soft-cream)', borderTop: '1px solid var(--soft-border-beige)' }}
+                  >
+                    <span className="font-body text-sm" style={{ color: 'var(--charcoal)' }}>
+                      Delivery ({deliveryZone?.label})
+                    </span>
+                    <span className="font-body text-sm font-medium" style={{ color: 'var(--deep-orange)' }}>
+                      KSh {deliveryFee.toLocaleString()}
+                    </span>
+                  </div>
+                  <div
+                    className="flex justify-between px-5 py-4"
+                    style={{ borderTop: '1px solid var(--soft-border-beige)', backgroundColor: '#FFFFFF' }}
+                  >
+                    <span className="font-body font-bold" style={{ color: 'var(--dark-chocolate)' }}>Total</span>
+                    <span className="font-body font-bold" style={{ fontSize: '1.125rem', color: 'var(--dark-chocolate)' }}>
+                      KSh {total.toLocaleString()}
+                    </span>
+                  </div>
                 </div>
 
                 {error && (
@@ -517,10 +762,27 @@ export default function Checkout() {
                     ))}
                   </div>
 
-                  <div className="space-y-2 pt-4" style={{ borderTop: '1px solid var(--soft-border-beige)' }}>
+                  {/* Subtotal / Delivery / Total breakdown */}
+                  <div
+                    className="space-y-2 pt-4"
+                    style={{ borderTop: '1px solid var(--soft-border-beige)' }}
+                  >
+                    <div className="flex justify-between font-body text-sm">
+                      <span style={{ color: 'var(--warm-taupe)' }}>Subtotal</span>
+                      <span style={{ color: 'var(--dark-chocolate)' }}>KSh {subtotal.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between font-body text-sm">
+                      <span style={{ color: 'var(--warm-taupe)' }}>Delivery</span>
+                      <span style={{ color: deliveryZone ? 'var(--deep-orange)' : 'var(--warm-taupe)' }}>
+                        {deliveryZone
+                          ? `KSh ${deliveryFee.toLocaleString()}`
+                          : 'Enter address'}
+                      </span>
+                    </div>
                     <div
                       className="flex justify-between font-body font-bold pt-3"
                       style={{
+                        borderTop: '1px solid var(--soft-border-beige)',
                         color: 'var(--dark-chocolate)',
                         fontSize: '1rem',
                       }}
@@ -550,6 +812,34 @@ export default function Checkout() {
                   </span>
                 </div>
               ))}
+            </div>
+
+            {/* Zone guide */}
+            <div
+              className="rounded-2xl p-5"
+              style={{ backgroundColor: '#FFFFFF', border: '1px solid var(--soft-border-beige)' }}
+            >
+              <p
+                className="font-body font-semibold text-xs uppercase tracking-wider mb-3"
+                style={{ color: 'var(--warm-taupe)' }}
+              >
+                Delivery Fees
+              </p>
+              <div className="space-y-2">
+                {DELIVERY_ZONES.map(z => (
+                  <div
+                    key={z.id}
+                    className="flex justify-between items-center text-xs font-body py-1"
+                    style={{
+                      color: deliveryZone?.id === z.id ? 'var(--deep-orange)' : 'var(--charcoal)',
+                      fontWeight: deliveryZone?.id === z.id ? 600 : 400,
+                    }}
+                  >
+                    <span>{z.label.split('—')[1]?.trim()}</span>
+                    <span>KSh {z.fee}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

@@ -432,3 +432,25 @@
   background-color: var(--soft-cream);
   color: var(--dark-chocolate);
 }
+
+/* Google Maps autocomplete dropdown */
+.pac-container {
+  z-index: 9999 !important;
+  font-family: 'Poppins', sans-serif;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e0d8;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  margin-top: 4px;
+}
+.pac-item {
+  padding: 0.6rem 1rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+.pac-item:hover {
+  background-color: #FFF4EE;
+}
+.pac-item-query {
+  font-size: 0.875rem;
+  color: #3b2a1a;
+}
