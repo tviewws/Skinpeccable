@@ -15,7 +15,7 @@ const limiter = rateLimit({
 app.use('/api/', limiter);
 
 app.use(cors({
-  origin: ['http://localhost:3000', 'https://skinpeccable.vercel.app']
+  origin: ['http://localhost:3000', 'https://skinpeccable.vercel.app', 'https://skinpeccable.co.ke', 'https://www.skinpeccable.co.ke']
 }));
 app.use(express.json());
 
