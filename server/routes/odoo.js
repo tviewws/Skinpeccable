@@ -269,4 +269,69 @@ router.post('/order', async (req, res) => {
   }
 });
 
+// GET /api/odoo/discount/validate
+// Validates a discount code against Odoo loyalty programs
+// Query: ?code=MULDIBO5&subtotal=3500
+router.get('/discount/validate', async (req, res) => {
+  const { code, subtotal = 0 } = req.query;
+
+  if (!code) return res.json({ success: false, error: 'No code provided.' });
+
+  try {
+    // 1. Find the coupon by code
+    const coupon = await odooCall('loyalty.card', 'search_read',
+      [[['code', '=', code.toUpperCase()]]],
+      { fields: ['id', 'code', 'program_id', 'expiration_date'], limit: 1 }
+    );
+
+    if (!coupon || coupon.length === 0)
+      return res.json({ success: false, error: 'Invalid discount code.' });
+
+    const programId = coupon[0].program_id[0];
+
+    // 2. Check expiry
+    if (coupon[0].expiration_date && new Date(coupon[0].expiration_date) < new Date())
+      return res.json({ success: false, error: 'This discount code has expired.' });
+
+    // 3. Check minimum spend rule
+    const rules = await odooCall('loyalty.rule', 'search_read',
+      [[['program_id', '=', programId]]],
+      { fields: ['minimum_qty', 'minimum_amount'], limit: 1 }
+    );
+
+    if (rules.length > 0 && Number(subtotal) < rules[0].minimum_amount) {
+      return res.json({
+        success: false,
+        error: `Minimum spend of KSh ${rules[0].minimum_amount.toLocaleString()} required for this code.`,
+      });
+    }
+
+    // 4. Get the reward
+    const rewards = await odooCall('loyalty.reward', 'search_read',
+      [[['program_id', '=', programId]]],
+      { fields: ['discount', 'discount_mode', 'reward_type'], limit: 1 }
+    );
+
+    if (!rewards.length)
+      return res.json({ success: false, error: 'No reward found for this code.' });
+
+    const reward = rewards[0];
+
+    return res.json({
+      success: true,
+      discount: {
+        type: reward.discount_mode === 'fixed_amount' ? 'fixed' : 'percentage',
+        value: reward.discount,
+        label: reward.discount_mode === 'fixed_amount'
+          ? `KSh ${reward.discount.toLocaleString()} off`
+          : `${reward.discount}% off`,
+      },
+    });
+
+  } catch (err) {
+    console.error('Discount validation error:', err.message);
+    return res.json({ success: false, error: 'Could not validate code. Please try again.' });
+  }
+});
+
 module.exports = router;

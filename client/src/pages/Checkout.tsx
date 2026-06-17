@@ -260,11 +260,7 @@ export default function Checkout() {
     setDiscountResult(null);
 
     try {
-      const res = await fetch(`${BACKEND_URL}/api/discounts/validate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code }),
-      });
+      const res = await fetch(`${BACKEND_URL}/api/odoo/discount/validate?code=${code}&subtotal=${subtotal}`);
       const data = await res.json();
 
       if (!data.success) {
