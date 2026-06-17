@@ -676,7 +676,7 @@ export default function Checkout() {
                       value={form.notes}
                       onChange={handleChange}
                       rows={3}
-                      placeholder="Any special instructions for your order?"
+                      placeholder={['pickup_mtaani', 'wells_fargo'].includes(deliveryZone?.id || '') ? 'Please enter your exact location / nearest stage for collection' : 'Any special instructions for your order?'}
                       style={{ ...inputStyle, resize: 'vertical' }}
                       onFocus={e => (e.target.style.borderColor = 'var(--deep-orange)')}
                       onBlur={e => (e.target.style.borderColor = 'var(--soft-border-beige)')}
