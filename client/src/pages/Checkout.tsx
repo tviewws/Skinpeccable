@@ -505,19 +505,23 @@ export default function Checkout() {
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
                       {[
                         { id: 'address', label: '🏠 Home Delivery', sublabel: 'Enter your address below' },
+                        { id: 'zone0', label: '🏪 In-Store Collection', sublabel: 'Lavington Mall — Free' },
                         { id: 'pickup_mtaani', label: '📦 Pick Up Mtaani', sublabel: 'Next day — KSh 250' },
                         { id: 'wells_fargo', label: '🚚 Wells Fargo', sublabel: 'Next day — KSh 350' },
                       ].map(method => {
                         const isActive =
                           method.id === 'address'
-                            ? !['pickup_mtaani', 'wells_fargo'].includes(deliveryZone?.id || '')
+                            ? !['zone0', 'pickup_mtaani', 'wells_fargo'].includes(deliveryZone?.id || '')
                             : deliveryZone?.id === method.id;
                         return (
                           <button
                             key={method.id}
                             type="button"
                             onClick={() => {
-                              if (method.id === 'pickup_mtaani') {
+                              if (method.id === 'zone0') {
+                                setDeliveryZone(DELIVERY_ZONES.find(z => z.id === 'zone0') || null);
+                                setForm(prev => ({ ...prev, address: 'In-Store Collection — Lavington Mall' }));
+                              } else if (method.id === 'pickup_mtaani') {
                                 setDeliveryZone(DELIVERY_ZONES.find(z => z.id === 'pickup_mtaani') || null);
                                 setForm(prev => ({ ...prev, address: 'Pick Up Mtaani' }));
                               } else if (method.id === 'wells_fargo') {
@@ -551,7 +555,7 @@ export default function Checkout() {
                   </div>
 
                   {/* ── DELIVERY ADDRESS — only shown for home delivery */}
-                  {!['pickup_mtaani', 'wells_fargo'].includes(deliveryZone?.id || '') && (
+                  {!['zone0', 'pickup_mtaani', 'wells_fargo'].includes(deliveryZone?.id || '') && (
                     <div className="mb-5">
                       <label
                         className="block font-body font-medium text-xs mb-2 uppercase tracking-wider"
@@ -622,7 +626,7 @@ export default function Checkout() {
                   )}
 
                   {/* Zone confirmed pill for courier methods */}
-                  {['pickup_mtaani', 'wells_fargo'].includes(deliveryZone?.id || '') && (
+                  {['zone0', 'pickup_mtaani', 'wells_fargo'].includes(deliveryZone?.id || '') && (
                     <div className="mb-5">
                       <div
                         className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-body font-semibold"
@@ -730,7 +734,7 @@ export default function Checkout() {
                   >
                     <Truck size={15} style={{ color: 'var(--deep-orange)', flexShrink: 0 }} />
                     <span className="font-body text-sm" style={{ color: 'var(--dark-chocolate)' }}>
-                      {deliveryZone.id === 'pickup_mtaani' || deliveryZone.id === 'wells_fargo'
+                      {deliveryZone.id === 'zone0' || deliveryZone.id === 'pickup_mtaani' || deliveryZone.id === 'wells_fargo'
                         ? <><strong>{deliveryZone.label}</strong> — next day delivery</>
                         : <>Delivering to <strong>{form.address}</strong> — {deliveryZone.label}</>
                       }
