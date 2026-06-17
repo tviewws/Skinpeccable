@@ -78,6 +78,25 @@ async function findOrCreateProduct(name, price) {
   return newProduct;
 }
 
+// Find or create a dedicated delivery service product in Odoo.
+// We reuse the same product record every time and set the price per order line.
+async function findOrCreateDeliveryProduct() {
+  const existing = await odooCall('product.product', 'search_read',
+    [[['name', '=', 'Delivery Fee']]],
+    { fields: ['id', 'name'], limit: 1 }
+  );
+  if (existing.length > 0) return existing[0].id;
+
+  const newProduct = await odooCall('product.product', 'create', [{
+    name: 'Delivery Fee',
+    list_price: 0,
+    type: 'service',
+    sale_ok: true,
+    purchase_ok: false,
+  }]);
+  return newProduct;
+}
+
 // Test route
 router.get('/test', async (req, res) => {
   try {
@@ -92,11 +111,8 @@ router.get('/test', async (req, res) => {
 });
 
 // GET /api/odoo/categories
-// Fetches all product categories from Odoo that are actually used by published products,
-// and shapes them into { id, label } objects matching the frontend CATEGORIES format.
 router.get('/categories', async (req, res) => {
   try {
-    // 1. Get all published products and their category IDs
     const products = await odooCall(
       'product.template',
       'search_read',
@@ -104,7 +120,6 @@ router.get('/categories', async (req, res) => {
       { fields: ['categ_id'] }
     );
 
-    // 2. Collect unique category IDs from published products
     const categoryMap = new Map();
     for (const p of products) {
       if (p.categ_id && p.categ_id[0]) {
@@ -112,17 +127,14 @@ router.get('/categories', async (req, res) => {
       }
     }
 
-    // 3. Shape into frontend-friendly format
-    // id: lowercased, hyphenated version of the name (matches how products.category is set)
-    // label: original display name from Odoo
     const categories = [
-      { id: 'all', label: 'All Products' }, // always first
+      { id: 'all', label: 'All Products' },
       ...[...categoryMap.entries()]
         .map(([, name]) => ({
           id: name.toLowerCase().replace(/\s+/g, '-'),
           label: name,
         }))
-        .sort((a, b) => a.label.localeCompare(b.label)), // alphabetical
+        .sort((a, b) => a.label.localeCompare(b.label)),
     ];
 
     res.json({ success: true, categories });
@@ -133,7 +145,8 @@ router.get('/categories', async (req, res) => {
 });
 
 // GET /api/odoo/products
-// Fetches all published products from Odoo and shapes them to match the frontend Product interface
+// Fetches all published products from Odoo and shapes them to match the frontend Product interface.
+// qty_available is used to mark products as SOLD OUT when stock is zero or below.
 router.get('/products', async (req, res) => {
   try {
     const products = await odooCall(
@@ -149,6 +162,7 @@ router.get('/products', async (req, res) => {
           'list_price',
           'image_1920',
           'categ_id',
+          'qty_available',
         ],
       }
     );
@@ -161,12 +175,14 @@ router.get('/products', async (req, res) => {
         description = p.description_sale.replace(/<[^>]*>/g, '').trim();
       }
 
+      const inStock = p.qty_available > 0;
+
       return {
         id: `odoo_${p.id}`,
         name: p.name,
         brand: 'Skinpeccable',
         category: p.categ_id?.[1]?.toLowerCase().replace(/\s+/g, '-') || 'all',
-        price: p.list_price > 0 ? p.list_price : 'SOLD OUT',
+        price: p.list_price > 0 && inStock ? p.list_price : 'SOLD OUT',
         description,
         image: p.image_1920
           ? `data:image/png;base64,${p.image_1920}`
@@ -182,16 +198,28 @@ router.get('/products', async (req, res) => {
 });
 
 // POST /api/odoo/order
+// Creates a confirmed sale order in Odoo, including a delivery fee line item.
+// Expected body:
+// {
+//   customer: { name, email, phone, address, city },
+//   items: [{ name, price, qty }],
+//   total: number,          // full amount including delivery
+//   deliveryFee: number,    // e.g. 300
+//   deliveryZone: string,   // e.g. "Zone 2 — Central Nairobi"
+//   notes: string
+// }
 router.post('/order', async (req, res) => {
   try {
-    const { customer, items, total } = req.body;
+    const { customer, items, total, deliveryFee, deliveryZone, notes } = req.body;
 
+    // 1. Find or create the customer in Odoo
     const partnerId = await findOrCreateCustomer(
-      customer.name,
+      customer.name || `${customer.firstName} ${customer.lastName}`,
       customer.email,
       customer.phone || ''
     );
 
+    // 2. Build order lines for each product
     const orderLines = await Promise.all(items.map(async (item) => {
       const productId = await findOrCreateProduct(item.name, item.price);
       return [0, 0, {
@@ -202,18 +230,37 @@ router.post('/order', async (req, res) => {
       }];
     }));
 
+    // 3. Add delivery fee as a separate line item (if applicable)
+    if (deliveryFee && deliveryFee > 0) {
+      const deliveryProductId = await findOrCreateDeliveryProduct();
+      orderLines.push([0, 0, {
+        product_id: deliveryProductId,
+        name: `Delivery — ${deliveryZone || 'Standard'}`,
+        product_uom_qty: 1,
+        price_unit: deliveryFee,
+      }]);
+    }
+
+    // 4. Create the sale order
     const saleOrderId = await odooCall('sale.order', 'create', [{
       partner_id: partnerId,
       order_line: orderLines,
-      note: `Order placed via Skinpeccable website. Total: KES ${total}`
+      note: [
+        notes ? `Customer note: ${notes}` : '',
+        `Customer phone: ${customer.phone || 'N/A'}`,
+        `Delivery zone: ${deliveryZone || 'N/A'}`,
+        `Delivery address: ${customer.address || ''}${customer.city ? ', ' + customer.city : ''}`,
+        `Order total (incl. delivery): KES ${total}`,
+      ].filter(Boolean).join('\n'),
     }]);
 
+    // 5. Confirm the order (moves it from draft to confirmed in Odoo)
     await odooCall('sale.order', 'action_confirm', [[saleOrderId]]);
 
     res.json({
       success: true,
       sale_order_id: saleOrderId,
-      message: `Order #${saleOrderId} created in Odoo`
+      message: `Order #${saleOrderId} created in Odoo`,
     });
 
   } catch (err) {

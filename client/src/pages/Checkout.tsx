@@ -1,7 +1,7 @@
 /*
  * SKINPECCABLE GLOWTIQUE — Checkout Page
  * Design: "Structured Warmth" — clean checkout, order summary, Pesapal payment
- * Updated: Google Maps autocomplete + zone-based delivery fee
+ * Updated: Google Maps autocomplete + zone-based delivery fee (client zones v2)
  */
 
 import { useState, useEffect, useRef } from 'react';
@@ -20,55 +20,91 @@ import { useCart } from '@/contexts/CartContext';
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
 // ─────────────────────────────────────────────
-// DELIVERY ZONES — based on Nairobi corridors
-// Update prices here anytime your client changes rates
+// DELIVERY ZONES — client-defined Nairobi zones
+// Update prices / keywords here when rates change
 // ─────────────────────────────────────────────
 const DELIVERY_ZONES = [
   {
-    id: 'cbd',
-    label: 'Zone 1 — CBD & Near',
+    id: 'zone0',
+    label: 'Zone 0 — Store Pick-Up',
+    fee: 0,
+    keywords: [
+      'lavington mall', 'pick up', 'pickup', 'collect in store', 'store pickup',
+    ],
+  },
+  {
+    id: 'zone1',
+    label: 'Zone 1 — Lavington & Surrounds',
     fee: 200,
     keywords: [
-      'nairobi cbd', 'city centre', 'city center', 'westlands', 'kilimani',
-      'upper hill', 'parklands', 'ngara', 'pangani', 'mlango kubwa',
-      'eastleigh', 'river road', 'downtown', 'kimathi', 'kenyatta avenue',
+      'lavington', 'denis pritt', 'kileleshwa', 'valley arcade',
+      'riverside drive', 'spring valley', 'abc place', 'mpaka road',
+      'parklands',
     ],
   },
   {
-    id: 'inner',
-    label: 'Zone 2 — Inner Estates',
+    id: 'zone2',
+    label: 'Zone 2 — Central Nairobi',
     fee: 300,
     keywords: [
-      'ngong road', 'thika road', "lang'ata", 'langata', 'south b', 'south c',
-      'karen', 'hurlingham', 'lavington', 'kileleshwa', 'spring valley',
-      'gigiri', 'muthaiga', 'runda', 'ridgeways', 'kasarani', 'roysambu',
-      'kahawa', 'zimmerman', 'githurai', 'lucky summer', 'baba dogo',
-      'umoja', 'donholm', 'komarock', 'embakasi', 'pipeline', 'imara daima',
-      'buruburu', 'jogoo road', 'waiyaki way', 'limuru road', 'kiambu road',
-      'mombasa road', 'enterprise road',
+      'hurlingham', 'yaya', 'kilimani', 'upper hill', 'upperhill',
+      'serena', 'cbd', 'city centre', 'city center', 'chiromo',
+      'nairobi hospital', 'knh', 'prestige', 'strathmore', 'coptic',
+      'madaraka', 'oshwal', 'highrise', 'nairobi west', 'nyayo',
     ],
   },
   {
-    id: 'outer',
-    label: 'Zone 3 — Outer Nairobi',
-    fee: 400,
+    id: 'zone3',
+    label: 'Zone 3 — Mid Nairobi',
+    fee: 350,
     keywords: [
-      'rongai', 'ruaka', 'ruiru', 'kikuyu', 'dagoretti', 'kawangware',
-      'kangemi', 'kabete', 'uthiru', 'kinoo', 'banana', 'juja',
-      'syokimau', 'athi river', 'mlolongo', 'kitengela',
-      'ngong', 'kiserian', 'ongata rongai',
+      'westgate', 'ngara', 'eastleigh', 'pangani', 'muthaiga', 'utalii',
+      't-mall', 'capital centre', 'dci', 'balozi', 'aga khan', 'mp shah',
+      'dagoretti', 'buruburu', 'donholm', 'jericho', 'kasarani', 'kangemi',
+      'highridge', 'westlands',
     ],
   },
   {
-    id: 'outside',
-    label: 'Zone 4 — Outside Nairobi',
+    id: 'zone4',
+    label: 'Zone 4 — Outer Nairobi',
+    fee: 500,
+    keywords: [
+      'trm', 'thika road', 'thika rd', 'garden city', 'usiu', 'zimmerman',
+      'githurai', 'kahawa wendani', 'kariobangi', 'lucky summer',
+      'loresho', 'peponi', 'uthiru', 'kabete', 'delta', 'village market',
+      'runda', 'gigiri', 'karura',
+    ],
+  },
+  {
+    id: 'zone5',
+    label: 'Zone 5 — Nairobi Environs',
     fee: 600,
     keywords: [
-      'kiambu', 'thika', 'limuru', 'machakos', 'nakuru', 'mombasa',
-      'kisumu', 'eldoret', 'nyeri', 'muranga', 'kajiado', 'naivasha',
+      'ruaka', 'ndenderu', 'ruiru', 'syokimau', 'mlolongo', 'embakasi',
+      'pipeline', 'tassia', 'ngong road', 'rongai', 'athi river',
+      'kitengela', 'ngong', 'kahawa', 'juja',
+    ],
+  },
+  {
+    id: 'pickup_mtaani',
+    label: 'Pick Up Mtaani — Next Day',
+    fee: 250,
+    keywords: [
+      'pick up mtaani', 'pickup mtaani', 'mtaani',
+    ],
+  },
+  {
+    id: 'wells_fargo',
+    label: 'Wells Fargo — Next Day',
+    fee: 350,
+    keywords: [
+      'wells fargo', 'wellsfargo',
     ],
   },
 ];
+
+// Zones shown in the sidebar fee guide (exclude zone0 — it's free / pick-up only)
+const DISPLAY_ZONES = DELIVERY_ZONES.filter(z => z.id !== 'zone0');
 
 // Match a typed/autocompleted address to a delivery zone
 function getDeliveryZone(address: string): typeof DELIVERY_ZONES[0] | null {
@@ -195,6 +231,38 @@ export default function Checkout() {
     setError('');
 
     try {
+      // 1. Create order in Odoo first
+      const odooRes = await fetch(`${BACKEND_URL}/api/odoo/order`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customer: {
+            name: `${form.firstName} ${form.lastName}`,
+            email: form.email,
+            phone: form.phone,
+            address: form.address,
+            city: form.city,
+          },
+          items: items.map(i => ({
+            name: i.name,
+            price: i.price,
+            qty: i.quantity,
+          })),
+          total,
+          deliveryFee,
+          deliveryZone: deliveryZone?.label,
+          notes: form.notes,
+        }),
+      });
+
+      const odooData = await odooRes.json();
+
+      if (!odooData.success) {
+        // Log the error but don't block payment — order can be manually created if needed
+        console.error('Odoo order creation failed:', odooData.error);
+      }
+
+      // 2. Initiate Pesapal payment
       const res = await fetch(`${BACKEND_URL}/api/payments/pesapal/initiate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -212,7 +280,7 @@ export default function Checkout() {
             price: i.price,
             qty: i.quantity,
           })),
-          amount: total,           // ← includes delivery fee
+          amount: total,
           deliveryFee,
           deliveryZone: deliveryZone?.label,
           notes: form.notes,
@@ -426,74 +494,149 @@ export default function Checkout() {
                     </div>
                   </div>
 
-                  {/* ── DELIVERY ADDRESS with Google Maps autocomplete */}
+                  {/* ── DELIVERY METHOD — Pick Up Mtaani / Wells Fargo / Address */}
                   <div className="mb-5">
                     <label
                       className="block font-body font-medium text-xs mb-2 uppercase tracking-wider"
                       style={{ color: 'var(--warm-taupe)' }}
                     >
-                      Delivery Address *
+                      Delivery Method *
                     </label>
-                    <div style={{ position: 'relative' }}>
-                      <MapPin
-                        size={15}
-                        style={{
-                          position: 'absolute',
-                          left: '0.85rem',
-                          top: '50%',
-                          transform: 'translateY(-50%)',
-                          color: deliveryZone ? 'var(--deep-orange)' : 'var(--warm-taupe)',
-                          pointerEvents: 'none',
-                          zIndex: 1,
-                        }}
-                      />
-                      <input
-                        ref={addressInputRef}
-                        type="text"
-                        name="address"
-                        value={form.address}
-                        onChange={handleAddressChange}
-                        required
-                        placeholder="Start typing your estate or street…"
-                        style={{
-                          ...inputStyle,
-                          paddingLeft: '2.25rem',
-                        }}
-                        onFocus={e => (e.target.style.borderColor = 'var(--deep-orange)')}
-                        onBlur={e => (e.target.style.borderColor = deliveryZone ? 'var(--deep-orange)' : 'var(--soft-border-beige)')}
-                        autoComplete="off"
-                      />
-                    </div>
-
-                    {/* Zone pill — appears once address is recognised */}
-                    {form.address && (
-                      <div className="mt-2">
-                        {deliveryZone ? (
-                          <div
-                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-body font-semibold"
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                      {[
+                        { id: 'address', label: '🏠 Home Delivery', sublabel: 'Enter your address below' },
+                        { id: 'pickup_mtaani', label: '📦 Pick Up Mtaani', sublabel: 'Next day — KSh 250' },
+                        { id: 'wells_fargo', label: '🚚 Wells Fargo', sublabel: 'Next day — KSh 350' },
+                      ].map(method => {
+                        const isActive =
+                          method.id === 'address'
+                            ? !['pickup_mtaani', 'wells_fargo'].includes(deliveryZone?.id || '')
+                            : deliveryZone?.id === method.id;
+                        return (
+                          <button
+                            key={method.id}
+                            type="button"
+                            onClick={() => {
+                              if (method.id === 'pickup_mtaani') {
+                                setDeliveryZone(DELIVERY_ZONES.find(z => z.id === 'pickup_mtaani') || null);
+                                setForm(prev => ({ ...prev, address: 'Pick Up Mtaani' }));
+                              } else if (method.id === 'wells_fargo') {
+                                setDeliveryZone(DELIVERY_ZONES.find(z => z.id === 'wells_fargo') || null);
+                                setForm(prev => ({ ...prev, address: 'Wells Fargo Courier' }));
+                              } else {
+                                setDeliveryZone(null);
+                                setForm(prev => ({ ...prev, address: '' }));
+                              }
+                            }}
                             style={{
-                              backgroundColor: '#FFF4EE',
-                              color: 'var(--deep-orange)',
-                              border: '1px solid var(--deep-orange)',
+                              padding: '0.75rem 1rem',
+                              borderRadius: '0.5rem',
+                              border: `2px solid ${isActive ? 'var(--deep-orange)' : 'var(--soft-border-beige)'}`,
+                              backgroundColor: isActive ? '#FFF4EE' : '#FFFFFF',
+                              cursor: 'pointer',
+                              textAlign: 'left',
+                              transition: 'all 150ms ease',
                             }}
                           >
-                            <Truck size={12} />
-                            {deliveryZone.label} — Delivery: KSh {deliveryZone.fee.toLocaleString()}
-                          </div>
-                        ) : (
-                          <p className="text-xs font-body" style={{ color: '#B45309' }}>
-                            ⚠ Area not recognised — please select from the suggestions or type your estate name clearly.
-                          </p>
-                        )}
-                      </div>
-                    )}
-
-                    {!mapsLoaded && import.meta.env.VITE_GOOGLE_MAPS_API_KEY && (
-                      <p className="text-xs mt-1 font-body" style={{ color: 'var(--warm-taupe)' }}>
-                        Loading address suggestions…
-                      </p>
-                    )}
+                            <p className="font-body font-semibold text-sm" style={{ color: 'var(--dark-chocolate)' }}>
+                              {method.label}
+                            </p>
+                            <p className="font-body text-xs mt-0.5" style={{ color: 'var(--warm-taupe)' }}>
+                              {method.sublabel}
+                            </p>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
+
+                  {/* ── DELIVERY ADDRESS — only shown for home delivery */}
+                  {!['pickup_mtaani', 'wells_fargo'].includes(deliveryZone?.id || '') && (
+                    <div className="mb-5">
+                      <label
+                        className="block font-body font-medium text-xs mb-2 uppercase tracking-wider"
+                        style={{ color: 'var(--warm-taupe)' }}
+                      >
+                        Delivery Address *
+                      </label>
+                      <div style={{ position: 'relative' }}>
+                        <MapPin
+                          size={15}
+                          style={{
+                            position: 'absolute',
+                            left: '0.85rem',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            color: deliveryZone ? 'var(--deep-orange)' : 'var(--warm-taupe)',
+                            pointerEvents: 'none',
+                            zIndex: 1,
+                          }}
+                        />
+                        <input
+                          ref={addressInputRef}
+                          type="text"
+                          name="address"
+                          value={form.address}
+                          onChange={handleAddressChange}
+                          required
+                          placeholder="Start typing your estate or street…"
+                          style={{
+                            ...inputStyle,
+                            paddingLeft: '2.25rem',
+                          }}
+                          onFocus={e => (e.target.style.borderColor = 'var(--deep-orange)')}
+                          onBlur={e => (e.target.style.borderColor = deliveryZone ? 'var(--deep-orange)' : 'var(--soft-border-beige)')}
+                          autoComplete="off"
+                        />
+                      </div>
+
+                      {/* Zone pill — appears once address is recognised */}
+                      {form.address && (
+                        <div className="mt-2">
+                          {deliveryZone ? (
+                            <div
+                              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-body font-semibold"
+                              style={{
+                                backgroundColor: '#FFF4EE',
+                                color: 'var(--deep-orange)',
+                                border: '1px solid var(--deep-orange)',
+                              }}
+                            >
+                              <Truck size={12} />
+                              {deliveryZone.label} — Delivery: KSh {deliveryZone.fee.toLocaleString()}
+                            </div>
+                          ) : (
+                            <p className="text-xs font-body" style={{ color: '#B45309' }}>
+                              ⚠ Area not recognised — please select from the suggestions or type your estate name clearly.
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      {!mapsLoaded && import.meta.env.VITE_GOOGLE_MAPS_API_KEY && (
+                        <p className="text-xs mt-1 font-body" style={{ color: 'var(--warm-taupe)' }}>
+                          Loading address suggestions…
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Zone confirmed pill for courier methods */}
+                  {['pickup_mtaani', 'wells_fargo'].includes(deliveryZone?.id || '') && (
+                    <div className="mb-5">
+                      <div
+                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-body font-semibold"
+                        style={{
+                          backgroundColor: '#FFF4EE',
+                          color: 'var(--deep-orange)',
+                          border: '1px solid var(--deep-orange)',
+                        }}
+                      >
+                        <Truck size={12} />
+                        {deliveryZone?.label} — KSh {deliveryZone?.fee.toLocaleString()}
+                      </div>
+                    </div>
+                  )}
 
                   {/* City */}
                   <div className="mb-5">
@@ -556,7 +699,7 @@ export default function Checkout() {
 
                   {!deliveryZone && form.address.length < 3 && (
                     <p className="text-xs text-center mt-3 font-body" style={{ color: 'var(--warm-taupe)' }}>
-                      Enter your delivery address above to calculate your delivery fee
+                      Select a delivery method above to continue
                     </p>
                   )}
                 </div>
@@ -587,7 +730,10 @@ export default function Checkout() {
                   >
                     <Truck size={15} style={{ color: 'var(--deep-orange)', flexShrink: 0 }} />
                     <span className="font-body text-sm" style={{ color: 'var(--dark-chocolate)' }}>
-                      Delivering to <strong>{form.address}</strong> — {deliveryZone.label}
+                      {deliveryZone.id === 'pickup_mtaani' || deliveryZone.id === 'wells_fargo'
+                        ? <><strong>{deliveryZone.label}</strong> — next day delivery</>
+                        : <>Delivering to <strong>{form.address}</strong> — {deliveryZone.label}</>
+                      }
                     </span>
                   </div>
                 )}
@@ -643,7 +789,7 @@ export default function Checkout() {
                       Delivery ({deliveryZone?.label})
                     </span>
                     <span className="font-body text-sm font-medium" style={{ color: 'var(--deep-orange)' }}>
-                      KSh {deliveryFee.toLocaleString()}
+                      {deliveryFee === 0 ? 'Free' : `KSh ${deliveryFee.toLocaleString()}`}
                     </span>
                   </div>
                   <div
@@ -775,8 +921,8 @@ export default function Checkout() {
                       <span style={{ color: 'var(--warm-taupe)' }}>Delivery</span>
                       <span style={{ color: deliveryZone ? 'var(--deep-orange)' : 'var(--warm-taupe)' }}>
                         {deliveryZone
-                          ? `KSh ${deliveryFee.toLocaleString()}`
-                          : 'Enter address'}
+                          ? deliveryFee === 0 ? 'Free' : `KSh ${deliveryFee.toLocaleString()}`
+                          : 'Select method'}
                       </span>
                     </div>
                     <div
@@ -826,7 +972,7 @@ export default function Checkout() {
                 Delivery Fees
               </p>
               <div className="space-y-2">
-                {DELIVERY_ZONES.map(z => (
+                {DISPLAY_ZONES.map(z => (
                   <div
                     key={z.id}
                     className="flex justify-between items-center text-xs font-body py-1"
@@ -839,6 +985,19 @@ export default function Checkout() {
                     <span>KSh {z.fee}</span>
                   </div>
                 ))}
+                <div
+                  className="flex justify-between items-center text-xs font-body py-1"
+                  style={{
+                    color: deliveryZone?.id === 'zone0' ? 'var(--deep-orange)' : 'var(--charcoal)',
+                    fontWeight: deliveryZone?.id === 'zone0' ? 600 : 400,
+                    borderTop: '1px solid var(--soft-border-beige)',
+                    marginTop: '0.25rem',
+                    paddingTop: '0.5rem',
+                  }}
+                >
+                  <span>Store Pick-Up (Lavington Mall)</span>
+                  <span style={{ color: 'green' }}>Free</span>
+                </div>
               </div>
             </div>
           </div>
