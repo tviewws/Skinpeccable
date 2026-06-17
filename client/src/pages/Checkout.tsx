@@ -960,46 +960,7 @@ export default function Checkout() {
               ))}
             </div>
 
-            {/* Zone guide */}
-            <div
-              className="rounded-2xl p-5"
-              style={{ backgroundColor: '#FFFFFF', border: '1px solid var(--soft-border-beige)' }}
-            >
-              <p
-                className="font-body font-semibold text-xs uppercase tracking-wider mb-3"
-                style={{ color: 'var(--warm-taupe)' }}
-              >
-                Delivery Fees
-              </p>
-              <div className="space-y-2">
-                {DISPLAY_ZONES.map(z => (
-                  <div
-                    key={z.id}
-                    className="flex justify-between items-center text-xs font-body py-1"
-                    style={{
-                      color: deliveryZone?.id === z.id ? 'var(--deep-orange)' : 'var(--charcoal)',
-                      fontWeight: deliveryZone?.id === z.id ? 600 : 400,
-                    }}
-                  >
-                    <span>{z.label.split('—')[1]?.trim()}</span>
-                    <span>KSh {z.fee}</span>
-                  </div>
-                ))}
-                <div
-                  className="flex justify-between items-center text-xs font-body py-1"
-                  style={{
-                    color: deliveryZone?.id === 'zone0' ? 'var(--deep-orange)' : 'var(--charcoal)',
-                    fontWeight: deliveryZone?.id === 'zone0' ? 600 : 400,
-                    borderTop: '1px solid var(--soft-border-beige)',
-                    marginTop: '0.25rem',
-                    paddingTop: '0.5rem',
-                  }}
-                >
-                  <span>Store Pick-Up (Lavington Mall)</span>
-                  <span style={{ color: 'green' }}>Free</span>
-                </div>
-              </div>
-            </div>
+
           </div>
         </div>
       </div>
