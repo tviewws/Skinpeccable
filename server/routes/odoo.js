@@ -269,6 +269,24 @@ router.post('/order', async (req, res) => {
   }
 });
 
+// GET /api/odoo/discount/debug
+// Temporary debug route — remove after confirming correct model/field names
+router.get('/discount/debug', async (req, res) => {
+  try {
+    const cards = await odooCall('loyalty.card', 'search_read',
+      [[]],
+      { fields: ['id', 'code', 'program_id'], limit: 10 }
+    );
+    const programs = await odooCall('loyalty.program', 'search_read',
+      [[]],
+      { fields: ['id', 'name', 'program_type'], limit: 10 }
+    );
+    res.json({ cards, programs });
+  } catch (err) {
+    res.json({ error: err.message });
+  }
+});
+
 // GET /api/odoo/discount/validate
 // Validates a discount code against Odoo loyalty programs
 // Query: ?code=MULDIBO5&subtotal=3500
