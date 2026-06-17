@@ -288,7 +288,7 @@ router.get('/discount/debug', async (req, res) => {
 });
 
 // GET /api/odoo/discount/validate
-// Validates a discount code against Odoo loyalty programs
+// Validates a discount code against Odoo loyalty programs (promo_code type)
 // Query: ?code=MULDIBO5&subtotal=3500
 router.get('/discount/validate', async (req, res) => {
   const { code, subtotal = 0 } = req.query;
@@ -296,31 +296,49 @@ router.get('/discount/validate', async (req, res) => {
   if (!code) return res.json({ success: false, error: 'No code provided.' });
 
   try {
-    // 1. Find the coupon by code
-    const coupon = await odooCall('loyalty.card', 'search_read',
+    // 1. Find the promo_code program by matching the code on loyalty.rule
+    //    For promo_code programs, the code lives on loyalty.rule (mode = 'with_code')
+    const matchingRules = await odooCall('loyalty.rule', 'search_read',
       [[['code', '=', code.toUpperCase()]]],
-      { fields: ['id', 'code', 'program_id', 'expiration_date'], limit: 1 }
+      { fields: ['id', 'program_id', 'minimum_amount', 'minimum_qty', 'code'], limit: 1 }
     );
 
-    if (!coupon || coupon.length === 0)
-      return res.json({ success: false, error: 'Invalid discount code.' });
+    // 2. Fallback: search by program name if rule code not found
+    let programId = null;
+    let minimumAmount = 0;
 
-    const programId = coupon[0].program_id[0];
+    if (matchingRules && matchingRules.length > 0) {
+      programId = matchingRules[0].program_id[0];
+      minimumAmount = matchingRules[0].minimum_amount || 0;
+    } else {
+      // Try matching against program name (e.g. MULDIBO5%)
+      const programs = await odooCall('loyalty.program', 'search_read',
+        [[['program_type', '=', 'promo_code']]],
+        { fields: ['id', 'name'], limit: 50 }
+      );
 
-    // 2. Check expiry
-    if (coupon[0].expiration_date && new Date(coupon[0].expiration_date) < new Date())
-      return res.json({ success: false, error: 'This discount code has expired.' });
+      const match = programs.find(p =>
+        p.name.toUpperCase().replace('%', '').includes(code.toUpperCase()) ||
+        code.toUpperCase().includes(p.name.toUpperCase().replace('%', ''))
+      );
 
-    // 3. Check minimum spend rule
-    const rules = await odooCall('loyalty.rule', 'search_read',
-      [[['program_id', '=', programId]]],
-      { fields: ['minimum_qty', 'minimum_amount'], limit: 1 }
-    );
+      if (!match) return res.json({ success: false, error: 'Invalid discount code.' });
 
-    if (rules.length > 0 && Number(subtotal) < rules[0].minimum_amount) {
+      programId = match.id;
+
+      // Get rules for minimum spend
+      const rules = await odooCall('loyalty.rule', 'search_read',
+        [[['program_id', '=', programId]]],
+        { fields: ['minimum_amount', 'minimum_qty'], limit: 1 }
+      );
+      minimumAmount = rules[0]?.minimum_amount || 0;
+    }
+
+    // 3. Check minimum spend
+    if (Number(subtotal) < minimumAmount) {
       return res.json({
         success: false,
-        error: `Minimum spend of KSh ${rules[0].minimum_amount.toLocaleString()} required for this code.`,
+        error: `Minimum spend of KSh ${minimumAmount.toLocaleString()} required for this code.`,
       });
     }
 
