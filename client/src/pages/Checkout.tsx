@@ -2,6 +2,7 @@
  * SKINPECCABLE GLOWTIQUE — Checkout Page
  * Design: "Structured Warmth" — clean checkout, order summary, Pesapal payment
  * Updated: Google Maps autocomplete + zone-based delivery fee (client zones v2)
+ * Updated: Scroll-to-top on payment step + discount code input
  */
 
 import { useState, useEffect, useRef } from 'react';
@@ -14,6 +15,8 @@ import {
   Truck,
   CreditCard,
   MapPin,
+  Tag,
+  X,
 } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 
@@ -130,6 +133,13 @@ const inputStyle: React.CSSProperties = {
   transition: 'border-color 200ms ease',
 };
 
+// Discount type returned from backend
+type DiscountResult = {
+  type: 'percentage' | 'fixed';
+  value: number;
+  label: string;
+};
+
 // Extend window to include google maps
 declare global {
   interface Window {
@@ -148,6 +158,13 @@ export default function Checkout() {
   const addressInputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<any>(null);
 
+  // ── Discount state
+  const [discountCode, setDiscountCode] = useState('');
+  const [discountInput, setDiscountInput] = useState('');
+  const [discountResult, setDiscountResult] = useState<DiscountResult | null>(null);
+  const [discountError, setDiscountError] = useState('');
+  const [discountLoading, setDiscountLoading] = useState(false);
+
   const [form, setForm] = useState({
     firstName: '',
     lastName: '',
@@ -157,6 +174,13 @@ export default function Checkout() {
     city: '',
     notes: '',
   });
+
+  // ── Scroll to top when entering payment step
+  useEffect(() => {
+    if (step === 'payment') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [step]);
 
   // ── Load Google Maps script
   useEffect(() => {
@@ -212,9 +236,57 @@ export default function Checkout() {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const deliveryFee = deliveryZone?.fee ?? 0;
+  // ── Discount calculation helpers
   const subtotal = totalPrice;
-  const total = subtotal + deliveryFee;
+  const deliveryFee = deliveryZone?.fee ?? 0;
+
+  const discountAmount = (() => {
+    if (!discountResult) return 0;
+    if (discountResult.type === 'percentage') {
+      return Math.round((subtotal * discountResult.value) / 100);
+    }
+    return Math.min(discountResult.value, subtotal); // fixed — never discount below 0
+  })();
+
+  const total = subtotal + deliveryFee - discountAmount;
+
+  // ── Apply discount code
+  const handleApplyDiscount = async () => {
+    const code = discountInput.trim().toUpperCase();
+    if (!code) return;
+
+    setDiscountLoading(true);
+    setDiscountError('');
+    setDiscountResult(null);
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/discounts/validate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code }),
+      });
+      const data = await res.json();
+
+      if (!data.success) {
+        setDiscountError(data.error || 'Invalid discount code. Please try again.');
+      } else {
+        setDiscountResult(data.discount);
+        setDiscountCode(code);
+      }
+    } catch {
+      setDiscountError('Could not validate the code. Please check your connection and try again.');
+    } finally {
+      setDiscountLoading(false);
+    }
+  };
+
+  // ── Remove applied discount
+  const handleRemoveDiscount = () => {
+    setDiscountResult(null);
+    setDiscountCode('');
+    setDiscountInput('');
+    setDiscountError('');
+  };
 
   const handleDetailsSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -252,6 +324,8 @@ export default function Checkout() {
           deliveryFee,
           deliveryZone: deliveryZone?.label,
           notes: form.notes,
+          discountCode: discountCode || null,
+          discountAmount: discountAmount || null,
         }),
       });
 
@@ -284,6 +358,8 @@ export default function Checkout() {
           deliveryFee,
           deliveryZone: deliveryZone?.label,
           notes: form.notes,
+          discountCode: discountCode || null,
+          discountAmount: discountAmount || null,
         }),
       });
 
@@ -308,6 +384,8 @@ export default function Checkout() {
         })),
         deliveryFee,
         deliveryZone: deliveryZone?.label,
+        discountCode: discountCode || null,
+        discountAmount: discountAmount || null,
         total,
       }));
 
@@ -742,8 +820,9 @@ export default function Checkout() {
                   </div>
                 )}
 
+                {/* Pesapal payment box */}
                 <div
-                  className="rounded-xl p-5 mb-8"
+                  className="rounded-xl p-5 mb-6"
                   style={{
                     border: '2px solid var(--deep-orange)',
                     backgroundColor: '#FFF8F4',
@@ -771,6 +850,97 @@ export default function Checkout() {
                   </p>
                 </div>
 
+                {/* ── DISCOUNT CODE */}
+                <div className="mb-6">
+                  <label
+                    className="block font-body font-medium text-xs mb-2 uppercase tracking-wider"
+                    style={{ color: 'var(--warm-taupe)' }}
+                  >
+                    Discount Code
+                  </label>
+
+                  {discountResult ? (
+                    /* Applied state — show green pill with remove button */
+                    <div
+                      className="flex items-center justify-between px-4 py-3 rounded-xl"
+                      style={{
+                        backgroundColor: '#F0FDF4',
+                        border: '1px solid #86EFAC',
+                      }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Tag size={14} style={{ color: '#16A34A' }} />
+                        <span className="font-body font-semibold text-sm" style={{ color: '#15803D' }}>
+                          {discountCode}
+                        </span>
+                        <span className="font-body text-sm" style={{ color: '#16A34A' }}>
+                          — {discountResult.label} applied
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleRemoveDiscount}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          padding: '2px',
+                          color: '#16A34A',
+                          display: 'flex',
+                          alignItems: 'center',
+                        }}
+                        title="Remove discount"
+                      >
+                        <X size={15} />
+                      </button>
+                    </div>
+                  ) : (
+                    /* Input state */
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={discountInput}
+                        onChange={e => {
+                          setDiscountInput(e.target.value.toUpperCase());
+                          setDiscountError('');
+                        }}
+                        onKeyDown={e => e.key === 'Enter' && handleApplyDiscount()}
+                        placeholder="Enter code e.g. GLOW10"
+                        style={{ ...inputStyle, flex: 1 }}
+                        onFocus={e => (e.target.style.borderColor = 'var(--deep-orange)')}
+                        onBlur={e => (e.target.style.borderColor = 'var(--soft-border-beige)')}
+                      />
+                      <button
+                        type="button"
+                        onClick={handleApplyDiscount}
+                        disabled={discountLoading || !discountInput.trim()}
+                        style={{
+                          fontFamily: "'Poppins', sans-serif",
+                          fontSize: '0.8rem',
+                          fontWeight: 600,
+                          padding: '0.75rem 1.25rem',
+                          borderRadius: '0.375rem',
+                          border: 'none',
+                          backgroundColor: discountInput.trim() ? 'var(--dark-chocolate)' : 'var(--soft-border-beige)',
+                          color: discountInput.trim() ? '#FFFFFF' : 'var(--warm-taupe)',
+                          cursor: discountInput.trim() ? 'pointer' : 'not-allowed',
+                          whiteSpace: 'nowrap',
+                          transition: 'background-color 150ms ease',
+                          flexShrink: 0,
+                        }}
+                      >
+                        {discountLoading ? '…' : 'Apply'}
+                      </button>
+                    </div>
+                  )}
+
+                  {discountError && (
+                    <p className="font-body text-xs mt-2" style={{ color: '#DC2626' }}>
+                      {discountError}
+                    </p>
+                  )}
+                </div>
+
                 {/* Amount breakdown */}
                 <div
                   className="rounded-xl mb-6 overflow-hidden"
@@ -796,6 +966,23 @@ export default function Checkout() {
                       {deliveryFee === 0 ? 'Free' : `KSh ${deliveryFee.toLocaleString()}`}
                     </span>
                   </div>
+
+                  {/* Discount line — only shown when a code is applied */}
+                  {discountResult && (
+                    <div
+                      className="flex justify-between px-5 py-3"
+                      style={{ backgroundColor: '#F0FDF4', borderTop: '1px solid var(--soft-border-beige)' }}
+                    >
+                      <span className="font-body text-sm flex items-center gap-1.5" style={{ color: '#15803D' }}>
+                        <Tag size={12} />
+                        Discount ({discountCode})
+                      </span>
+                      <span className="font-body text-sm font-medium" style={{ color: '#15803D' }}>
+                        − KSh {discountAmount.toLocaleString()}
+                      </span>
+                    </div>
+                  )}
+
                   <div
                     className="flex justify-between px-5 py-4"
                     style={{ borderTop: '1px solid var(--soft-border-beige)', backgroundColor: '#FFFFFF' }}
@@ -912,7 +1099,7 @@ export default function Checkout() {
                     ))}
                   </div>
 
-                  {/* Subtotal / Delivery / Total breakdown */}
+                  {/* Subtotal / Delivery / Discount / Total breakdown */}
                   <div
                     className="space-y-2 pt-4"
                     style={{ borderTop: '1px solid var(--soft-border-beige)' }}
@@ -929,6 +1116,13 @@ export default function Checkout() {
                           : 'Select method'}
                       </span>
                     </div>
+                    {/* Discount line in sidebar — only when applied */}
+                    {discountResult && (
+                      <div className="flex justify-between font-body text-sm">
+                        <span style={{ color: '#15803D' }}>Discount</span>
+                        <span style={{ color: '#15803D' }}>− KSh {discountAmount.toLocaleString()}</span>
+                      </div>
+                    )}
                     <div
                       className="flex justify-between font-body font-bold pt-3"
                       style={{
@@ -963,8 +1157,6 @@ export default function Checkout() {
                 </div>
               ))}
             </div>
-
-
           </div>
         </div>
       </div>
