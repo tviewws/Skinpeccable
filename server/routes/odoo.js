@@ -4,8 +4,20 @@ const router = express.Router();
 
 const { ODOO_URL, ODOO_DB, ODOO_USERNAME, ODOO_API_KEY } = process.env;
 
-// Authenticate and get session cookie
+// ── Session cache — reuse cookie for 8 minutes before re-authenticating
+let sessionCache = { cookie: null, expiresAt: 0 };
+
+// ── Products / categories cache — serve from memory, refresh every 5 minutes
+let productsCache = { data: null, expiresAt: 0 };
+let categoriesCache = { data: null, expiresAt: 0 };
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+// Authenticate and get session cookie (cached)
 async function getOdooSession() {
+  if (sessionCache.cookie && Date.now() < sessionCache.expiresAt) {
+    return sessionCache.cookie;
+  }
+
   const response = await axios.post(`${ODOO_URL}/web/session/authenticate`, {
     jsonrpc: '2.0',
     method: 'call',
@@ -22,8 +34,9 @@ async function getOdooSession() {
     throw new Error('Odoo authentication failed — check your email, API key and DB name');
   }
 
-  const cookie = response.headers['set-cookie']?.[0];
-  return cookie;
+  sessionCache.cookie = response.headers['set-cookie']?.[0];
+  sessionCache.expiresAt = Date.now() + 8 * 60 * 1000; // 8 minutes
+  return sessionCache.cookie;
 }
 
 // Make an authenticated Odoo API call
@@ -113,6 +126,10 @@ router.get('/test', async (req, res) => {
 // GET /api/odoo/categories
 router.get('/categories', async (req, res) => {
   try {
+    if (categoriesCache.data && Date.now() < categoriesCache.expiresAt) {
+      return res.json({ success: true, categories: categoriesCache.data });
+    }
+
     const products = await odooCall(
       'product.template',
       'search_read',
@@ -137,6 +154,9 @@ router.get('/categories', async (req, res) => {
         .sort((a, b) => a.label.localeCompare(b.label)),
     ];
 
+    categoriesCache.data = categories;
+    categoriesCache.expiresAt = Date.now() + CACHE_TTL;
+
     res.json({ success: true, categories });
   } catch (err) {
     console.error('Odoo categories fetch error:', err.message);
@@ -149,6 +169,10 @@ router.get('/categories', async (req, res) => {
 // qty_available is used to mark products as SOLD OUT when stock is zero or below.
 router.get('/products', async (req, res) => {
   try {
+    if (productsCache.data && Date.now() < productsCache.expiresAt) {
+      return res.json({ success: true, products: productsCache.data });
+    }
+
     const products = await odooCall(
       'product.template',
       'search_read',
@@ -189,6 +213,9 @@ router.get('/products', async (req, res) => {
           : '/placeholder.png',
       };
     });
+
+    productsCache.data = shaped;
+    productsCache.expiresAt = Date.now() + CACHE_TTL;
 
     res.json({ success: true, products: shaped });
   } catch (err) {
