@@ -135,26 +135,12 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div
-          className="flex flex-col md:flex-row items-center justify-between gap-4 mt-14 pt-8"
+          className="flex flex-col md:flex-row items-center justify-center gap-4 mt-14 pt-8"
           style={{ borderTop: '1px solid rgba(234,223,207,0.12)' }}
         >
           <p className="font-body text-xs" style={{ color: 'rgba(234,223,207,0.4)' }}>
             © {new Date().getFullYear()} Skinpeccable Glowtique. All rights reserved.
           </p>
-          <div className="flex gap-6">
-            {['Privacy Policy', 'Terms of Service', 'Returns & Exchanges'].map(label => (
-              <a
-                key={label}
-                href="#"
-                className="font-body text-xs transition-colors"
-                style={{ color: 'rgba(234,223,207,0.4)' }}
-                onMouseEnter={e => ((e.target as HTMLElement).style.color = 'var(--soft-cream)')}
-                onMouseLeave={e => ((e.target as HTMLElement).style.color = 'rgba(234,223,207,0.4)')}
-              >
-                {label}
-              </a>
-            ))}
-          </div>
         </div>
       </div>
     </footer>
