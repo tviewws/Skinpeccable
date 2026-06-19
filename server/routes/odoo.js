@@ -10,7 +10,7 @@ let sessionCache = { cookie: null, expiresAt: 0 };
 // ── Products / categories cache — serve from memory, refresh every 5 minutes
 let productsCache = { data: null, expiresAt: 0 };
 let categoriesCache = { data: null, expiresAt: 0 };
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
 
 // Authenticate and get session cookie (cached)
 async function getOdooSession() {
@@ -109,6 +109,86 @@ async function findOrCreateDeliveryProduct() {
   }]);
   return newProduct;
 }
+
+// GET /api/odoo/warmup
+// Pre-fills products and categories caches. Designed to be pinged by an
+// external cron job every ~25 minutes (just under the 30-minute TTL) so
+// real visitors never hit a cold cache.
+router.get('/warmup', async (req, res) => {
+  try {
+    const products = await odooCall(
+      'product.template',
+      'search_read',
+      [[['is_published', '=', true]]],
+      {
+        fields: [
+          'id',
+          'name',
+          'description',
+          'description_sale',
+          'list_price',
+          'image_1920',
+          'categ_id',
+          'qty_available',
+        ],
+      }
+    );
+
+    const shaped = products.map((p) => {
+      let description = '';
+      if (p.description && typeof p.description === 'string') {
+        description = p.description.replace(/<[^>]*>/g, '').trim();
+      } else if (p.description_sale && typeof p.description_sale === 'string') {
+        description = p.description_sale.replace(/<[^>]*>/g, '').trim();
+      }
+
+      const inStock = p.qty_available > 0;
+
+      return {
+        id: `odoo_${p.id}`,
+        name: p.name,
+        brand: 'Skinpeccable',
+        category: p.categ_id?.[1]?.toLowerCase().replace(/\s+/g, '-') || 'all',
+        price: p.list_price > 0 && inStock ? p.list_price : 'SOLD OUT',
+        description,
+        image: p.image_1920
+          ? `data:image/png;base64,${p.image_1920}`
+          : '/placeholder.png',
+      };
+    });
+
+    productsCache.data = shaped;
+    productsCache.expiresAt = Date.now() + CACHE_TTL;
+
+    const categoryMap = new Map();
+    for (const p of products) {
+      if (p.categ_id && p.categ_id[0]) {
+        categoryMap.set(p.categ_id[0], p.categ_id[1]);
+      }
+    }
+
+    const categories = [
+      { id: 'all', label: 'All Products' },
+      ...[...categoryMap.entries()]
+        .map(([, name]) => ({
+          id: name.toLowerCase().replace(/\s+/g, '-'),
+          label: name,
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label)),
+    ];
+
+    categoriesCache.data = categories;
+    categoriesCache.expiresAt = Date.now() + CACHE_TTL;
+
+    res.json({
+      success: true,
+      message: `Warmed up cache with ${shaped.length} products and ${categories.length} categories`,
+    });
+  } catch (err) {
+    console.error('Odoo warmup error:', err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
 
 // Test route
 router.get('/test', async (req, res) => {
