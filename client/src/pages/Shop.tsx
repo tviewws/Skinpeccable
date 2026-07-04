@@ -24,6 +24,11 @@ interface Category {
   label: string;
 }
 
+interface Tag {
+  id: number;
+  name: string;
+}
+
 const FALLBACK_CATEGORIES: Category[] = [
   { id: 'all', label: 'All Products' },
 ];
@@ -55,6 +60,21 @@ async function fetchOdooCategories(): Promise<Category[]> {
   } catch (err) {
     console.error('fetchOdooCategories error:', err);
     return FALLBACK_CATEGORIES;
+  }
+}
+
+async function fetchOdooTags(): Promise<Tag[]> {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/odoo/tags`);
+    const data = await res.json();
+    if (!data.success) {
+      console.error('Failed to fetch Odoo tags:', data.error);
+      return [];
+    }
+    return data.tags as Tag[];
+  } catch (err) {
+    console.error('fetchOdooTags error:', err);
+    return [];
   }
 }
 
@@ -226,15 +246,17 @@ export default function Shop() {
   const searchStr = useSearch();
 
   const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [activeConcern, setActiveConcern] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc' | 'name'>('default');
 
   const [odooProducts, setOdooProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>(FALLBACK_CATEGORIES);
+  const [tags, setTags] = useState<Tag[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [loadingCategories, setLoadingCategories] = useState(true);
 
-  // Fetch products and categories in parallel
+  // Fetch products, categories and concern tags in parallel
   useEffect(() => {
     fetchOdooProducts().then((products) => {
       setOdooProducts(products);
@@ -244,6 +266,10 @@ export default function Shop() {
     fetchOdooCategories().then((cats) => {
       setCategories(cats);
       setLoadingCategories(false);
+    });
+
+    fetchOdooTags().then((fetchedTags) => {
+      setTags(fetchedTags);
     });
   }, []);
 
@@ -259,7 +285,15 @@ export default function Shop() {
 
   const handleCategoryChange = (catId: string) => {
     setSearchQuery('');
+    setActiveConcern(null);
     setActiveCategory(catId);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleConcernChange = (tagId: number) => {
+    setSearchQuery('');
+    setActiveCategory('all');
+    setActiveConcern(prev => (prev === tagId ? null : tagId));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -270,6 +304,10 @@ export default function Shop() {
       products = odooProducts.filter(p =>
         p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.brand.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    } else if (activeConcern !== null) {
+      products = odooProducts.filter(p =>
+        ((p as any).tagIds as number[] | undefined)?.includes(activeConcern)
       );
     } else {
       products = activeCategory === 'all'
@@ -297,10 +335,13 @@ export default function Shop() {
       default:
         return sorted;
     }
-  }, [activeCategory, searchQuery, sortBy, odooProducts]);
+  }, [activeCategory, activeConcern, searchQuery, sortBy, odooProducts]);
 
-  const activeCategoryLabel =
-    categories.find(c => c.id === activeCategory)?.label || 'All Products';
+  const activeConcernLabel = tags.find(t => t.id === activeConcern)?.name;
+
+  const activeCategoryLabel = activeConcern !== null
+    ? `Shop by Concern — ${activeConcernLabel || ''}`
+    : categories.find(c => c.id === activeCategory)?.label || 'All Products';
 
   return (
     <div>
@@ -357,7 +398,7 @@ export default function Shop() {
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {categories.map(cat => {
-              const isActive = activeCategory === cat.id;
+              const isActive = activeCategory === cat.id && activeConcern === null;
               return (
                 <button
                   key={cat.id}
@@ -402,7 +443,7 @@ export default function Shop() {
             </p>
             <nav className="flex flex-col gap-1">
               {categories.map(cat => {
-                const isActive = activeCategory === cat.id;
+                const isActive = activeCategory === cat.id && activeConcern === null;
                 return (
                   <button
                     key={cat.id}
@@ -424,6 +465,50 @@ export default function Shop() {
                 );
               })}
             </nav>
+
+            {tags.length > 0 && (
+              <>
+                <div
+                  style={{
+                    height: '1px',
+                    backgroundColor: 'var(--soft-border-beige)',
+                    margin: '1.25rem 0',
+                  }}
+                />
+                <div className="flex items-center gap-2 mb-4">
+                  <p
+                    className="font-body font-semibold tracking-widest uppercase"
+                    style={{ fontSize: '0.65rem', color: 'var(--warm-taupe)', letterSpacing: '0.18em' }}
+                  >
+                    Shop by Concern
+                  </p>
+                </div>
+                <nav className="flex flex-col gap-1">
+                  {tags.map(tag => {
+                    const isActive = activeConcern === tag.id;
+                    return (
+                      <button
+                        key={tag.id}
+                        onClick={() => handleConcernChange(tag.id)}
+                        className="text-left font-body font-medium py-2.5 px-3 rounded transition-colors duration-200 cursor-pointer w-full"
+                        style={{
+                          fontSize: '0.875rem',
+                          color: isActive ? 'var(--dark-chocolate)' : 'var(--warm-taupe)',
+                          backgroundColor: isActive ? 'var(--soft-cream)' : 'transparent',
+                          borderTop: 'none',
+                          borderRight: 'none',
+                          borderBottom: 'none',
+                          borderLeft: isActive ? '2px solid var(--deep-orange)' : '2px solid transparent',
+                          outline: 'none',
+                        }}
+                      >
+                        {tag.name}
+                      </button>
+                    );
+                  })}
+                </nav>
+              </>
+            )}
           </div>
         </aside>
 
