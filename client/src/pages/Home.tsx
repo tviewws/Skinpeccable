@@ -169,50 +169,81 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── ANNOUNCEMENT / NEW ARRIVALS BANNER (dynamic, managed in Odoo) ── */}
+      {/* ── ANNOUNCEMENT / NEW ARRIVALS SPOTLIGHT (dynamic, managed in Odoo) ── */}
       {banners.length > 0 && (
-        <section style={{ backgroundColor: 'var(--dark-chocolate)' }}>
-          {banners.map((banner) => (
-            <div
-              key={banner.id}
-              className="container flex flex-col md:flex-row items-center gap-6 py-6"
-            >
-              {banner.image && (
-                <img
-                  src={banner.image}
-                  alt={banner.title}
-                  className="w-full md:w-40 h-24 object-cover rounded-lg flex-shrink-0"
-                />
-              )}
-              <div className="flex-1 text-center md:text-left">
-                <h3
-                  className="font-display font-semibold"
-                  style={{ fontSize: '1.25rem', color: '#FFFFFF' }}
-                >
-                  {banner.title}
-                </h3>
-                {banner.subtitle && (
-                  <p
-                    className="font-body text-sm mt-1"
-                    style={{ color: 'rgba(234,223,207,0.8)' }}
-                  >
-                    {banner.subtitle}
-                  </p>
+        <section className="py-24" style={{ backgroundColor: '#F6F1EB' }}>
+          <div className="container">
+            {banners.map((banner) => (
+              <div
+                key={banner.id}
+                className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center reveal"
+              >
+                {/* Image side */}
+                {banner.image && (
+                  <div className="relative order-1 lg:order-none">
+                    <div
+                      className="relative overflow-hidden rounded-lg"
+                      style={{ aspectRatio: '4/3', maxHeight: '460px' }}
+                    >
+                      <img
+                        src={banner.image}
+                        alt={banner.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    {/* Decorative offset frame, consistent with Brand Story section */}
+                    <div
+                      className="absolute -bottom-4 -right-4 w-28 h-28 rounded-lg -z-10"
+                      style={{ backgroundColor: 'var(--soft-cream)', border: '2px solid var(--deep-orange)' }}
+                    />
+                  </div>
                 )}
-              </div>
-              {banner.linkUrl && (
-                <Link href={banner.linkUrl}>
-                  <button
-                    className="btn-primary flex items-center gap-2 flex-shrink-0"
-                    style={{ fontSize: '0.85rem', padding: '0.65rem 1.5rem' }}
+
+                {/* Text side */}
+                <div className={banner.image ? '' : 'lg:col-span-2 text-center max-w-2xl mx-auto'}>
+                  <div className={`flex items-center gap-3 mb-5 ${banner.image ? '' : 'justify-center'}`}>
+                    <div style={{ width: '2rem', height: '1.5px', backgroundColor: 'var(--deep-orange)' }} />
+                    <span
+                      className="font-body font-medium tracking-widest uppercase"
+                      style={{ fontSize: '0.7rem', color: 'var(--deep-orange)', letterSpacing: '0.2em' }}
+                    >
+                      Just Announced
+                    </span>
+                  </div>
+
+                  <h2
+                    className="font-display font-semibold mb-5"
+                    style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', color: 'var(--dark-chocolate)', lineHeight: 1.15 }}
                   >
-                    View
-                    <ArrowRight size={14} />
-                  </button>
-                </Link>
-              )}
-            </div>
-          ))}
+                    {banner.title}
+                  </h2>
+
+                  {banner.subtitle && (
+                    <p
+                      className="font-body leading-relaxed mb-8"
+                      style={{
+                        fontSize: '1.05rem',
+                        color: 'var(--charcoal)',
+                        maxWidth: banner.image ? '440px' : '600px',
+                        marginInline: banner.image ? undefined : 'auto',
+                      }}
+                    >
+                      {banner.subtitle}
+                    </p>
+                  )}
+
+                  {banner.linkUrl && (
+                    <Link href={banner.linkUrl}>
+                      <button className="btn-primary flex items-center gap-2">
+                        Discover More
+                        <ArrowRight size={16} />
+                      </button>
+                    </Link>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
         </section>
       )}
 
