@@ -1,10 +1,10 @@
 /*
  * SKINPECCABLE GLOWTIQUE — Home Page
  * Design: "Structured Warmth" — animated welcome experience, no products
- * Sections: Hero (full-screen) | Categories Preview | Brand Story | Three Pillars | Lifestyle Split | Tagline CTA
+ * Sections: Hero (full-screen) | Home Banner (dynamic, Odoo-managed) | Categories Preview | Brand Story | Three Pillars | Lifestyle Split | Tagline CTA
  */
 
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'wouter';
 import { ArrowRight, Sparkles, Leaf, Heart } from 'lucide-react';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
@@ -31,6 +31,15 @@ const PILLARS = [
   },
 ];
 
+type ContentBlock = {
+  id: number;
+  title: string;
+  subtitle: string;
+  linkUrl: string;
+  section: string;
+  image: string | null;
+};
+
 export default function Home() {
   usePageMeta(
     'Skinpeccable Glowtique | Beauty, Skincare & Grooming Boutique in Nairobi',
@@ -41,6 +50,19 @@ export default function Home() {
 
   // NOTE: Parallax scroll effect removed — it conflicts with video playback
   // and causes visual glitching on the <video> element.
+
+  // ── Dynamic Home Banner content (managed by client via Odoo Website Content Block) ──
+  const [banners, setBanners] = useState<ContentBlock[]>([]);
+
+  useEffect(() => {
+    const backendUrl = import.meta.env.VITE_BACKEND_URL;
+    fetch(`${backendUrl}/api/odoo/content-blocks?section=Home Banner`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) setBanners(data.blocks);
+      })
+      .catch((err) => console.error('Failed to load home banners:', err));
+  }, []);
 
   return (
     <div>
@@ -146,6 +168,53 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* ── ANNOUNCEMENT / NEW ARRIVALS BANNER (dynamic, managed in Odoo) ── */}
+      {banners.length > 0 && (
+        <section style={{ backgroundColor: 'var(--dark-chocolate)' }}>
+          {banners.map((banner) => (
+            <div
+              key={banner.id}
+              className="container flex flex-col md:flex-row items-center gap-6 py-6"
+            >
+              {banner.image && (
+                <img
+                  src={banner.image}
+                  alt={banner.title}
+                  className="w-full md:w-40 h-24 object-cover rounded-lg flex-shrink-0"
+                />
+              )}
+              <div className="flex-1 text-center md:text-left">
+                <h3
+                  className="font-display font-semibold"
+                  style={{ fontSize: '1.25rem', color: '#FFFFFF' }}
+                >
+                  {banner.title}
+                </h3>
+                {banner.subtitle && (
+                  <p
+                    className="font-body text-sm mt-1"
+                    style={{ color: 'rgba(234,223,207,0.8)' }}
+                  >
+                    {banner.subtitle}
+                  </p>
+                )}
+              </div>
+              {banner.linkUrl && (
+                <Link href={banner.linkUrl}>
+                  <button
+                    className="btn-primary flex items-center gap-2 flex-shrink-0"
+                    style={{ fontSize: '0.85rem', padding: '0.65rem 1.5rem' }}
+                  >
+                    View
+                    <ArrowRight size={14} />
+                  </button>
+                </Link>
+              )}
+            </div>
+          ))}
+        </section>
+      )}
 
       {/* ── CATEGORIES PREVIEW (Moved Below Hero) ── */}
       <section className="py-24" style={{ backgroundColor: '#FFFFFF' }}>
