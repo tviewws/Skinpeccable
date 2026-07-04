@@ -15,6 +15,9 @@ const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
 // ── Content blocks cache — homepage banners, hero, new-arrivals promos
 let contentBlocksCache = { data: null, expiresAt: 0 };
 
+// ── Product tags cache — Shop by Concern (Acne, Oily Skin, etc.)
+let tagsCache = { data: null, expiresAt: 0 };
+
 // Authenticate and get session cookie (cached)
 async function getOdooSession() {
   if (sessionCache.cookie && Date.now() < sessionCache.expiresAt) {
@@ -120,7 +123,7 @@ async function getContentBlocks(section = null) {
   if (section) domain.push(['x_studio_section_1', '=', section]);
 
   const blocks = await odooCall(
-    'x_website_content_bloc',
+    'x_website_content_block',
     'search_read',
     [domain],
     {
@@ -168,6 +171,7 @@ router.get('/warmup', async (req, res) => {
           'image_1920',
           'categ_id',
           'qty_available',
+          'product_tag_ids',
         ],
       }
     );
@@ -192,6 +196,7 @@ router.get('/warmup', async (req, res) => {
         image: p.image_1920
           ? `data:image/png;base64,${p.image_1920}`
           : '/placeholder.png',
+        tagIds: p.product_tag_ids || [],
       };
     });
 
@@ -305,6 +310,7 @@ router.get('/products', async (req, res) => {
           'image_1920',
           'categ_id',
           'qty_available',
+          'product_tag_ids',
         ],
       }
     );
@@ -329,6 +335,7 @@ router.get('/products', async (req, res) => {
         image: p.image_1920
           ? `data:image/png;base64,${p.image_1920}`
           : '/placeholder.png',
+        tagIds: p.product_tag_ids || [],
       };
     });
 
@@ -367,6 +374,34 @@ router.get('/content-blocks', async (req, res) => {
     res.json({ success: true, blocks });
   } catch (err) {
     console.error('Odoo content blocks fetch error:', err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// GET /api/odoo/tags
+// Returns all product tags (used for Shop by Concern: Acne, Oily Skin, etc.)
+// as { id, name } pairs so the frontend can map tag IDs to readable labels.
+router.get('/tags', async (req, res) => {
+  try {
+    if (tagsCache.data && Date.now() < tagsCache.expiresAt) {
+      return res.json({ success: true, tags: tagsCache.data });
+    }
+
+    const tags = await odooCall(
+      'product.tag',
+      'search_read',
+      [[]],
+      { fields: ['id', 'name'] }
+    );
+
+    const shaped = tags.map((t) => ({ id: t.id, name: t.name }));
+
+    tagsCache.data = shaped;
+    tagsCache.expiresAt = Date.now() + CACHE_TTL;
+
+    res.json({ success: true, tags: shaped });
+  } catch (err) {
+    console.error('Odoo tags fetch error:', err.message);
     res.status(500).json({ success: false, error: err.message });
   }
 });
