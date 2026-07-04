@@ -6,7 +6,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'wouter';
-import { ArrowRight, Sparkles, Leaf, Heart } from 'lucide-react';
+import { ArrowRight, ChevronRight, Sparkles, Leaf, Heart } from 'lucide-react';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import heroVideo from '../../assets/herovideo1.mp4';
@@ -53,6 +53,12 @@ export default function Home() {
 
   // ── Dynamic Home Banner content (managed by client via Odoo Website Content Block) ──
   const [banners, setBanners] = useState<ContentBlock[]>([]);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const activeBanner = banners[activeIndex];
+
+  const handleNextBanner = () => {
+    setActiveIndex((prev) => (prev + 1) % banners.length);
+  };
 
   useEffect(() => {
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
@@ -169,80 +175,172 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── ANNOUNCEMENT / NEW ARRIVALS SPOTLIGHT (dynamic, managed in Odoo) ── */}
-      {banners.length > 0 && (
-        <section className="py-24" style={{ backgroundColor: '#F6F1EB' }}>
+      {/* ── NEW ARRIVALS SPOTLIGHT (dynamic, managed in Odoo) ── */}
+      {banners.length > 0 && activeBanner && (
+        <section className="relative py-6" style={{ backgroundColor: '#F6F1EB', overflow: 'hidden' }}>
+          <style>{`
+            @keyframes marqueeLeft {
+              from { transform: translateX(0); }
+              to { transform: translateX(-50%); }
+            }
+            @keyframes marqueeRight {
+              from { transform: translateX(-50%); }
+              to { transform: translateX(0); }
+            }
+            .marquee-track {
+              display: flex;
+              width: max-content;
+              white-space: nowrap;
+              will-change: transform;
+            }
+            .marquee-top .marquee-track {
+              animation: marqueeLeft 22s linear infinite;
+            }
+            .marquee-bottom .marquee-track {
+              animation: marqueeRight 22s linear infinite;
+            }
+            .marquee-item {
+              font-family: var(--font-display);
+              font-weight: 600;
+              font-size: 1.1rem;
+              letter-spacing: 0.15em;
+              padding: 0 1.5rem;
+              color: var(--deep-orange);
+              text-transform: uppercase;
+            }
+            .marquee-item span {
+              color: var(--dark-chocolate);
+              opacity: 0.35;
+              padding-left: 1.5rem;
+            }
+            @keyframes bannerFadeIn {
+              from { opacity: 0; transform: translateY(8px); }
+              to { opacity: 1; transform: translateY(0); }
+            }
+            .banner-fade {
+              animation: bannerFadeIn 0.5s ease;
+            }
+          `}</style>
+
+          {/* Top marquee belt */}
+          <div
+            className="marquee-top overflow-hidden mb-10"
+            style={{ transform: 'rotate(-1.2deg)', marginInline: '-2rem' }}
+          >
+            <div className="marquee-track">
+              {Array(2).fill(null).map((_, i) => (
+                <span className="marquee-item" key={i}>
+                  New Arrivals <span>•</span> New Arrivals <span>•</span> New Arrivals <span>•</span> New Arrivals <span>•</span>
+                </span>
+              ))}
+            </div>
+          </div>
+
           <div className="container">
-            {banners.map((banner) => (
-              <div
-                key={banner.id}
-                className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center"
-              >
-                {/* Image side */}
-                {banner.image && (
-                  <div className="relative order-1 lg:order-none">
-                    <div
-                      className="relative overflow-hidden rounded-lg"
-                      style={{ aspectRatio: '4/3', maxHeight: '460px' }}
-                    >
-                      <img
-                        src={banner.image}
-                        alt={banner.title}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    {/* Decorative offset frame, consistent with Brand Story section */}
-                    <div
-                      className="absolute -bottom-4 -right-4 w-28 h-28 rounded-lg -z-10"
-                      style={{ backgroundColor: 'var(--soft-cream)', border: '2px solid var(--deep-orange)' }}
+            <div key={activeBanner.id} className="banner-fade grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+              {/* Image side */}
+              {activeBanner.image && (
+                <div className="relative order-1 lg:order-none">
+                  <div
+                    className="relative overflow-hidden rounded-lg"
+                    style={{ aspectRatio: '4/3', maxHeight: '460px' }}
+                  >
+                    <img
+                      src={activeBanner.image}
+                      alt={activeBanner.title}
+                      className="w-full h-full object-cover"
                     />
                   </div>
+                  <div
+                    className="absolute -bottom-4 -right-4 w-28 h-28 rounded-lg -z-10"
+                    style={{ backgroundColor: 'var(--soft-cream)', border: '2px solid var(--deep-orange)' }}
+                  />
+                </div>
+              )}
+
+              {/* Text side */}
+              <div className={activeBanner.image ? '' : 'lg:col-span-2 text-center max-w-2xl mx-auto'}>
+                <h2
+                  className="font-display font-semibold mb-5"
+                  style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', color: 'var(--dark-chocolate)', lineHeight: 1.15 }}
+                >
+                  {activeBanner.title}
+                </h2>
+
+                {activeBanner.subtitle && (
+                  <p
+                    className="font-body leading-relaxed mb-8"
+                    style={{
+                      fontSize: '1.05rem',
+                      color: 'var(--charcoal)',
+                      maxWidth: activeBanner.image ? '440px' : '600px',
+                      marginInline: activeBanner.image ? undefined : 'auto',
+                    }}
+                  >
+                    {activeBanner.subtitle}
+                  </p>
                 )}
 
-                {/* Text side */}
-                <div className={banner.image ? '' : 'lg:col-span-2 text-center max-w-2xl mx-auto'}>
-                  <div className={`flex items-center gap-3 mb-5 ${banner.image ? '' : 'justify-center'}`}>
-                    <div style={{ width: '2rem', height: '1.5px', backgroundColor: 'var(--deep-orange)' }} />
-                    <span
-                      className="font-body font-medium tracking-widest uppercase"
-                      style={{ fontSize: '0.7rem', color: 'var(--deep-orange)', letterSpacing: '0.2em' }}
-                    >
-                      Just Announced
-                    </span>
-                  </div>
-
-                  <h2
-                    className="font-display font-semibold mb-5"
-                    style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', color: 'var(--dark-chocolate)', lineHeight: 1.15 }}
-                  >
-                    {banner.title}
-                  </h2>
-
-                  {banner.subtitle && (
-                    <p
-                      className="font-body leading-relaxed mb-8"
-                      style={{
-                        fontSize: '1.05rem',
-                        color: 'var(--charcoal)',
-                        maxWidth: banner.image ? '440px' : '600px',
-                        marginInline: banner.image ? undefined : 'auto',
-                      }}
-                    >
-                      {banner.subtitle}
-                    </p>
-                  )}
-
-                  {banner.linkUrl && (
-                    <Link href={banner.linkUrl}>
+                <div className={`flex items-center gap-4 ${activeBanner.image ? '' : 'justify-center'}`}>
+                  {activeBanner.linkUrl && (
+                    <Link href={activeBanner.linkUrl}>
                       <button className="btn-primary flex items-center gap-2">
                         Discover More
                         <ArrowRight size={16} />
                       </button>
                     </Link>
                   )}
+
+                  {banners.length > 1 && (
+                    <button
+                      onClick={handleNextBanner}
+                      aria-label="Next new arrival"
+                      className="flex items-center justify-center rounded-full transition-transform duration-200"
+                      style={{
+                        width: '3rem',
+                        height: '3rem',
+                        border: '1.5px solid var(--deep-orange)',
+                        color: 'var(--deep-orange)',
+                        backgroundColor: 'transparent',
+                      }}
+                      onMouseEnter={e => {
+                        (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--deep-orange)';
+                        (e.currentTarget as HTMLButtonElement).style.color = '#FFFFFF';
+                      }}
+                      onMouseLeave={e => {
+                        (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
+                        (e.currentTarget as HTMLButtonElement).style.color = 'var(--deep-orange)';
+                      }}
+                    >
+                      <ChevronRight size={20} />
+                    </button>
+                  )}
                 </div>
+
+                {banners.length > 1 && (
+                  <p
+                    className="font-body mt-4"
+                    style={{ fontSize: '0.75rem', color: 'var(--warm-taupe)', letterSpacing: '0.1em' }}
+                  >
+                    {activeIndex + 1} / {banners.length}
+                  </p>
+                )}
               </div>
-            ))}
+            </div>
+          </div>
+
+          {/* Bottom marquee belt */}
+          <div
+            className="marquee-bottom overflow-hidden mt-10"
+            style={{ transform: 'rotate(1.2deg)', marginInline: '-2rem' }}
+          >
+            <div className="marquee-track">
+              {Array(2).fill(null).map((_, i) => (
+                <span className="marquee-item" key={i}>
+                  New Arrivals <span>•</span> New Arrivals <span>•</span> New Arrivals <span>•</span> New Arrivals <span>•</span>
+                </span>
+              ))}
+            </div>
           </div>
         </section>
       )}
