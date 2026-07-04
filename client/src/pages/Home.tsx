@@ -176,7 +176,7 @@ export default function Home() {
             {banners.map((banner) => (
               <div
                 key={banner.id}
-                className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center reveal"
+                className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center"
               >
                 {/* Image side */}
                 {banner.image && (
