@@ -12,6 +12,9 @@ let productsCache = { data: null, expiresAt: 0 };
 let categoriesCache = { data: null, expiresAt: 0 };
 const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
 
+// ── Content blocks cache — homepage banners, hero, new-arrivals promos
+let contentBlocksCache = { data: null, expiresAt: 0 };
+
 // Authenticate and get session cookie (cached)
 async function getOdooSession() {
   if (sessionCache.cookie && Date.now() < sessionCache.expiresAt) {
@@ -108,6 +111,41 @@ async function findOrCreateDeliveryProduct() {
     purchase_ok: false,
   }]);
   return newProduct;
+}
+
+// Fetch content blocks (hero/banners/new-arrivals promos) from the
+// custom Studio model, optionally filtered by section.
+async function getContentBlocks(section = null) {
+  const domain = [['x_active', '=', true]];
+  if (section) domain.push(['x_studio_section_1', '=', section]);
+
+  const blocks = await odooCall(
+    'x_website_content_block',
+    'search_read',
+    [domain],
+    {
+      fields: [
+        'id',
+        'x_name',
+        'x_studio_subtitle',
+        'x_studio_link_url',
+        'x_studio_section_1',
+        'x_studio_image',
+      ],
+      order: 'id asc',
+    }
+  );
+
+  return blocks.map((b) => ({
+    id: b.id,
+    title: b.x_name || '',
+    subtitle: b.x_studio_subtitle || '',
+    linkUrl: b.x_studio_link_url || '',
+    section: b.x_studio_section_1,
+    image: b.x_studio_image
+      ? `data:image/png;base64,${b.x_studio_image}`
+      : null,
+  }));
 }
 
 // GET /api/odoo/warmup
@@ -300,6 +338,35 @@ router.get('/products', async (req, res) => {
     res.json({ success: true, products: shaped });
   } catch (err) {
     console.error('Odoo products fetch error:', err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// GET /api/odoo/content-blocks?section=Home Hero
+// Fetches homepage/banner/new-arrivals content blocks from the custom
+// Website Content Block model, optionally filtered by section.
+router.get('/content-blocks', async (req, res) => {
+  try {
+    const { section } = req.query;
+    const cacheKey = section || 'all';
+
+    if (
+      contentBlocksCache.data &&
+      contentBlocksCache.data[cacheKey] &&
+      Date.now() < contentBlocksCache.expiresAt
+    ) {
+      return res.json({ success: true, blocks: contentBlocksCache.data[cacheKey] });
+    }
+
+    const blocks = await getContentBlocks(section);
+
+    if (!contentBlocksCache.data) contentBlocksCache.data = {};
+    contentBlocksCache.data[cacheKey] = blocks;
+    contentBlocksCache.expiresAt = Date.now() + CACHE_TTL;
+
+    res.json({ success: true, blocks });
+  } catch (err) {
+    console.error('Odoo content blocks fetch error:', err.message);
     res.status(500).json({ success: false, error: err.message });
   }
 });
