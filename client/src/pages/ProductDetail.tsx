@@ -37,6 +37,25 @@ export default function ProductDetail() {
         const found = data.products.find((p: Product) => p.id === id);
         if (found) {
           setProduct(found);
+
+          // Meta Pixel: ViewContent event
+          if (typeof window !== 'undefined' && found.price !== 'SOLD OUT') {
+            (window as any).dataLayer = (window as any).dataLayer || [];
+            (window as any).dataLayer.push({
+              event: 'view_content',
+              ecommerce: {
+                currency: 'KES',
+                value: found.price,
+                items: [{
+                  item_id: found.id,
+                  item_name: found.name,
+                  item_brand: found.brand,
+                  item_category: found.category,
+                  price: found.price,
+                }],
+              },
+            });
+          }
         } else {
           setNotFound(true);
         }
@@ -45,7 +64,7 @@ export default function ProductDetail() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  // ── Loading state
+  // Loading state
   if (loading) {
     return (
       <div
@@ -59,7 +78,7 @@ export default function ProductDetail() {
     );
   }
 
-  // ── 404 fallback
+  // 404 fallback
   if (notFound || !product) {
     return (
       <div
@@ -113,7 +132,7 @@ export default function ProductDetail() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
 
-          {/* ── PRODUCT IMAGE */}
+          {/* PRODUCT IMAGE */}
           <div
             className="rounded-2xl overflow-hidden"
             style={{
@@ -129,7 +148,7 @@ export default function ProductDetail() {
             />
           </div>
 
-          {/* ── PRODUCT INFO */}
+          {/* PRODUCT INFO */}
           <div className="flex flex-col gap-6 pt-2">
 
             {/* Badge */}
@@ -230,7 +249,7 @@ export default function ProductDetail() {
               className="font-body text-xs text-center"
               style={{ color: 'var(--warm-taupe)' }}
             >
-              🔒 Secure checkout · Delivery across Nairobi · 100% authentic
+               Secure checkout · Delivery across Nairobi · 100% authentic
             </p>
           </div>
         </div>
