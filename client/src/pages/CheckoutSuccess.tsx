@@ -23,6 +23,23 @@ export default function CheckoutSuccess() {
           body: JSON.stringify(order),
         });
 
+        // Meta Pixel: Purchase event
+        if (typeof window !== 'undefined') {
+          (window as any).dataLayer = (window as any).dataLayer || [];
+          (window as any).dataLayer.push({
+            event: 'purchase',
+            ecommerce: {
+              currency: 'KES',
+              value: order.total,
+              items: (order.items || []).map((i: any) => ({
+                item_name: i.name,
+                price: i.price,
+                quantity: i.qty,
+              })),
+            },
+          });
+        }
+
         localStorage.removeItem('pendingOrder');
         console.log('Order sent to Odoo successfully');
       } catch (err) {
