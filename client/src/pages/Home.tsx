@@ -12,6 +12,7 @@ import { usePageMeta } from '@/hooks/usePageMeta';
 import heroVideo from '../../assets/herovideo1.mp4';
 import heroSkin from '../../assets/heroskin.jpg';
 import homeImage2 from '../../assets/homeimage2.png';
+import { apiFetch } from '@/lib/api';
 
 const PILLARS = [
   {
@@ -57,17 +58,28 @@ export default function Home() {
   const activeBanner = banners[activeIndex];
 
   const handleNextBanner = () => {
-    setActiveIndex((prev) => (prev + 1) % banners.length);
+    setActiveIndex((prev) => (banners.length ? (prev + 1) % banners.length : 0));
   };
 
   useEffect(() => {
-    const backendUrl = import.meta.env.VITE_BACKEND_URL;
-    fetch(`${backendUrl}/api/odoo/content-blocks?section=Home Banner`)
-      .then((res) => res.json())
+    let cancelled = false;
+
+    // The banner section is promotional, so a failure hides it rather than
+    // breaking the page — but every failure mode still surfaces in the console
+    // instead of being indistinguishable from "no banners configured".
+    apiFetch<{ blocks: ContentBlock[] }>(
+      '/api/odoo/content-blocks?section=Home%20Banner'
+    )
       .then((data) => {
-        if (data.success) setBanners(data.blocks);
+        if (!cancelled) setBanners(data.blocks);
       })
-      .catch((err) => console.error('Failed to load home banners:', err));
+      .catch((err: unknown) => {
+        console.error('Failed to load home banners:', err);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (
