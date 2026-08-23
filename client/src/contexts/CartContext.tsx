@@ -3,6 +3,7 @@
  * Global cart state: add, remove, update quantity, open/close drawer
  */
 import React, { createContext, useContext, useState, useCallback } from 'react';
+import { pushEcommerceEvent } from '@/lib/analytics';
 
 export interface CartItem {
   id: string;
@@ -44,24 +45,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setIsOpen(true);
 
     // Meta Pixel: AddToCart event
-    if (typeof window !== 'undefined') {
-      (window as any).dataLayer = (window as any).dataLayer || [];
-      (window as any).dataLayer.push({
-        event: 'add_to_cart',
-        ecommerce: {
-          currency: 'KES',
-          value: newItem.price,
-          items: [{
-            item_id: newItem.id,
-            item_name: newItem.name,
-            item_brand: newItem.brand,
-            item_category: newItem.category,
-            price: newItem.price,
-            quantity: 1,
-          }],
-        },
-      });
-    }
+    pushEcommerceEvent('add_to_cart', newItem.price, [{
+      item_id: newItem.id,
+      item_name: newItem.name,
+      item_brand: newItem.brand,
+      item_category: newItem.category,
+      price: newItem.price,
+      quantity: 1,
+    }]);
   }, []);
 
   const removeItem = useCallback((id: string) => {

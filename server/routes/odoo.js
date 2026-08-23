@@ -1,28 +1,27 @@
 const express = require('express');
 const axios = require('axios');
 const router = express.Router();
+const { TtlCache } = require('../lib/cache');
+const { asyncRoute } = require('../lib/route');
+const {
+  fetchPublishedProducts,
+  shapeProducts,
+  shapeCategories,
+} = require('../lib/odoo-data');
 
 const { ODOO_URL, ODOO_DB, ODOO_USERNAME, ODOO_API_KEY } = process.env;
 
-// ── Session cache — reuse cookie for 8 minutes before re-authenticating
-let sessionCache = { cookie: null, expiresAt: 0 };
-
-// ── Products / categories cache — serve from memory, refresh every 5 minutes
-let productsCache = { data: null, expiresAt: 0 };
-let categoriesCache = { data: null, expiresAt: 0 };
 const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
-
-// ── Content blocks cache — homepage banners, hero, new-arrivals promos
-let contentBlocksCache = { data: null, expiresAt: 0 };
-
-// ── Product tags cache — Shop by Concern (Acne, Oily Skin, etc.)
-let tagsCache = { data: null, expiresAt: 0 };
+const sessionCache = new TtlCache(8 * 60 * 1000);
+const productsCache = new TtlCache(CACHE_TTL);
+const categoriesCache = new TtlCache(CACHE_TTL);
+const contentBlocksCache = new TtlCache(CACHE_TTL, true);
+const tagsCache = new TtlCache(CACHE_TTL);
 
 // Authenticate and get session cookie (cached)
 async function getOdooSession() {
-  if (sessionCache.cookie && Date.now() < sessionCache.expiresAt) {
-    return sessionCache.cookie;
-  }
+  const cachedCookie = sessionCache.get();
+  if (cachedCookie) return cachedCookie;
 
   const response = await axios.post(`${ODOO_URL}/web/session/authenticate`, {
     jsonrpc: '2.0',
@@ -40,9 +39,9 @@ async function getOdooSession() {
     throw new Error('Odoo authentication failed — check your email, API key and DB name');
   }
 
-  sessionCache.cookie = response.headers['set-cookie']?.[0];
-  sessionCache.expiresAt = Date.now() + 8 * 60 * 1000; // 8 minutes
-  return sessionCache.cookie;
+  const cookie = response.headers['set-cookie']?.[0];
+  sessionCache.set(cookie);
+  return cookie;
 }
 
 // Make an authenticated Odoo API call
@@ -155,256 +154,106 @@ async function getContentBlocks(section = null) {
 // Pre-fills products and categories caches. Designed to be pinged by an
 // external cron job every ~25 minutes (just under the 30-minute TTL) so
 // real visitors never hit a cold cache.
-router.get('/warmup', async (req, res) => {
-  try {
-    const products = await odooCall(
-      'product.template',
-      'search_read',
-      [[['is_published', '=', true]]],
-      {
-        fields: [
-          'id',
-          'name',
-          'description',
-          'description_sale',
-          'list_price',
-          'image_1920',
-          'categ_id',
-          'qty_available',
-          'product_tag_ids',
-        ],
-      }
-    );
+router.get('/warmup', asyncRoute('Odoo warmup error', async (req, res) => {
+  const products = await fetchPublishedProducts(odooCall);
+  const shaped = shapeProducts(products);
+  productsCache.set(shaped);
 
-    const shaped = products.map((p) => {
-      let description = '';
-      if (p.description && typeof p.description === 'string') {
-        description = p.description.replace(/<[^>]*>/g, '').trim();
-      } else if (p.description_sale && typeof p.description_sale === 'string') {
-        description = p.description_sale.replace(/<[^>]*>/g, '').trim();
-      }
+  const categories = shapeCategories(products);
+  categoriesCache.set(categories);
 
-      const inStock = p.qty_available > 0;
-
-      return {
-        id: `odoo_${p.id}`,
-        name: p.name,
-        brand: 'Skinpeccable',
-        category: p.categ_id?.[1]?.toLowerCase().replace(/\s+/g, '-') || 'all',
-        price: p.list_price > 0 && inStock ? p.list_price : 'SOLD OUT',
-        description,
-        image: p.image_1920
-          ? `data:image/png;base64,${p.image_1920}`
-          : '/placeholder.png',
-        tagIds: p.product_tag_ids || [],
-      };
-    });
-
-    productsCache.data = shaped;
-    productsCache.expiresAt = Date.now() + CACHE_TTL;
-
-    const categoryMap = new Map();
-    for (const p of products) {
-      if (p.categ_id && p.categ_id[0]) {
-        categoryMap.set(p.categ_id[0], p.categ_id[1]);
-      }
-    }
-
-    const categories = [
-      { id: 'all', label: 'All Products' },
-      ...[...categoryMap.entries()]
-        .map(([, name]) => ({
-          id: name.toLowerCase().replace(/\s+/g, '-'),
-          label: name,
-        }))
-        .sort((a, b) => a.label.localeCompare(b.label)),
-    ];
-
-    categoriesCache.data = categories;
-    categoriesCache.expiresAt = Date.now() + CACHE_TTL;
-
-    res.json({
-      success: true,
-      message: `Warmed up cache with ${shaped.length} products and ${categories.length} categories`,
-    });
-  } catch (err) {
-    console.error('Odoo warmup error:', err.message);
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
+  res.json({
+    success: true,
+    message: `Warmed up cache with ${shaped.length} products and ${categories.length} categories`,
+  });
+}));
 
 // Test route
-router.get('/test', async (req, res) => {
-  try {
-    const result = await odooCall('res.partner', 'search_read',
-      [[['customer_rank', '>', 0]]],
-      { fields: ['name', 'email'], limit: 5 }
-    );
-    res.json({ success: true, sample_customers: result });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
+router.get('/test', asyncRoute('Odoo test error', async (req, res) => {
+  const result = await odooCall('res.partner', 'search_read',
+    [[['customer_rank', '>', 0]]],
+    { fields: ['name', 'email'], limit: 5 }
+  );
+  res.json({ success: true, sample_customers: result });
+}));
 
 // GET /api/odoo/categories
-router.get('/categories', async (req, res) => {
-  try {
-    if (categoriesCache.data && Date.now() < categoriesCache.expiresAt) {
-      return res.json({ success: true, categories: categoriesCache.data });
-    }
-
-    const products = await odooCall(
-      'product.template',
-      'search_read',
-      [[['is_published', '=', true]]],
-      { fields: ['categ_id'] }
-    );
-
-    const categoryMap = new Map();
-    for (const p of products) {
-      if (p.categ_id && p.categ_id[0]) {
-        categoryMap.set(p.categ_id[0], p.categ_id[1]);
-      }
-    }
-
-    const categories = [
-      { id: 'all', label: 'All Products' },
-      ...[...categoryMap.entries()]
-        .map(([, name]) => ({
-          id: name.toLowerCase().replace(/\s+/g, '-'),
-          label: name,
-        }))
-        .sort((a, b) => a.label.localeCompare(b.label)),
-    ];
-
-    categoriesCache.data = categories;
-    categoriesCache.expiresAt = Date.now() + CACHE_TTL;
-
-    res.json({ success: true, categories });
-  } catch (err) {
-    console.error('Odoo categories fetch error:', err.message);
-    res.status(500).json({ success: false, error: err.message });
+router.get('/categories', asyncRoute('Odoo categories fetch error', async (req, res) => {
+  const cachedCategories = categoriesCache.get();
+  if (cachedCategories) {
+    return res.json({ success: true, categories: cachedCategories });
   }
-});
+
+  const products = await odooCall(
+    'product.template',
+    'search_read',
+    [[['is_published', '=', true]]],
+    { fields: ['categ_id'] }
+  );
+
+  const categories = shapeCategories(products);
+  categoriesCache.set(categories);
+
+  res.json({ success: true, categories });
+}));
 
 // GET /api/odoo/products
 // Fetches all published products from Odoo and shapes them to match the frontend Product interface.
 // qty_available is used to mark products as SOLD OUT when stock is zero or below.
-router.get('/products', async (req, res) => {
-  try {
-    if (productsCache.data && Date.now() < productsCache.expiresAt) {
-      return res.json({ success: true, products: productsCache.data });
-    }
-
-    const products = await odooCall(
-      'product.template',
-      'search_read',
-      [[['is_published', '=', true]]],
-      {
-        fields: [
-          'id',
-          'name',
-          'description',
-          'description_sale',
-          'list_price',
-          'image_1920',
-          'categ_id',
-          'qty_available',
-          'product_tag_ids',
-        ],
-      }
-    );
-
-    const shaped = products.map((p) => {
-      let description = '';
-      if (p.description && typeof p.description === 'string') {
-        description = p.description.replace(/<[^>]*>/g, '').trim();
-      } else if (p.description_sale && typeof p.description_sale === 'string') {
-        description = p.description_sale.replace(/<[^>]*>/g, '').trim();
-      }
-
-      const inStock = p.qty_available > 0;
-
-      return {
-        id: `odoo_${p.id}`,
-        name: p.name,
-        brand: 'Skinpeccable',
-        category: p.categ_id?.[1]?.toLowerCase().replace(/\s+/g, '-') || 'all',
-        price: p.list_price > 0 && inStock ? p.list_price : 'SOLD OUT',
-        description,
-        image: p.image_1920
-          ? `data:image/png;base64,${p.image_1920}`
-          : '/placeholder.png',
-        tagIds: p.product_tag_ids || [],
-      };
-    });
-
-    productsCache.data = shaped;
-    productsCache.expiresAt = Date.now() + CACHE_TTL;
-
-    res.json({ success: true, products: shaped });
-  } catch (err) {
-    console.error('Odoo products fetch error:', err.message);
-    res.status(500).json({ success: false, error: err.message });
+router.get('/products', asyncRoute('Odoo products fetch error', async (req, res) => {
+  const cachedProducts = productsCache.get();
+  if (cachedProducts) {
+    return res.json({ success: true, products: cachedProducts });
   }
-});
+
+  const products = await fetchPublishedProducts(odooCall);
+  const shaped = shapeProducts(products);
+  productsCache.set(shaped);
+
+  res.json({ success: true, products: shaped });
+}));
 
 // GET /api/odoo/content-blocks?section=Home Hero
 // Fetches homepage/banner/new-arrivals content blocks from the custom
 // Website Content Block model, optionally filtered by section.
-router.get('/content-blocks', async (req, res) => {
-  try {
-    const { section } = req.query;
-    const cacheKey = section || 'all';
+router.get('/content-blocks', asyncRoute('Odoo content blocks fetch error', async (req, res) => {
+  const { section } = req.query;
+  const cacheKey = section || 'all';
 
-    if (
-      contentBlocksCache.data &&
-      contentBlocksCache.data[cacheKey] &&
-      Date.now() < contentBlocksCache.expiresAt
-    ) {
-      return res.json({ success: true, blocks: contentBlocksCache.data[cacheKey] });
-    }
-
-    const blocks = await getContentBlocks(section);
-
-    if (!contentBlocksCache.data) contentBlocksCache.data = {};
-    contentBlocksCache.data[cacheKey] = blocks;
-    contentBlocksCache.expiresAt = Date.now() + CACHE_TTL;
-
-    res.json({ success: true, blocks });
-  } catch (err) {
-    console.error('Odoo content blocks fetch error:', err.message);
-    res.status(500).json({ success: false, error: err.message });
+  const cachedBlocks = contentBlocksCache.get(cacheKey);
+  if (cachedBlocks) {
+    return res.json({ success: true, blocks: cachedBlocks });
   }
-});
+
+  const blocks = await getContentBlocks(section);
+
+  contentBlocksCache.set(cacheKey, blocks);
+
+  res.json({ success: true, blocks });
+}));
 
 // GET /api/odoo/tags
 // Returns all product tags (used for Shop by Concern: Acne, Oily Skin, etc.)
 // as { id, name } pairs so the frontend can map tag IDs to readable labels.
-router.get('/tags', async (req, res) => {
-  try {
-    if (tagsCache.data && Date.now() < tagsCache.expiresAt) {
-      return res.json({ success: true, tags: tagsCache.data });
-    }
-
-    const tags = await odooCall(
-      'product.tag',
-      'search_read',
-      [[]],
-      { fields: ['id', 'name'] }
-    );
-
-    const shaped = tags.map((t) => ({ id: t.id, name: t.name }));
-
-    tagsCache.data = shaped;
-    tagsCache.expiresAt = Date.now() + CACHE_TTL;
-
-    res.json({ success: true, tags: shaped });
-  } catch (err) {
-    console.error('Odoo tags fetch error:', err.message);
-    res.status(500).json({ success: false, error: err.message });
+router.get('/tags', asyncRoute('Odoo tags fetch error', async (req, res) => {
+  const cachedTags = tagsCache.get();
+  if (cachedTags) {
+    return res.json({ success: true, tags: cachedTags });
   }
-});
+
+  const tags = await odooCall(
+    'product.tag',
+    'search_read',
+    [[]],
+    { fields: ['id', 'name'] }
+  );
+
+  const shaped = tags.map((t) => ({ id: t.id, name: t.name }));
+
+  tagsCache.set(shaped);
+
+  res.json({ success: true, tags: shaped });
+}));
 
 // POST /api/odoo/order
 // Creates a confirmed sale order in Odoo, including a delivery fee line item.
@@ -417,66 +266,60 @@ router.get('/tags', async (req, res) => {
 //   deliveryZone: string,   // e.g. "Zone 2 — Central Nairobi"
 //   notes: string
 // }
-router.post('/order', async (req, res) => {
-  try {
-    const { customer, items, total, deliveryFee, deliveryZone, notes } = req.body;
+router.post('/order', asyncRoute('Odoo order error', async (req, res) => {
+  const { customer, items, total, deliveryFee, deliveryZone, notes } = req.body;
 
-    // 1. Find or create the customer in Odoo
-    const partnerId = await findOrCreateCustomer(
-      customer.name || `${customer.firstName} ${customer.lastName}`,
-      customer.email,
-      customer.phone || ''
-    );
+  // 1. Find or create the customer in Odoo
+  const partnerId = await findOrCreateCustomer(
+    customer.name || `${customer.firstName} ${customer.lastName}`,
+    customer.email,
+    customer.phone || ''
+  );
 
-    // 2. Build order lines for each product
-    const orderLines = await Promise.all(items.map(async (item) => {
-      const productId = await findOrCreateProduct(item.name, item.price);
-      return [0, 0, {
-        product_id: productId,
-        name: item.name,
-        product_uom_qty: item.qty,
-        price_unit: item.price,
-      }];
-    }));
+  // 2. Build order lines for each product
+  const orderLines = await Promise.all(items.map(async (item) => {
+    const productId = await findOrCreateProduct(item.name, item.price);
+    return [0, 0, {
+      product_id: productId,
+      name: item.name,
+      product_uom_qty: item.qty,
+      price_unit: item.price,
+    }];
+  }));
 
-    // 3. Add delivery fee as a separate line item (if applicable)
-    if (deliveryFee && deliveryFee > 0) {
-      const deliveryProductId = await findOrCreateDeliveryProduct();
-      orderLines.push([0, 0, {
-        product_id: deliveryProductId,
-        name: `Delivery — ${deliveryZone || 'Standard'}`,
-        product_uom_qty: 1,
-        price_unit: deliveryFee,
-      }]);
-    }
-
-    // 4. Create the sale order
-    const saleOrderId = await odooCall('sale.order', 'create', [{
-      partner_id: partnerId,
-      order_line: orderLines,
-      note: [
-        notes ? `Customer note: ${notes}` : '',
-        `Customer phone: ${customer.phone || 'N/A'}`,
-        `Delivery zone: ${deliveryZone || 'N/A'}`,
-        `Delivery address: ${customer.address || ''}${customer.city ? ', ' + customer.city : ''}`,
-        `Order total (incl. delivery): KES ${total}`,
-      ].filter(Boolean).join('\n'),
+  // 3. Add delivery fee as a separate line item (if applicable)
+  if (deliveryFee && deliveryFee > 0) {
+    const deliveryProductId = await findOrCreateDeliveryProduct();
+    orderLines.push([0, 0, {
+      product_id: deliveryProductId,
+      name: `Delivery — ${deliveryZone || 'Standard'}`,
+      product_uom_qty: 1,
+      price_unit: deliveryFee,
     }]);
-
-    // 5. Confirm the order (moves it from draft to confirmed in Odoo)
-    await odooCall('sale.order', 'action_confirm', [[saleOrderId]]);
-
-    res.json({
-      success: true,
-      sale_order_id: saleOrderId,
-      message: `Order #${saleOrderId} created in Odoo`,
-    });
-
-  } catch (err) {
-    console.error('Odoo order error:', err.message);
-    res.status(500).json({ success: false, error: err.message });
   }
-});
+
+  // 4. Create the sale order
+  const saleOrderId = await odooCall('sale.order', 'create', [{
+    partner_id: partnerId,
+    order_line: orderLines,
+    note: [
+      notes ? `Customer note: ${notes}` : '',
+      `Customer phone: ${customer.phone || 'N/A'}`,
+      `Delivery zone: ${deliveryZone || 'N/A'}`,
+      `Delivery address: ${customer.address || ''}${customer.city ? ', ' + customer.city : ''}`,
+      `Order total (incl. delivery): KES ${total}`,
+    ].filter(Boolean).join('\n'),
+  }]);
+
+  // 5. Confirm the order (moves it from draft to confirmed in Odoo)
+  await odooCall('sale.order', 'action_confirm', [[saleOrderId]]);
+
+  res.json({
+    success: true,
+    sale_order_id: saleOrderId,
+    message: `Order #${saleOrderId} created in Odoo`,
+  });
+}));
 
 // GET /api/odoo/discount/debug
 // Temporary debug route — remove after confirming correct model/field names

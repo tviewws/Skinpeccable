@@ -19,8 +19,9 @@ import {
   X,
 } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
-
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+import { BACKEND_URL, fetchJson } from '@/lib/api';
+import { formatKsh } from '@/lib/formatting';
+import { toOrderItems } from '@/lib/orders';
 
 // ─────────────────────────────────────────────
 // DELIVERY ZONES — client-defined Nairobi zones
@@ -260,8 +261,11 @@ export default function Checkout() {
     setDiscountResult(null);
 
     try {
-      const res = await fetch(`${BACKEND_URL}/api/odoo/discount/validate?code=${code}&subtotal=${subtotal}`);
-      const data = await res.json();
+      const data = await fetchJson<{
+        success: boolean;
+        error?: string;
+        discount: DiscountResult;
+      }>(`${BACKEND_URL}/api/odoo/discount/validate?code=${code}&subtotal=${subtotal}`);
 
       if (!data.success) {
         setDiscountError(data.error || 'Invalid discount code. Please try again.');
@@ -300,32 +304,28 @@ export default function Checkout() {
 
     try {
       // 1. Create order in Odoo first
-      const odooRes = await fetch(`${BACKEND_URL}/api/odoo/order`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customer: {
-            name: `${form.firstName} ${form.lastName}`,
-            email: form.email,
-            phone: form.phone,
-            address: form.address,
-            city: form.city,
-          },
-          items: items.map(i => ({
-            name: i.name,
-            price: i.price,
-            qty: i.quantity,
-          })),
-          total,
-          deliveryFee,
-          deliveryZone: deliveryZone?.label,
-          notes: form.notes,
-          discountCode: discountCode || null,
-          discountAmount: discountAmount || null,
-        }),
-      });
-
-      const odooData = await odooRes.json();
+      const odooData = await fetchJson<{ success: boolean; error?: string }>(
+        `${BACKEND_URL}/api/odoo/order`,
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            customer: {
+              name: `${form.firstName} ${form.lastName}`,
+              email: form.email,
+              phone: form.phone,
+              address: form.address,
+              city: form.city,
+            },
+            items: toOrderItems(items),
+            total,
+            deliveryFee,
+            deliveryZone: deliveryZone?.label,
+            notes: form.notes,
+            discountCode: discountCode || null,
+            discountAmount: discountAmount || null,
+          }),
+        }
+      );
 
       if (!odooData.success) {
         // Log the error but don't block payment — order can be manually created if needed
@@ -333,9 +333,12 @@ export default function Checkout() {
       }
 
       // 2. Initiate Pesapal payment
-      const res = await fetch(`${BACKEND_URL}/api/payments/pesapal/initiate`, {
+      const data = await fetchJson<{
+        success: boolean;
+        error?: string;
+        redirect_url?: string;
+      }>(`${BACKEND_URL}/api/payments/pesapal/initiate`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           customer: {
             firstName: form.firstName,
@@ -345,11 +348,7 @@ export default function Checkout() {
             address: form.address,
             city: form.city,
           },
-          items: items.map(i => ({
-            name: i.name,
-            price: i.price,
-            qty: i.quantity,
-          })),
+          items: toOrderItems(items),
           amount: total,
           deliveryFee,
           deliveryZone: deliveryZone?.label,
@@ -358,8 +357,6 @@ export default function Checkout() {
           discountAmount: discountAmount || null,
         }),
       });
-
-      const data = await res.json();
 
       if (!data.success || !data.redirect_url) {
         setError(data.error || 'Could not initiate payment. Please try again.');
@@ -373,11 +370,7 @@ export default function Checkout() {
           email: form.email,
           phone: form.phone,
         },
-        items: items.map(i => ({
-          name: i.name,
-          price: i.price,
-          qty: i.quantity,
-        })),
+        items: toOrderItems(items),
         deliveryFee,
         deliveryZone: deliveryZone?.label,
         discountCode: discountCode || null,
@@ -681,7 +674,7 @@ export default function Checkout() {
                               }}
                             >
                               <Truck size={12} />
-                              {deliveryZone.label} — Delivery: KSh {deliveryZone.fee.toLocaleString()}
+                              {deliveryZone.label} — Delivery: {formatKsh(deliveryZone.fee)}
                             </div>
                           ) : (
                             <p className="text-xs font-body" style={{ color: '#B45309' }}>
@@ -711,7 +704,7 @@ export default function Checkout() {
                         }}
                       >
                         <Truck size={12} />
-                        {deliveryZone?.label} — KSh {deliveryZone?.fee.toLocaleString()}
+                        {deliveryZone?.label} — {formatKsh(deliveryZone?.fee ?? 0)}
                       </div>
                     </div>
                   )}
@@ -948,7 +941,7 @@ export default function Checkout() {
                   >
                     <span className="font-body text-sm" style={{ color: 'var(--charcoal)' }}>Subtotal</span>
                     <span className="font-body text-sm font-medium" style={{ color: 'var(--dark-chocolate)' }}>
-                      KSh {subtotal.toLocaleString()}
+                      {formatKsh(subtotal)}
                     </span>
                   </div>
                   <div
@@ -959,7 +952,7 @@ export default function Checkout() {
                       Delivery ({deliveryZone?.label})
                     </span>
                     <span className="font-body text-sm font-medium" style={{ color: 'var(--deep-orange)' }}>
-                      {deliveryFee === 0 ? 'Free' : `KSh ${deliveryFee.toLocaleString()}`}
+                      {deliveryFee === 0 ? 'Free' : formatKsh(deliveryFee)}
                     </span>
                   </div>
 
@@ -974,7 +967,7 @@ export default function Checkout() {
                         Discount ({discountCode})
                       </span>
                       <span className="font-body text-sm font-medium" style={{ color: '#15803D' }}>
-                        − KSh {discountAmount.toLocaleString()}
+                        − {formatKsh(discountAmount)}
                       </span>
                     </div>
                   )}
@@ -985,7 +978,7 @@ export default function Checkout() {
                   >
                     <span className="font-body font-bold" style={{ color: 'var(--dark-chocolate)' }}>Total</span>
                     <span className="font-body font-bold" style={{ fontSize: '1.125rem', color: 'var(--dark-chocolate)' }}>
-                      KSh {total.toLocaleString()}
+                      {formatKsh(total)}
                     </span>
                   </div>
                 </div>
@@ -1024,7 +1017,7 @@ export default function Checkout() {
                     ) : (
                       <>
                         <CreditCard size={15} />
-                        Pay now — KSh {total.toLocaleString()}
+                        Pay now — {formatKsh(total)}
                       </>
                     )}
                   </button>
@@ -1089,7 +1082,7 @@ export default function Checkout() {
                           className="font-body font-semibold text-sm flex-shrink-0"
                           style={{ color: 'var(--dark-chocolate)' }}
                         >
-                          KSh {(item.price * item.quantity).toLocaleString()}
+                          {formatKsh(item.price * item.quantity)}
                         </span>
                       </div>
                     ))}
@@ -1102,13 +1095,13 @@ export default function Checkout() {
                   >
                     <div className="flex justify-between font-body text-sm">
                       <span style={{ color: 'var(--warm-taupe)' }}>Subtotal</span>
-                      <span style={{ color: 'var(--dark-chocolate)' }}>KSh {subtotal.toLocaleString()}</span>
+                      <span style={{ color: 'var(--dark-chocolate)' }}>{formatKsh(subtotal)}</span>
                     </div>
                     <div className="flex justify-between font-body text-sm">
                       <span style={{ color: 'var(--warm-taupe)' }}>Delivery</span>
                       <span style={{ color: deliveryZone ? 'var(--deep-orange)' : 'var(--warm-taupe)' }}>
                         {deliveryZone
-                          ? deliveryFee === 0 ? 'Free' : `KSh ${deliveryFee.toLocaleString()}`
+                          ? deliveryFee === 0 ? 'Free' : formatKsh(deliveryFee)
                           : 'Select method'}
                       </span>
                     </div>
@@ -1116,7 +1109,7 @@ export default function Checkout() {
                     {discountResult && (
                       <div className="flex justify-between font-body text-sm">
                         <span style={{ color: '#15803D' }}>Discount</span>
-                        <span style={{ color: '#15803D' }}>− KSh {discountAmount.toLocaleString()}</span>
+                        <span style={{ color: '#15803D' }}>− {formatKsh(discountAmount)}</span>
                       </div>
                     )}
                     <div
@@ -1128,7 +1121,7 @@ export default function Checkout() {
                       }}
                     >
                       <span>Total</span>
-                      <span>KSh {total.toLocaleString()}</span>
+                      <span>{formatKsh(total)}</span>
                     </div>
                   </div>
                 </>

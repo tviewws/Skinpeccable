@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link } from 'wouter';
 import { CheckCircle, Loader } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
-
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+import { BACKEND_URL, fetchJson } from '@/lib/api';
+import { pushEcommerceEvent } from '@/lib/analytics';
 
 export default function CheckoutSuccess() {
   const { clearCart } = useCart();
@@ -17,28 +17,17 @@ export default function CheckoutSuccess() {
 
         const order = JSON.parse(raw);
 
-        await fetch(`${BACKEND_URL}/api/odoo/order`, {
+        await fetchJson(`${BACKEND_URL}/api/odoo/order`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(order),
         });
 
         // Meta Pixel: Purchase event
-        if (typeof window !== 'undefined') {
-          (window as any).dataLayer = (window as any).dataLayer || [];
-          (window as any).dataLayer.push({
-            event: 'purchase',
-            ecommerce: {
-              currency: 'KES',
-              value: order.total,
-              items: (order.items || []).map((i: any) => ({
-                item_name: i.name,
-                price: i.price,
-                quantity: i.qty,
-              })),
-            },
-          });
-        }
+        pushEcommerceEvent('purchase', order.total, (order.items || []).map((i: any) => ({
+          item_name: i.name,
+          price: i.price,
+          quantity: i.qty,
+        })));
 
         localStorage.removeItem('pendingOrder');
         console.log('Order sent to Odoo successfully');
