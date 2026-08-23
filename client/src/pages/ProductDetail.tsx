@@ -10,8 +10,9 @@ import { useState, useEffect } from 'react';
 import { type Product } from '@/lib/products';
 import { useCart } from '@/contexts/CartContext';
 import { toast } from 'sonner';
-
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+import { BACKEND_URL, fetchJsonSuccess } from '@/lib/api';
+import { pushEcommerceEvent } from '@/lib/analytics';
+import { formatKsh } from '@/lib/formatting';
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
@@ -30,32 +31,23 @@ export default function ProductDetail() {
       return;
     }
 
-    fetch(`${BACKEND_URL}/api/odoo/products`)
-      .then(r => r.json())
+    fetchJsonSuccess<{ products: Product[] }>(
+      `${BACKEND_URL}/api/odoo/products`
+    )
       .then(data => {
-        if (!data.success) throw new Error('API error');
         const found = data.products.find((p: Product) => p.id === id);
         if (found) {
           setProduct(found);
 
           // Meta Pixel: ViewContent event
-          if (typeof window !== 'undefined' && found.price !== 'SOLD OUT') {
-            (window as any).dataLayer = (window as any).dataLayer || [];
-            (window as any).dataLayer.push({
-              event: 'view_content',
-              ecommerce: {
-                currency: 'KES',
-                value: found.price,
-                items: [{
-                  item_id: found.id,
-                  item_name: found.name,
-                  item_brand: found.brand,
-                  item_category: found.category,
-                  price: found.price,
-                }],
-              },
-            });
-          }
+          if (found.price !== 'SOLD OUT')
+            pushEcommerceEvent('view_content', found.price, [{
+              item_id: found.id,
+              item_name: found.name,
+              item_brand: found.brand,
+              item_category: found.category,
+              price: found.price,
+            }]);
         } else {
           setNotFound(true);
         }
@@ -106,7 +98,7 @@ export default function ProductDetail() {
       category: product.category,
     });
     toast.success(`${product.name} added to your bag`, {
-      description: `KSh ${(product.price as number).toLocaleString()}`,
+      description: formatKsh(product.price as number),
       duration: 2500,
     });
     setAdded(true);
@@ -185,7 +177,7 @@ export default function ProductDetail() {
               className="font-body font-bold"
               style={{ fontSize: '1.5rem', color: 'var(--dark-chocolate)' }}
             >
-              {isSoldOut ? 'KSh SOLD OUT' : `KSh ${(product.price as number).toLocaleString()}`}
+              {formatKsh(product.price)}
             </p>
 
             {/* Divider */}

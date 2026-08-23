@@ -15,9 +15,9 @@ import { useCart } from '@/contexts/CartContext';
 import { toast } from 'sonner';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { usePageMeta } from '@/hooks/usePageMeta';
+import { BACKEND_URL, fetchJsonSuccess } from '@/lib/api';
+import { formatKsh } from '@/lib/formatting';
 import shopVideo from '../../assets/shopvideo.mp4';
-
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
 interface Category {
   id: string;
@@ -35,12 +35,9 @@ const FALLBACK_CATEGORIES: Category[] = [
 
 async function fetchOdooProducts(): Promise<Product[]> {
   try {
-    const res = await fetch(`${BACKEND_URL}/api/odoo/products`);
-    const data = await res.json();
-    if (!data.success) {
-      console.error('Failed to fetch Odoo products:', data.error);
-      return [];
-    }
+    const data = await fetchJsonSuccess<{ products: Product[] }>(
+      `${BACKEND_URL}/api/odoo/products`
+    );
     return data.products as Product[];
   } catch (err) {
     console.error('fetchOdooProducts error:', err);
@@ -50,12 +47,9 @@ async function fetchOdooProducts(): Promise<Product[]> {
 
 async function fetchOdooCategories(): Promise<Category[]> {
   try {
-    const res = await fetch(`${BACKEND_URL}/api/odoo/categories`);
-    const data = await res.json();
-    if (!data.success) {
-      console.error('Failed to fetch Odoo categories:', data.error);
-      return FALLBACK_CATEGORIES;
-    }
+    const data = await fetchJsonSuccess<{ categories: Category[] }>(
+      `${BACKEND_URL}/api/odoo/categories`
+    );
     return data.categories as Category[];
   } catch (err) {
     console.error('fetchOdooCategories error:', err);
@@ -65,12 +59,9 @@ async function fetchOdooCategories(): Promise<Category[]> {
 
 async function fetchOdooTags(): Promise<Tag[]> {
   try {
-    const res = await fetch(`${BACKEND_URL}/api/odoo/tags`);
-    const data = await res.json();
-    if (!data.success) {
-      console.error('Failed to fetch Odoo tags:', data.error);
-      return [];
-    }
+    const data = await fetchJsonSuccess<{ tags: Tag[] }>(
+      `${BACKEND_URL}/api/odoo/tags`
+    );
     return data.tags as Tag[];
   } catch (err) {
     console.error('fetchOdooTags error:', err);
@@ -113,7 +104,7 @@ function ProductCard({ product }: { product: Product }) {
       category: product.category,
     });
     toast.success(`${product.name} added to your bag`, {
-      description: `KSh ${(product.price as number).toLocaleString()}`,
+      description: formatKsh(product.price as number),
       duration: 2500,
     });
   };
@@ -201,7 +192,7 @@ function ProductCard({ product }: { product: Product }) {
             className="font-body font-bold"
             style={{ fontSize: '1rem', color: isSoldOut ? 'var(--warm-taupe)' : 'var(--dark-chocolate)' }}
           >
-            {isSoldOut ? 'Sold Out' : `KSh ${(product.price as number).toLocaleString()}`}
+            {isSoldOut ? 'Sold Out' : formatKsh(product.price as number)}
           </span>
           {!isSoldOut && (
             <button

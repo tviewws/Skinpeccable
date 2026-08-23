@@ -9,6 +9,7 @@ import { Link } from 'wouter';
 import { ArrowRight, ChevronRight, Sparkles, Leaf, Heart } from 'lucide-react';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { usePageMeta } from '@/hooks/usePageMeta';
+import { BACKEND_URL, fetchJsonSuccess } from '@/lib/api';
 import heroVideo from '../../assets/herovideo1.mp4';
 import heroSkin from '../../assets/heroskin.jpg';
 import homeImage2 from '../../assets/homeimage2.png';
@@ -61,12 +62,10 @@ export default function Home() {
   };
 
   useEffect(() => {
-    const backendUrl = import.meta.env.VITE_BACKEND_URL;
-    fetch(`${backendUrl}/api/odoo/content-blocks?section=Home Banner`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) setBanners(data.blocks);
-      })
+    fetchJsonSuccess<{ blocks: ContentBlock[] }>(
+      `${BACKEND_URL}/api/odoo/content-blocks?section=Home Banner`
+    )
+      .then(data => setBanners(data.blocks))
       .catch((err) => console.error('Failed to load home banners:', err));
   }, []);
 

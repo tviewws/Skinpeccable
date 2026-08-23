@@ -6,6 +6,7 @@
 import { X, Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { Link } from 'wouter';
+import { formatKsh } from '@/lib/formatting';
 
 export default function CartDrawer() {
   const { items, isOpen, closeCart, removeItem, updateQuantity, totalItems, totalPrice } = useCart();
@@ -137,7 +138,7 @@ export default function CartDrawer() {
                           className="font-body font-semibold"
                           style={{ fontSize: '0.9rem', color: 'var(--dark-chocolate)' }}
                         >
-                          KSh {(item.price * item.quantity).toLocaleString()}
+                          {formatKsh(item.price * item.quantity)}
                         </span>
                         <button
                           onClick={() => removeItem(item.id)}
@@ -165,7 +166,7 @@ export default function CartDrawer() {
             <div className="flex items-center justify-between mb-1">
               <span className="font-body text-sm" style={{ color: 'var(--warm-taupe)' }}>Subtotal</span>
               <span className="font-body font-semibold" style={{ color: 'var(--dark-chocolate)' }}>
-                KSh {totalPrice.toLocaleString()}
+                {formatKsh(totalPrice)}
               </span>
             </div>
             <p className="font-body text-xs mb-4" style={{ color: 'var(--warm-taupe)' }}>
