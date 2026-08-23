@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 const { z } = require('zod');
+const { priceOrder, PricingError } = require('../lib/pricing');
 
 const {
   PESAPAL_CONSUMER_KEY,
@@ -15,15 +16,26 @@ const {
 const orderSchema = z.object({
   amount: z.number().positive(),
   customer: z.object({
-    firstName: z.string().min(1),
-    lastName: z.string().min(1),
-    email: z.string().email(),
-    phone: z.string().min(9),
-    address: z.string().min(1),
-    city: z.string().min(1),
+    firstName: z.string().trim().min(1).max(60),
+    lastName: z.string().trim().min(1).max(60),
+    email: z.string().email().max(160),
+    phone: z.string().trim().min(9).max(30),
+    address: z.string().trim().min(1).max(300),
+    city: z.string().trim().min(1).max(80),
   }),
-  items: z.array(z.any()).min(1),
-});
+  items: z.array(z.object({
+    name: z.string().trim().min(1).max(200),
+    qty: z.number().int().positive().max(100),
+    price: z.number().nonnegative().optional(),
+  })).min(1).max(50),
+  deliveryFee: z.number().nonnegative().optional(),
+  deliveryZone: z.string().trim().max(80).optional(),
+  notes: z.string().trim().max(1000).optional(),
+  discountCode: z.string().trim().max(60).nullish(),
+}).passthrough();
+
+// Pesapal order tracking IDs are UUIDs
+const trackingIdSchema = z.string().uuid();
 
 // Use sandbox or live URL based on environment
 const PESAPAL_BASE =
@@ -130,7 +142,16 @@ router.post('/pesapal/initiate', async (req, res) => {
       });
     }
 
-    const { customer, items, amount, notes } = req.body;
+    const { customer, items, amount, deliveryFee, discountCode, notes } = validation.data;
+
+    // 0. Recompute the amount from Odoo prices — never charge a browser-supplied total
+    const priced = await priceOrder({ items, deliveryFee, discountCode });
+
+    if (Math.abs(priced.total - amount) > 1) {
+      console.warn(
+        `Pesapal amount mismatch: client sent ${amount}, server computed ${priced.total}`
+      );
+    }
 
     // 1. Get auth token
     const token = await getPesapalToken();
@@ -142,7 +163,7 @@ router.post('/pesapal/initiate', async (req, res) => {
     const { redirect_url, order_tracking_id } = await submitOrder(token, ipnId, {
       customer,
       items,
-      amount,
+      amount: priced.total,
       notes,
     });
 
@@ -151,8 +172,11 @@ router.post('/pesapal/initiate', async (req, res) => {
     res.json({ success: true, redirect_url, order_tracking_id });
 
   } catch (err) {
+    if (err instanceof PricingError) {
+      return res.status(400).json({ success: false, error: err.message });
+    }
     console.error('Pesapal initiate error:', err.message);
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Could not initiate payment' });
   }
 });
 
@@ -160,19 +184,22 @@ router.post('/pesapal/initiate', async (req, res) => {
 // Called by Pesapal when payment status changes
 router.get('/pesapal/ipn', async (req, res) => {
   try {
-    const { orderTrackingId, orderMerchantReference, orderNotificationType } = req.query;
+    const { orderMerchantReference, orderNotificationType } = req.query;
+    const tracking = trackingIdSchema.safeParse(req.query.orderTrackingId);
 
-    console.log('Pesapal IPN received:', {
-      orderTrackingId,
-      orderMerchantReference,
-      orderNotificationType,
-    });
+    if (!tracking.success) {
+      return res.status(400).json({ error: 'Invalid orderTrackingId' });
+    }
+
+    const orderTrackingId = tracking.data;
+
+    console.log('Pesapal IPN received:', { orderTrackingId });
 
     // Get token to check transaction status
     const token = await getPesapalToken();
 
     const statusRes = await axios.get(
-      `${PESAPAL_BASE}/api/Transactions/GetTransactionStatus?orderTrackingId=${orderTrackingId}`,
+      `${PESAPAL_BASE}/api/Transactions/GetTransactionStatus?orderTrackingId=${encodeURIComponent(orderTrackingId)}`,
       {
         headers: {
           Accept: 'application/json',
@@ -189,7 +216,7 @@ router.get('/pesapal/ipn', async (req, res) => {
 
   } catch (err) {
     console.error('Pesapal IPN error:', err.message);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'IPN processing failed' });
   }
 });
 
@@ -197,16 +224,16 @@ router.get('/pesapal/ipn', async (req, res) => {
 // Check payment status manually (called from frontend if needed)
 router.get('/pesapal/status', async (req, res) => {
   try {
-    const { orderTrackingId } = req.query;
+    const tracking = trackingIdSchema.safeParse(req.query.orderTrackingId);
 
-    if (!orderTrackingId) {
-      return res.status(400).json({ success: false, error: 'orderTrackingId is required' });
+    if (!tracking.success) {
+      return res.status(400).json({ success: false, error: 'A valid orderTrackingId is required' });
     }
 
     const token = await getPesapalToken();
 
     const statusRes = await axios.get(
-      `${PESAPAL_BASE}/api/Transactions/GetTransactionStatus?orderTrackingId=${orderTrackingId}`,
+      `${PESAPAL_BASE}/api/Transactions/GetTransactionStatus?orderTrackingId=${encodeURIComponent(tracking.data)}`,
       {
         headers: {
           Accept: 'application/json',
@@ -218,12 +245,13 @@ router.get('/pesapal/status', async (req, res) => {
     res.json({
       success: true,
       status: statusRes.data.payment_status_description,
-      data: statusRes.data,
+      amount: statusRes.data.amount,
+      currency: statusRes.data.currency,
     });
 
   } catch (err) {
     console.error('Pesapal status error:', err.message);
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Could not fetch payment status' });
   }
 });
 
