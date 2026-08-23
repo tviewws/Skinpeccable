@@ -16,8 +16,7 @@ import { toast } from 'sonner';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import shopVideo from '../../assets/shopvideo.mp4';
-
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+import { apiFetch } from '@/lib/api';
 
 interface Category {
   id: string;
@@ -34,48 +33,18 @@ const FALLBACK_CATEGORIES: Category[] = [
 ];
 
 async function fetchOdooProducts(): Promise<Product[]> {
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/odoo/products`);
-    const data = await res.json();
-    if (!data.success) {
-      console.error('Failed to fetch Odoo products:', data.error);
-      return [];
-    }
-    return data.products as Product[];
-  } catch (err) {
-    console.error('fetchOdooProducts error:', err);
-    return [];
-  }
+  const data = await apiFetch<{ products: Product[] }>('/api/odoo/products');
+  return data.products;
 }
 
 async function fetchOdooCategories(): Promise<Category[]> {
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/odoo/categories`);
-    const data = await res.json();
-    if (!data.success) {
-      console.error('Failed to fetch Odoo categories:', data.error);
-      return FALLBACK_CATEGORIES;
-    }
-    return data.categories as Category[];
-  } catch (err) {
-    console.error('fetchOdooCategories error:', err);
-    return FALLBACK_CATEGORIES;
-  }
+  const data = await apiFetch<{ categories: Category[] }>('/api/odoo/categories');
+  return data.categories;
 }
 
 async function fetchOdooTags(): Promise<Tag[]> {
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/odoo/tags`);
-    const data = await res.json();
-    if (!data.success) {
-      console.error('Failed to fetch Odoo tags:', data.error);
-      return [];
-    }
-    return data.tags as Tag[];
-  } catch (err) {
-    console.error('fetchOdooTags error:', err);
-    return [];
-  }
+  const data = await apiFetch<{ tags: Tag[] }>('/api/odoo/tags');
+  return data.tags;
 }
 
 function SkeletonCard() {
@@ -255,23 +224,61 @@ export default function Shop() {
   const [tags, setTags] = useState<Tag[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [loadingCategories, setLoadingCategories] = useState(true);
+  const [productsError, setProductsError] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   // Fetch products, categories and concern tags in parallel
   useEffect(() => {
-    fetchOdooProducts().then((products) => {
-      setOdooProducts(products);
-      setLoadingProducts(false);
-    });
+    let cancelled = false;
 
-    fetchOdooCategories().then((cats) => {
-      setCategories(cats);
-      setLoadingCategories(false);
-    });
+    setLoadingProducts(true);
+    setLoadingCategories(true);
+    setProductsError(null);
 
-    fetchOdooTags().then((fetchedTags) => {
-      setTags(fetchedTags);
-    });
-  }, []);
+    fetchOdooProducts()
+      .then((products) => {
+        if (!cancelled) setOdooProducts(products);
+      })
+      .catch((err: unknown) => {
+        console.error('Failed to load products:', err);
+        if (!cancelled) {
+          setOdooProducts([]);
+          setProductsError(
+            err instanceof Error ? err.message : 'Could not load products.'
+          );
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingProducts(false);
+      });
+
+    // Categories and concern tags only shape the filters, so a failure there
+    // degrades to "All Products" instead of blocking the grid — but it still
+    // has to be logged rather than vanish.
+    fetchOdooCategories()
+      .then((cats) => {
+        if (!cancelled) setCategories(cats);
+      })
+      .catch((err: unknown) => {
+        console.error('Failed to load categories:', err);
+        if (!cancelled) setCategories(FALLBACK_CATEGORIES);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingCategories(false);
+      });
+
+    fetchOdooTags()
+      .then((fetchedTags) => {
+        if (!cancelled) setTags(fetchedTags);
+      })
+      .catch((err: unknown) => {
+        console.error('Failed to load concern tags:', err);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadKey]);
 
   // Honour ?cat= query param once categories are loaded
   useEffect(() => {
@@ -604,6 +611,22 @@ export default function Shop() {
                     <SkeletonCard />
                   </div>
                 ))}
+              </div>
+            ) : productsError ? (
+              <div className="text-center py-24">
+                <p className="font-display text-2xl mb-3" style={{ color: 'var(--dark-chocolate)' }}>
+                  We couldn't load our products
+                </p>
+                <p className="font-body text-sm mb-6" style={{ color: 'var(--warm-taupe)' }}>
+                  {productsError}
+                </p>
+                <button
+                  onClick={() => setReloadKey(k => k + 1)}
+                  className="btn-secondary"
+                  style={{ fontSize: '0.8rem' }}
+                >
+                  Try Again
+                </button>
               </div>
             ) : filteredProducts.length === 0 ? (
               <div className="text-center py-24">

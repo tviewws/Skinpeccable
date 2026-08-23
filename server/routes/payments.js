@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 const { z } = require('zod');
+const { logError, asyncRoute } = require('../lib/errors');
 
 const {
   PESAPAL_CONSUMER_KEY,
@@ -119,42 +120,36 @@ async function submitOrder(token, ipnId, orderData) {
 
 // ── POST /api/payments/pesapal/initiate
 // Called by checkout page — registers order and returns Pesapal redirect URL
-router.post('/pesapal/initiate', async (req, res) => {
-  try {
-    const validation = orderSchema.safeParse(req.body);
-    if (!validation.success) {
-      return res.status(400).json({
-        success: false,
-        error: 'Invalid order data',
-        details: validation.error.flatten(),
-      });
-    }
-
-    const { customer, items, amount, notes } = req.body;
-
-    // 1. Get auth token
-    const token = await getPesapalToken();
-
-    // 2. Register IPN
-    const ipnId = await registerIPN(token);
-
-    // 3. Submit order and get redirect URL
-    const { redirect_url, order_tracking_id } = await submitOrder(token, ipnId, {
-      customer,
-      items,
-      amount,
-      notes,
+router.post('/pesapal/initiate', asyncRoute(async (req, res) => {
+  const validation = orderSchema.safeParse(req.body);
+  if (!validation.success) {
+    return res.status(400).json({
+      success: false,
+      error: 'Invalid order data',
+      details: validation.error.flatten(),
     });
-
-    console.log(`Pesapal order created: ${order_tracking_id}`);
-
-    res.json({ success: true, redirect_url, order_tracking_id });
-
-  } catch (err) {
-    console.error('Pesapal initiate error:', err.message);
-    res.status(500).json({ success: false, error: err.message });
   }
-});
+
+  const { customer, items, amount, notes } = req.body;
+
+  // 1. Get auth token
+  const token = await getPesapalToken();
+
+  // 2. Register IPN
+  const ipnId = await registerIPN(token);
+
+  // 3. Submit order and get redirect URL
+  const { redirect_url, order_tracking_id } = await submitOrder(token, ipnId, {
+    customer,
+    items,
+    amount,
+    notes,
+  });
+
+  console.log(`Pesapal order created: ${order_tracking_id}`);
+
+  res.json({ success: true, redirect_url, order_tracking_id });
+}));
 
 // ── GET /api/payments/pesapal/ipn
 // Called by Pesapal when payment status changes
@@ -172,7 +167,7 @@ router.get('/pesapal/ipn', async (req, res) => {
     const token = await getPesapalToken();
 
     const statusRes = await axios.get(
-      `${PESAPAL_BASE}/api/Transactions/GetTransactionStatus?orderTrackingId=${orderTrackingId}`,
+      `${PESAPAL_BASE}/api/Transactions/GetTransactionStatus?orderTrackingId=${encodeURIComponent(orderTrackingId)}`,
       {
         headers: {
           Accept: 'application/json',
@@ -188,43 +183,39 @@ router.get('/pesapal/ipn', async (req, res) => {
     res.json({ orderNotificationType, orderTrackingId, orderMerchantReference, status: '200' });
 
   } catch (err) {
-    console.error('Pesapal IPN error:', err.message);
-    res.status(500).json({ error: err.message });
+    // Pesapal retries on a non-200, so keep the 500 — but never lose the
+    // upstream detail, which is the only record of a failed notification.
+    logError('payments:pesapal/ipn', err);
+    res.status(500).json({ success: false, error: 'Could not process IPN notification' });
   }
 });
 
 // ── GET /api/payments/pesapal/status
 // Check payment status manually (called from frontend if needed)
-router.get('/pesapal/status', async (req, res) => {
-  try {
-    const { orderTrackingId } = req.query;
+router.get('/pesapal/status', asyncRoute(async (req, res) => {
+  const { orderTrackingId } = req.query;
 
-    if (!orderTrackingId) {
-      return res.status(400).json({ success: false, error: 'orderTrackingId is required' });
-    }
-
-    const token = await getPesapalToken();
-
-    const statusRes = await axios.get(
-      `${PESAPAL_BASE}/api/Transactions/GetTransactionStatus?orderTrackingId=${orderTrackingId}`,
-      {
-        headers: {
-          Accept: 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    res.json({
-      success: true,
-      status: statusRes.data.payment_status_description,
-      data: statusRes.data,
-    });
-
-  } catch (err) {
-    console.error('Pesapal status error:', err.message);
-    res.status(500).json({ success: false, error: err.message });
+  if (!orderTrackingId) {
+    return res.status(400).json({ success: false, error: 'orderTrackingId is required' });
   }
-});
+
+  const token = await getPesapalToken();
+
+  const statusRes = await axios.get(
+    `${PESAPAL_BASE}/api/Transactions/GetTransactionStatus?orderTrackingId=${encodeURIComponent(orderTrackingId)}`,
+    {
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  res.json({
+    success: true,
+    status: statusRes.data.payment_status_description,
+    data: statusRes.data,
+  });
+}));
 
 module.exports = router;

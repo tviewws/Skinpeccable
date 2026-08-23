@@ -10,8 +10,7 @@ import { useState, useEffect } from 'react';
 import { type Product } from '@/lib/products';
 import { useCart } from '@/contexts/CartContext';
 import { toast } from 'sonner';
-
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+import { apiFetch } from '@/lib/api';
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
@@ -22,6 +21,8 @@ export default function ProductDetail() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     if (!id) {
@@ -30,10 +31,12 @@ export default function ProductDetail() {
       return;
     }
 
-    fetch(`${BACKEND_URL}/api/odoo/products`)
-      .then(r => r.json())
+    setLoading(true);
+    setLoadError(null);
+    setNotFound(false);
+
+    apiFetch<{ products: Product[] }>('/api/odoo/products')
       .then(data => {
-        if (!data.success) throw new Error('API error');
         const found = data.products.find((p: Product) => p.id === id);
         if (found) {
           setProduct(found);
@@ -60,9 +63,16 @@ export default function ProductDetail() {
           setNotFound(true);
         }
       })
-      .catch(() => setNotFound(true))
+      // A failed request is not a missing product — saying "not found" here
+      // hides an outage and tells the shopper the item does not exist.
+      .catch((err: unknown) => {
+        console.error('Failed to load product:', err);
+        setLoadError(
+          err instanceof Error ? err.message : 'Could not load this product.'
+        );
+      })
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, reloadKey]);
 
   // Loading state
   if (loading) {
@@ -74,6 +84,31 @@ export default function ProductDetail() {
         <p className="font-body text-base animate-pulse" style={{ color: 'var(--warm-taupe)' }}>
           Loading product...
         </p>
+      </div>
+    );
+  }
+
+  // Load failure (network/API) — distinct from a product that does not exist
+  if (loadError) {
+    return (
+      <div
+        className="min-h-screen flex flex-col items-center justify-center py-24 px-4 text-center"
+        style={{ backgroundColor: 'var(--light-warm-grey)' }}
+      >
+        <p className="font-display text-2xl mb-3" style={{ color: 'var(--dark-chocolate)' }}>
+          We couldn't load this product
+        </p>
+        <p className="font-body text-sm mb-6" style={{ color: 'var(--warm-taupe)' }}>
+          {loadError}
+        </p>
+        <div className="flex items-center gap-3">
+          <button onClick={() => setReloadKey(k => k + 1)} className="btn-primary">
+            Try Again
+          </button>
+          <button onClick={() => navigate('/shop')} className="btn-secondary">
+            <ArrowLeft size={15} /> Back to Shop
+          </button>
+        </div>
       </div>
     );
   }

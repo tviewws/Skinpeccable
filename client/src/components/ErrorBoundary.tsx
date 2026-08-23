@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { AlertTriangle, RotateCcw } from "lucide-react";
-import { Component, ReactNode } from "react";
+import { Component, ErrorInfo, ReactNode } from "react";
 
 interface Props {
   children: ReactNode;
@@ -21,6 +21,12 @@ class ErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
+  // Rendering the stack was the only record of the crash; log it so the
+  // failure survives even though shoppers no longer see internals.
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error("Unhandled render error:", error, info.componentStack);
+  }
+
   render() {
     if (this.state.hasError) {
       return (
@@ -35,7 +41,9 @@ class ErrorBoundary extends Component<Props, State> {
 
             <div className="p-4 w-full rounded bg-muted overflow-auto mb-6">
               <pre className="text-sm text-muted-foreground whitespace-break-spaces">
-                {this.state.error?.stack}
+                {import.meta.env.DEV
+                  ? this.state.error?.stack
+                  : "Please reload the page. If this keeps happening, contact us and we'll help you out."}
               </pre>
             </div>
 

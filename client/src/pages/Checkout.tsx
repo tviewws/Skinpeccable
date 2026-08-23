@@ -19,8 +19,7 @@ import {
   X,
 } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
-
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+import { apiFetch, postJson } from '@/lib/api';
 
 // ─────────────────────────────────────────────
 // DELIVERY ZONES — client-defined Nairobi zones
@@ -260,17 +259,18 @@ export default function Checkout() {
     setDiscountResult(null);
 
     try {
-      const res = await fetch(`${BACKEND_URL}/api/odoo/discount/validate?code=${code}&subtotal=${subtotal}`);
-      const data = await res.json();
-
-      if (!data.success) {
-        setDiscountError(data.error || 'Invalid discount code. Please try again.');
-      } else {
-        setDiscountResult(data.discount);
-        setDiscountCode(code);
-      }
-    } catch {
-      setDiscountError('Could not validate the code. Please check your connection and try again.');
+      const data = await apiFetch<{ discount: DiscountResult }>(
+        `/api/odoo/discount/validate?code=${encodeURIComponent(code)}&subtotal=${subtotal}`
+      );
+      setDiscountResult(data.discount);
+      setDiscountCode(code);
+    } catch (err: unknown) {
+      console.error('Discount validation failed:', err);
+      setDiscountError(
+        err instanceof Error
+          ? err.message
+          : 'Could not validate the code. Please check your connection and try again.'
+      );
     } finally {
       setDiscountLoading(false);
     }
@@ -299,11 +299,11 @@ export default function Checkout() {
     setError('');
 
     try {
-      // 1. Create order in Odoo first
-      const odooRes = await fetch(`${BACKEND_URL}/api/odoo/order`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      // 1. Create order in Odoo first. This is deliberately non-fatal (the
+      // order is re-sent after payment and can be recreated by hand), but the
+      // reason it failed has to be logged instead of thrown away.
+      try {
+        await postJson('/api/odoo/order', {
           customer: {
             name: `${form.firstName} ${form.lastName}`,
             email: form.email,
@@ -322,21 +322,15 @@ export default function Checkout() {
           notes: form.notes,
           discountCode: discountCode || null,
           discountAmount: discountAmount || null,
-        }),
-      });
-
-      const odooData = await odooRes.json();
-
-      if (!odooData.success) {
-        // Log the error but don't block payment — order can be manually created if needed
-        console.error('Odoo order creation failed:', odooData.error);
+        });
+      } catch (odooErr: unknown) {
+        console.error('Odoo order creation failed:', odooErr);
       }
 
       // 2. Initiate Pesapal payment
-      const res = await fetch(`${BACKEND_URL}/api/payments/pesapal/initiate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      const data = await postJson<{ redirect_url?: string }>(
+        '/api/payments/pesapal/initiate',
+        {
           customer: {
             firstName: form.firstName,
             lastName: form.lastName,
@@ -356,13 +350,11 @@ export default function Checkout() {
           notes: form.notes,
           discountCode: discountCode || null,
           discountAmount: discountAmount || null,
-        }),
-      });
+        }
+      );
 
-      const data = await res.json();
-
-      if (!data.success || !data.redirect_url) {
-        setError(data.error || 'Could not initiate payment. Please try again.');
+      if (!data.redirect_url) {
+        setError('Could not initiate payment. Please try again.');
         setLoading(false);
         return;
       }
@@ -387,8 +379,13 @@ export default function Checkout() {
 
       window.location.href = data.redirect_url;
 
-    } catch (err) {
-      setError('Could not connect to the payment server. Please check your internet and try again.');
+    } catch (err: unknown) {
+      console.error('Payment initiation failed:', err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Could not connect to the payment server. Please check your internet and try again.'
+      );
       setLoading(false);
     }
   };
