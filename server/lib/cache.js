@@ -1,3 +1,5 @@
+// Simple in-memory TTL cache. A keyed cache holds several entries that share
+// one expiry; an unkeyed cache holds a single value.
 class TtlCache {
   constructor(ttl, keyed = false) {
     this.ttl = ttl;
@@ -11,11 +13,12 @@ class TtlCache {
     return this.keyed ? this.data[key] || null : this.data;
   }
 
-  set(key, value) {
+  set(...args) {
     if (this.keyed) {
+      const [key, value] = args;
       this.data[key] = value;
     } else {
-      this.data = key;
+      this.data = args[0];
     }
     this.expiresAt = Date.now() + this.ttl;
   }

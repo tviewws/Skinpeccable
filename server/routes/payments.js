@@ -159,12 +159,7 @@ router.get('/pesapal/ipn', async (req, res) => {
     // Get token to check transaction status
     const token = await getPesapalToken();
 
-    const statusRes = await getTransactionStatus(
-      axios,
-      PESAPAL_BASE,
-      token,
-      orderTrackingId
-    );
+    const statusRes = await getTransactionStatus(PESAPAL_BASE, token, orderTrackingId);
 
     const status = statusRes.data.payment_status_description;
     console.log(`Payment status for ${orderTrackingId}: ${status}`);
@@ -189,12 +184,7 @@ router.get('/pesapal/status', asyncRoute('Pesapal status error', async (req, res
 
   const token = await getPesapalToken();
 
-  const statusRes = await getTransactionStatus(
-    axios,
-    PESAPAL_BASE,
-    token,
-    orderTrackingId
-  );
+  const statusRes = await getTransactionStatus(PESAPAL_BASE, token, orderTrackingId);
 
   res.json({
     success: true,

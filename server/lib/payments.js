@@ -1,3 +1,5 @@
+const axios = require("axios");
+
 function pesapalHeaders(token) {
   return {
     "Content-Type": "application/json",
@@ -6,7 +8,7 @@ function pesapalHeaders(token) {
   };
 }
 
-async function getTransactionStatus(axios, baseUrl, token, orderTrackingId) {
+async function getTransactionStatus(baseUrl, token, orderTrackingId) {
   return axios.get(
     `${baseUrl}/api/Transactions/GetTransactionStatus?orderTrackingId=${orderTrackingId}`,
     {
