@@ -1,11 +1,11 @@
 const express = require('express');
-const axios = require('axios');
+const { z } = require('zod');
 const router = express.Router();
 
-const { ODOO_URL, ODOO_DB, ODOO_USERNAME, ODOO_API_KEY } = process.env;
+const { odooCall } = require('../lib/odoo');
+const { priceOrder, resolveDiscount, PricingError } = require('../lib/pricing');
 
-// ── Session cache — reuse cookie for 8 minutes before re-authenticating
-let sessionCache = { cookie: null, expiresAt: 0 };
+const { WARMUP_TOKEN } = process.env;
 
 // ── Products / categories cache — serve from memory, refresh every 5 minutes
 let productsCache = { data: null, expiresAt: 0 };
@@ -18,51 +18,37 @@ let contentBlocksCache = { data: null, expiresAt: 0 };
 // ── Product tags cache — Shop by Concern (Acne, Oily Skin, etc.)
 let tagsCache = { data: null, expiresAt: 0 };
 
-// Authenticate and get session cookie (cached)
-async function getOdooSession() {
-  if (sessionCache.cookie && Date.now() < sessionCache.expiresAt) {
-    return sessionCache.cookie;
-  }
+// Request schemas — every public endpoint validates its input before any Odoo
+// call, so untrusted payloads cannot reach the ERP.
+const orderSchema = z.object({
+  customer: z.object({
+    name: z.string().trim().min(1).max(120).optional(),
+    firstName: z.string().trim().max(60).optional(),
+    lastName: z.string().trim().max(60).optional(),
+    email: z.string().email().max(160),
+    phone: z.string().trim().max(30).optional(),
+    address: z.string().trim().max(300).optional(),
+    city: z.string().trim().max(80).optional(),
+  }),
+  items: z.array(z.object({
+    name: z.string().trim().min(1).max(200),
+    qty: z.number().int().positive().max(100),
+    price: z.number().nonnegative().optional(),
+  })).min(1).max(50),
+  deliveryFee: z.number().nonnegative().optional(),
+  deliveryZone: z.string().trim().max(80).optional(),
+  notes: z.string().trim().max(1000).optional(),
+  discountCode: z.string().trim().max(60).nullish(),
+}).passthrough();
 
-  const response = await axios.post(`${ODOO_URL}/web/session/authenticate`, {
-    jsonrpc: '2.0',
-    method: 'call',
-    params: {
-      db: ODOO_DB,
-      login: ODOO_USERNAME,
-      password: ODOO_API_KEY
-    }
-  }, {
-    headers: { 'Content-Type': 'application/json' }
-  });
+const discountQuerySchema = z.object({
+  code: z.string().trim().min(1).max(60),
+  subtotal: z.coerce.number().nonnegative().default(0),
+});
 
-  if (!response.data.result || !response.data.result.uid) {
-    throw new Error('Odoo authentication failed — check your email, API key and DB name');
-  }
-
-  sessionCache.cookie = response.headers['set-cookie']?.[0];
-  sessionCache.expiresAt = Date.now() + 8 * 60 * 1000; // 8 minutes
-  return sessionCache.cookie;
-}
-
-// Make an authenticated Odoo API call
-async function odooCall(model, method, args = [], kwargs = {}) {
-  const cookie = await getOdooSession();
-
-  const response = await axios.post(`${ODOO_URL}/web/dataset/call_kw`, {
-    jsonrpc: '2.0',
-    method: 'call',
-    params: { model, method, args, kwargs }
-  }, {
-    headers: {
-      'Content-Type': 'application/json',
-      'Cookie': cookie
-    }
-  });
-
-  if (response.data.error) throw new Error(response.data.error.data.message);
-  return response.data.result;
-}
+const contentBlocksQuerySchema = z.object({
+  section: z.string().trim().max(80).optional(),
+});
 
 // Find or create a customer
 async function findOrCreateCustomer(name, email, phone = '') {
@@ -79,22 +65,6 @@ async function findOrCreateCustomer(name, email, phone = '') {
     customer_rank: 1
   }]);
   return newCustomer;
-}
-
-// Find product in Odoo by name, or create it if it doesn't exist
-async function findOrCreateProduct(name, price) {
-  const existing = await odooCall('product.product', 'search_read',
-    [[['name', 'ilike', name]]],
-    { fields: ['id', 'name'], limit: 1 }
-  );
-  if (existing.length > 0) return existing[0].id;
-
-  const newProduct = await odooCall('product.product', 'create', [{
-    name,
-    list_price: price,
-    type: 'consu'
-  }]);
-  return newProduct;
 }
 
 // Find or create a dedicated delivery service product in Odoo.
@@ -157,6 +127,10 @@ async function getContentBlocks(section = null) {
 // real visitors never hit a cold cache.
 router.get('/warmup', async (req, res) => {
   try {
+    if (WARMUP_TOKEN && req.get('x-warmup-token') !== WARMUP_TOKEN) {
+      return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+
     const products = await odooCall(
       'product.template',
       'search_read',
@@ -229,20 +203,7 @@ router.get('/warmup', async (req, res) => {
     });
   } catch (err) {
     console.error('Odoo warmup error:', err.message);
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-// Test route
-router.get('/test', async (req, res) => {
-  try {
-    const result = await odooCall('res.partner', 'search_read',
-      [[['customer_rank', '>', 0]]],
-      { fields: ['name', 'email'], limit: 5 }
-    );
-    res.json({ success: true, sample_customers: result });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Could not warm up cache' });
   }
 });
 
@@ -283,7 +244,7 @@ router.get('/categories', async (req, res) => {
     res.json({ success: true, categories });
   } catch (err) {
     console.error('Odoo categories fetch error:', err.message);
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Could not load categories' });
   }
 });
 
@@ -345,7 +306,7 @@ router.get('/products', async (req, res) => {
     res.json({ success: true, products: shaped });
   } catch (err) {
     console.error('Odoo products fetch error:', err.message);
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Could not load products' });
   }
 });
 
@@ -354,7 +315,12 @@ router.get('/products', async (req, res) => {
 // Website Content Block model, optionally filtered by section.
 router.get('/content-blocks', async (req, res) => {
   try {
-    const { section } = req.query;
+    const query = contentBlocksQuerySchema.safeParse(req.query);
+    if (!query.success) {
+      return res.status(400).json({ success: false, error: 'Invalid section' });
+    }
+
+    const { section } = query.data;
     const cacheKey = section || 'all';
 
     if (
@@ -365,7 +331,7 @@ router.get('/content-blocks', async (req, res) => {
       return res.json({ success: true, blocks: contentBlocksCache.data[cacheKey] });
     }
 
-    const blocks = await getContentBlocks(section);
+    const blocks = await getContentBlocks(section || null);
 
     if (!contentBlocksCache.data) contentBlocksCache.data = {};
     contentBlocksCache.data[cacheKey] = blocks;
@@ -374,7 +340,7 @@ router.get('/content-blocks', async (req, res) => {
     res.json({ success: true, blocks });
   } catch (err) {
     console.error('Odoo content blocks fetch error:', err.message);
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Could not load content blocks' });
   }
 });
 
@@ -402,55 +368,66 @@ router.get('/tags', async (req, res) => {
     res.json({ success: true, tags: shaped });
   } catch (err) {
     console.error('Odoo tags fetch error:', err.message);
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Could not load tags' });
   }
 });
 
 // POST /api/odoo/order
 // Creates a confirmed sale order in Odoo, including a delivery fee line item.
+// Line prices, the delivery fee and any discount are resolved server side from
+// Odoo — the amounts sent by the browser are only used for reconciliation logs.
 // Expected body:
 // {
 //   customer: { name, email, phone, address, city },
-//   items: [{ name, price, qty }],
-//   total: number,          // full amount including delivery
+//   items: [{ name, qty }],
 //   deliveryFee: number,    // e.g. 300
 //   deliveryZone: string,   // e.g. "Zone 2 — Central Nairobi"
+//   discountCode: string,
 //   notes: string
 // }
 router.post('/order', async (req, res) => {
   try {
-    const { customer, items, total, deliveryFee, deliveryZone, notes } = req.body;
+    const validation = orderSchema.safeParse(req.body);
+    if (!validation.success) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid order data',
+        details: validation.error.flatten(),
+      });
+    }
 
-    // 1. Find or create the customer in Odoo
+    const { customer, items, deliveryFee, deliveryZone, notes, discountCode } = validation.data;
+
+    // 1. Price the order from Odoo data
+    const priced = await priceOrder({ items, deliveryFee, discountCode });
+
+    // 2. Find or create the customer in Odoo
     const partnerId = await findOrCreateCustomer(
-      customer.name || `${customer.firstName} ${customer.lastName}`,
+      customer.name || `${customer.firstName || ''} ${customer.lastName || ''}`.trim() || customer.email,
       customer.email,
       customer.phone || ''
     );
 
-    // 2. Build order lines for each product
-    const orderLines = await Promise.all(items.map(async (item) => {
-      const productId = await findOrCreateProduct(item.name, item.price);
-      return [0, 0, {
-        product_id: productId,
-        name: item.name,
-        product_uom_qty: item.qty,
-        price_unit: item.price,
-      }];
-    }));
+    // 3. Build order lines for each product
+    const orderLines = priced.items.map((item) => [0, 0, {
+      product_id: item.productId,
+      name: item.name,
+      product_uom_qty: item.qty,
+      price_unit: item.unitPrice,
+    }]);
 
-    // 3. Add delivery fee as a separate line item (if applicable)
-    if (deliveryFee && deliveryFee > 0) {
+    // 4. Add delivery fee as a separate line item (if applicable)
+    if (priced.deliveryFee > 0) {
       const deliveryProductId = await findOrCreateDeliveryProduct();
       orderLines.push([0, 0, {
         product_id: deliveryProductId,
         name: `Delivery — ${deliveryZone || 'Standard'}`,
         product_uom_qty: 1,
-        price_unit: deliveryFee,
+        price_unit: priced.deliveryFee,
       }]);
     }
 
-    // 4. Create the sale order
+    // 5. Create the sale order
     const saleOrderId = await odooCall('sale.order', 'create', [{
       partner_id: partnerId,
       order_line: orderLines,
@@ -459,40 +436,27 @@ router.post('/order', async (req, res) => {
         `Customer phone: ${customer.phone || 'N/A'}`,
         `Delivery zone: ${deliveryZone || 'N/A'}`,
         `Delivery address: ${customer.address || ''}${customer.city ? ', ' + customer.city : ''}`,
-        `Order total (incl. delivery): KES ${total}`,
+        discountCode ? `Discount code: ${discountCode} (KES ${priced.discountAmount})` : '',
+        `Order total (incl. delivery): KES ${priced.total}`,
       ].filter(Boolean).join('\n'),
     }]);
 
-    // 5. Confirm the order (moves it from draft to confirmed in Odoo)
+    // 6. Confirm the order (moves it from draft to confirmed in Odoo)
     await odooCall('sale.order', 'action_confirm', [[saleOrderId]]);
 
     res.json({
       success: true,
       sale_order_id: saleOrderId,
+      total: priced.total,
       message: `Order #${saleOrderId} created in Odoo`,
     });
 
   } catch (err) {
+    if (err instanceof PricingError) {
+      return res.status(400).json({ success: false, error: err.message });
+    }
     console.error('Odoo order error:', err.message);
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-// GET /api/odoo/discount/debug
-// Temporary debug route — remove after confirming correct model/field names
-router.get('/discount/debug', async (req, res) => {
-  try {
-    const cards = await odooCall('loyalty.card', 'search_read',
-      [[]],
-      { fields: ['id', 'code', 'program_id'], limit: 10 }
-    );
-    const programs = await odooCall('loyalty.program', 'search_read',
-      [[]],
-      { fields: ['id', 'name', 'program_type'], limit: 10 }
-    );
-    res.json({ cards, programs });
-  } catch (err) {
-    res.json({ error: err.message });
+    res.status(500).json({ success: false, error: 'Could not create order' });
   }
 });
 
@@ -500,79 +464,20 @@ router.get('/discount/debug', async (req, res) => {
 // Validates a discount code against Odoo loyalty programs (promo_code type)
 // Query: ?code=MULDIBO5&subtotal=3500
 router.get('/discount/validate', async (req, res) => {
-  const { code, subtotal = 0 } = req.query;
+  const query = discountQuerySchema.safeParse(req.query);
 
-  if (!code) return res.json({ success: false, error: 'No code provided.' });
+  if (!query.success) {
+    return res.json({ success: false, error: 'No code provided.' });
+  }
 
   try {
-    // 1. Find the promo_code program by matching the code on loyalty.rule
-    //    For promo_code programs, the code lives on loyalty.rule (mode = 'with_code')
-    const matchingRules = await odooCall('loyalty.rule', 'search_read',
-      [[['code', '=', code.toUpperCase()]]],
-      { fields: ['id', 'program_id', 'minimum_amount', 'minimum_qty', 'code'], limit: 1 }
-    );
+    const result = await resolveDiscount(query.data.code, query.data.subtotal);
 
-    // 2. Fallback: search by program name if rule code not found
-    let programId = null;
-    let minimumAmount = 0;
-
-    if (matchingRules && matchingRules.length > 0) {
-      programId = matchingRules[0].program_id[0];
-      minimumAmount = matchingRules[0].minimum_amount || 0;
-    } else {
-      // Try matching against program name (e.g. MULDIBO5%)
-      const programs = await odooCall('loyalty.program', 'search_read',
-        [[['program_type', '=', 'promo_code']]],
-        { fields: ['id', 'name'], limit: 50 }
-      );
-
-      const match = programs.find(p =>
-        p.name.toUpperCase().replace('%', '').includes(code.toUpperCase()) ||
-        code.toUpperCase().includes(p.name.toUpperCase().replace('%', ''))
-      );
-
-      if (!match) return res.json({ success: false, error: 'Invalid discount code.' });
-
-      programId = match.id;
-
-      // Get rules for minimum spend
-      const rules = await odooCall('loyalty.rule', 'search_read',
-        [[['program_id', '=', programId]]],
-        { fields: ['minimum_amount', 'minimum_qty'], limit: 1 }
-      );
-      minimumAmount = rules[0]?.minimum_amount || 0;
+    if (!result || result.error) {
+      return res.json({ success: false, error: result?.error || 'Invalid discount code.' });
     }
 
-    // 3. Check minimum spend
-    if (Number(subtotal) < minimumAmount) {
-      return res.json({
-        success: false,
-        error: `Minimum spend of KSh ${minimumAmount.toLocaleString()} required for this code.`,
-      });
-    }
-
-    // 4. Get the reward
-    const rewards = await odooCall('loyalty.reward', 'search_read',
-      [[['program_id', '=', programId]]],
-      { fields: ['discount', 'discount_mode', 'reward_type'], limit: 1 }
-    );
-
-    if (!rewards.length)
-      return res.json({ success: false, error: 'No reward found for this code.' });
-
-    const reward = rewards[0];
-
-    return res.json({
-      success: true,
-      discount: {
-        type: reward.discount_mode === 'fixed_amount' ? 'fixed' : 'percentage',
-        value: reward.discount,
-        label: reward.discount_mode === 'fixed_amount'
-          ? `KSh ${reward.discount.toLocaleString()} off`
-          : `${reward.discount}% off`,
-      },
-    });
-
+    return res.json({ success: true, discount: result.discount });
   } catch (err) {
     console.error('Discount validation error:', err.message);
     return res.json({ success: false, error: 'Could not validate code. Please try again.' });
