@@ -123,7 +123,7 @@ async function getContentBlocks(section = null) {
   if (section) domain.push(['x_studio_section_1', '=', section]);
 
   const blocks = await odooCall(
-    'x_website_content_block',
+    'x_website_content_bloc',
     'search_read',
     [domain],
     {
