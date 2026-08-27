@@ -1,7 +1,7 @@
 /*
  * SKINPECCABLE GLOWTIQUE — Home Page
  * Design: "Structured Warmth" — animated welcome experience, no products
- * Sections: Hero (full-screen) | Home Banner (dynamic, Odoo-managed) | Categories Preview | Brand Story | Three Pillars | Lifestyle Split | Tagline CTA
+ * Sections: Hero (full-screen) | Home Banner (dynamic, Odoo-managed) | Coming Soon (dynamic, Odoo-managed) | Categories Preview | Brand Story | Three Pillars | Lifestyle Split | Tagline CTA
  */
 
 import { useEffect, useRef, useState } from 'react';
@@ -68,6 +68,25 @@ export default function Home() {
         if (data.success) setBanners(data.blocks);
       })
       .catch((err) => console.error('Failed to load home banners:', err));
+  }, []);
+
+  // ── Dynamic Coming Soon content (managed by client via Odoo Website Content Block) ──
+  const [comingSoon, setComingSoon] = useState<ContentBlock[]>([]);
+  const [comingSoonIndex, setComingSoonIndex] = useState(0);
+  const activeComingSoon = comingSoon[comingSoonIndex];
+
+  const handleNextComingSoon = () => {
+    setComingSoonIndex((prev) => (prev + 1) % comingSoon.length);
+  };
+
+  useEffect(() => {
+    const backendUrl = import.meta.env.VITE_BACKEND_URL;
+    fetch(`${backendUrl}/api/odoo/content-blocks?section=Coming Soon`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) setComingSoon(data.blocks);
+      })
+      .catch((err) => console.error('Failed to load coming soon banners:', err));
   }, []);
 
   return (
@@ -338,6 +357,176 @@ export default function Home() {
               {Array(2).fill(null).map((_, i) => (
                 <span className="marquee-item" key={i}>
                   New Arrivals <span>•</span> New Arrivals <span>•</span> New Arrivals <span>•</span> New Arrivals <span>•</span>
+                </span>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── COMING SOON SPOTLIGHT (dynamic, managed in Odoo) ── */}
+      {comingSoon.length > 0 && activeComingSoon && (
+        <section className="relative py-6" style={{ backgroundColor: '#F6F1EB', overflow: 'hidden' }}>
+          <style>{`
+            @keyframes marqueeLeft2 {
+              from { transform: translateX(0); }
+              to { transform: translateX(-50%); }
+            }
+            @keyframes marqueeRight2 {
+              from { transform: translateX(-50%); }
+              to { transform: translateX(0); }
+            }
+            .marquee-track-2 {
+              display: flex;
+              width: max-content;
+              white-space: nowrap;
+              will-change: transform;
+            }
+            .marquee-top-2 .marquee-track-2 {
+              animation: marqueeLeft2 22s linear infinite;
+            }
+            .marquee-bottom-2 .marquee-track-2 {
+              animation: marqueeRight2 22s linear infinite;
+            }
+            .marquee-item-2 {
+              font-family: var(--font-display);
+              font-weight: 600;
+              font-size: 1.1rem;
+              letter-spacing: 0.15em;
+              padding: 0 1.5rem;
+              color: var(--deep-orange);
+              text-transform: uppercase;
+            }
+            .marquee-item-2 span {
+              color: var(--dark-chocolate);
+              opacity: 0.35;
+              padding-left: 1.5rem;
+            }
+            @keyframes bannerFadeIn2 {
+              from { opacity: 0; transform: translateY(8px); }
+              to { opacity: 1; transform: translateY(0); }
+            }
+            .banner-fade-2 {
+              animation: bannerFadeIn2 0.5s ease;
+            }
+          `}</style>
+
+          {/* Top marquee belt */}
+          <div
+            className="marquee-top-2 overflow-hidden mb-10"
+            style={{ transform: 'rotate(-1.2deg)', marginInline: '-2rem' }}
+          >
+            <div className="marquee-track-2">
+              {Array(2).fill(null).map((_, i) => (
+                <span className="marquee-item-2" key={i}>
+                  Coming Soon <span>•</span> Coming Soon <span>•</span> Coming Soon <span>•</span> Coming Soon <span>•</span>
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className="container">
+            <div key={activeComingSoon.id} className="banner-fade-2 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+              {/* Image side */}
+              {activeComingSoon.image && (
+                <div className="relative order-1 lg:order-none">
+                  <div
+                    className="relative overflow-hidden rounded-lg"
+                    style={{ aspectRatio: '4/3', maxHeight: '460px' }}
+                  >
+                    <img
+                      src={activeComingSoon.image}
+                      alt={activeComingSoon.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div
+                    className="absolute -bottom-4 -right-4 w-28 h-28 rounded-lg -z-10"
+                    style={{ backgroundColor: 'var(--soft-cream)', border: '2px solid var(--deep-orange)' }}
+                  />
+                </div>
+              )}
+
+              {/* Text side */}
+              <div className={activeComingSoon.image ? '' : 'lg:col-span-2 text-center max-w-2xl mx-auto'}>
+                <h2
+                  className="font-display font-semibold mb-5"
+                  style={{ fontSize: 'clamp(2rem, 4vw, 3rem)', color: 'var(--dark-chocolate)', lineHeight: 1.15 }}
+                >
+                  {activeComingSoon.title}
+                </h2>
+
+                {activeComingSoon.subtitle && (
+                  <p
+                    className="font-body leading-relaxed mb-8"
+                    style={{
+                      fontSize: '1.05rem',
+                      color: 'var(--charcoal)',
+                      maxWidth: activeComingSoon.image ? '440px' : '600px',
+                      marginInline: activeComingSoon.image ? undefined : 'auto',
+                    }}
+                  >
+                    {activeComingSoon.subtitle}
+                  </p>
+                )}
+
+                <div className={`flex items-center gap-4 ${activeComingSoon.image ? '' : 'justify-center'}`}>
+                  {activeComingSoon.linkUrl && (
+                    <Link href={activeComingSoon.linkUrl}>
+                      <button className="btn-primary flex items-center gap-2">
+                        Discover More
+                        <ArrowRight size={16} />
+                      </button>
+                    </Link>
+                  )}
+
+                  {comingSoon.length > 1 && (
+                    <button
+                      onClick={handleNextComingSoon}
+                      aria-label="Next coming soon item"
+                      className="flex items-center justify-center rounded-full transition-transform duration-200"
+                      style={{
+                        width: '3rem',
+                        height: '3rem',
+                        border: '1.5px solid var(--deep-orange)',
+                        color: 'var(--deep-orange)',
+                        backgroundColor: 'transparent',
+                      }}
+                      onMouseEnter={e => {
+                        (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--deep-orange)';
+                        (e.currentTarget as HTMLButtonElement).style.color = '#FFFFFF';
+                      }}
+                      onMouseLeave={e => {
+                        (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
+                        (e.currentTarget as HTMLButtonElement).style.color = 'var(--deep-orange)';
+                      }}
+                    >
+                      <ChevronRight size={20} />
+                    </button>
+                  )}
+                </div>
+
+                {comingSoon.length > 1 && (
+                  <p
+                    className="font-body mt-4"
+                    style={{ fontSize: '0.75rem', color: 'var(--warm-taupe)', letterSpacing: '0.1em' }}
+                  >
+                    {comingSoonIndex + 1} / {comingSoon.length}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom marquee belt */}
+          <div
+            className="marquee-bottom-2 overflow-hidden mt-10"
+            style={{ transform: 'rotate(1.2deg)', marginInline: '-2rem' }}
+          >
+            <div className="marquee-track-2">
+              {Array(2).fill(null).map((_, i) => (
+                <span className="marquee-item-2" key={i}>
+                  Coming Soon <span>•</span> Coming Soon <span>•</span> Coming Soon <span>•</span> Coming Soon <span>•</span>
                 </span>
               ))}
             </div>
