@@ -155,6 +155,10 @@ async function getContentBlocks(section = null) {
 // Pre-fills products and categories caches. Designed to be pinged by an
 // external cron job every ~25 minutes (just under the 30-minute TTL) so
 // real visitors never hit a cold cache.
+// NOTE: uses image_512 (not image_1920) — the shop grid only ever displays
+// these as small thumbnails, so we don't want to ship full-res base64 images
+// for all 228 products on every load. The product detail page fetches its
+// own full-res image separately via GET /api/odoo/products/:id.
 router.get('/warmup', async (req, res) => {
   try {
     const products = await odooCall(
@@ -168,7 +172,7 @@ router.get('/warmup', async (req, res) => {
           'description',
           'description_sale',
           'list_price',
-          'image_1920',
+          'image_512',
           'categ_id',
           'qty_available',
           'product_tag_ids',
@@ -193,8 +197,8 @@ router.get('/warmup', async (req, res) => {
         category: p.categ_id?.[1]?.toLowerCase().replace(/\s+/g, '-') || 'all',
         price: p.list_price > 0 && inStock ? p.list_price : 'SOLD OUT',
         description,
-        image: p.image_1920
-          ? `data:image/png;base64,${p.image_1920}`
+        image: p.image_512
+          ? `data:image/png;base64,${p.image_512}`
           : '/placeholder.png',
         tagIds: p.product_tag_ids || [],
       };
@@ -290,6 +294,10 @@ router.get('/categories', async (req, res) => {
 // GET /api/odoo/products
 // Fetches all published products from Odoo and shapes them to match the frontend Product interface.
 // qty_available is used to mark products as SOLD OUT when stock is zero or below.
+// NOTE: uses image_512 (not image_1920) — this list feeds the shop grid, where
+// images render as small thumbnails, so we avoid shipping 228 full-res base64
+// images in a single response. Full-res image is fetched separately per-product
+// on the product detail page via GET /api/odoo/products/:id.
 router.get('/products', async (req, res) => {
   try {
     if (productsCache.data && Date.now() < productsCache.expiresAt) {
@@ -307,7 +315,7 @@ router.get('/products', async (req, res) => {
           'description',
           'description_sale',
           'list_price',
-          'image_1920',
+          'image_512',
           'categ_id',
           'qty_available',
           'product_tag_ids',
@@ -332,8 +340,8 @@ router.get('/products', async (req, res) => {
         category: p.categ_id?.[1]?.toLowerCase().replace(/\s+/g, '-') || 'all',
         price: p.list_price > 0 && inStock ? p.list_price : 'SOLD OUT',
         description,
-        image: p.image_1920
-          ? `data:image/png;base64,${p.image_1920}`
+        image: p.image_512
+          ? `data:image/png;base64,${p.image_512}`
           : '/placeholder.png',
         tagIds: p.product_tag_ids || [],
       };
@@ -345,6 +353,75 @@ router.get('/products', async (req, res) => {
     res.json({ success: true, products: shaped });
   } catch (err) {
     console.error('Odoo products fetch error:', err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// GET /api/odoo/products/:id
+// Fetches a single product with its full-resolution image (image_1920) —
+// used by the product detail page, where the image is displayed large and
+// deserves full quality. Accepts either a raw Odoo id or the "odoo_123"
+// format used throughout the frontend.
+router.get('/products/:id', async (req, res) => {
+  try {
+    const rawId = req.params.id.replace(/^odoo_/, '');
+    const numericId = parseInt(rawId, 10);
+
+    if (Number.isNaN(numericId)) {
+      return res.status(400).json({ success: false, error: 'Invalid product id' });
+    }
+
+    const products = await odooCall(
+      'product.template',
+      'search_read',
+      [[['id', '=', numericId], ['is_published', '=', true]]],
+      {
+        fields: [
+          'id',
+          'name',
+          'description',
+          'description_sale',
+          'list_price',
+          'image_1920',
+          'categ_id',
+          'qty_available',
+          'product_tag_ids',
+        ],
+        limit: 1,
+      }
+    );
+
+    if (!products.length) {
+      return res.status(404).json({ success: false, error: 'Product not found' });
+    }
+
+    const p = products[0];
+
+    let description = '';
+    if (p.description && typeof p.description === 'string') {
+      description = p.description.replace(/<[^>]*>/g, '').trim();
+    } else if (p.description_sale && typeof p.description_sale === 'string') {
+      description = p.description_sale.replace(/<[^>]*>/g, '').trim();
+    }
+
+    const inStock = p.qty_available > 0;
+
+    const shaped = {
+      id: `odoo_${p.id}`,
+      name: p.name,
+      brand: 'Skinpeccable',
+      category: p.categ_id?.[1]?.toLowerCase().replace(/\s+/g, '-') || 'all',
+      price: p.list_price > 0 && inStock ? p.list_price : 'SOLD OUT',
+      description,
+      image: p.image_1920
+        ? `data:image/png;base64,${p.image_1920}`
+        : '/placeholder.png',
+      tagIds: p.product_tag_ids || [],
+    };
+
+    res.json({ success: true, product: shaped });
+  } catch (err) {
+    console.error('Odoo single product fetch error:', err.message);
     res.status(500).json({ success: false, error: err.message });
   }
 });

@@ -30,34 +30,32 @@ export default function ProductDetail() {
       return;
     }
 
-    fetch(`${BACKEND_URL}/api/odoo/products`)
+    // Fetches just this one product (with its full-resolution image) instead
+    // of pulling the entire shop list and filtering client-side.
+    fetch(`${BACKEND_URL}/api/odoo/products/${id}`)
       .then(r => r.json())
       .then(data => {
-        if (!data.success) throw new Error('API error');
-        const found = data.products.find((p: Product) => p.id === id);
-        if (found) {
-          setProduct(found);
+        if (!data.success || !data.product) throw new Error('API error');
+        const found: Product = data.product;
+        setProduct(found);
 
-          // Meta Pixel: ViewContent event
-          if (typeof window !== 'undefined' && found.price !== 'SOLD OUT') {
-            (window as any).dataLayer = (window as any).dataLayer || [];
-            (window as any).dataLayer.push({
-              event: 'view_content',
-              ecommerce: {
-                currency: 'KES',
-                value: found.price,
-                items: [{
-                  item_id: found.id,
-                  item_name: found.name,
-                  item_brand: found.brand,
-                  item_category: found.category,
-                  price: found.price,
-                }],
-              },
-            });
-          }
-        } else {
-          setNotFound(true);
+        // Meta Pixel: ViewContent event
+        if (typeof window !== 'undefined' && found.price !== 'SOLD OUT') {
+          (window as any).dataLayer = (window as any).dataLayer || [];
+          (window as any).dataLayer.push({
+            event: 'view_content',
+            ecommerce: {
+              currency: 'KES',
+              value: found.price,
+              items: [{
+                item_id: found.id,
+                item_name: found.name,
+                item_brand: found.brand,
+                item_category: found.category,
+                price: found.price,
+              }],
+            },
+          });
         }
       })
       .catch(() => setNotFound(true))
